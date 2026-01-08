@@ -200,6 +200,12 @@ impl GatewayPolicies {
 				ctx.register_expression(expr)
 			}
 		}
+
+		if let Some(extproc) = &self.ext_proc {
+			for expr in extproc.expressions() {
+				ctx.register_expression(expr);
+			}
+		}
 	}
 }
 
@@ -221,6 +227,11 @@ impl RoutePolicies {
 		if let Some(extauthz) = &self.ext_authz {
 			for expr in extauthz.expressions() {
 				ctx.register_expression(expr)
+			}
+		}
+		if let Some(extproc) = &self.ext_proc {
+			for expr in extproc.expressions() {
+				ctx.register_expression(expr);
 			}
 		}
 	}
@@ -451,9 +462,6 @@ impl Store {
 		let mut pol = GatewayPolicies::default();
 		for rule in rules {
 			match &rule {
-				TrafficPolicy::ExtProc(p) => {
-					pol.ext_proc.get_or_insert_with(|| p.clone());
-				},
 				TrafficPolicy::JwtAuth(p) => {
 					pol.jwt.get_or_insert_with(|| p.clone());
 				},
@@ -465,6 +473,9 @@ impl Store {
 				},
 				TrafficPolicy::ExtAuthz(p) => {
 					pol.ext_authz.get_or_insert_with(|| p.clone());
+				},
+				TrafficPolicy::ExtProc(p) => {
+					pol.ext_proc.get_or_insert_with(|| p.clone());
 				},
 				TrafficPolicy::Transformation(p) => {
 					pol.transformation.get_or_insert_with(|| p.clone());

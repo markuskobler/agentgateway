@@ -1308,6 +1308,26 @@ impl TryFrom<&proto::agent::TrafficPolicySpec> for TrafficPolicy {
 				TrafficPolicy::ExtProc(http::ext_proc::ExtProc {
 					target: Arc::new(target),
 					failure_mode,
+					metadata: if ep.metadata.is_empty() {
+						None
+					} else {
+						Some(
+							ep.metadata
+								.iter()
+								.map(|(k, v)| (k.clone(), Arc::new(cel::Expression::new_permissive(v))))
+								.collect(),
+						)
+					},
+					attributes: if ep.attributes.is_empty() {
+						None
+					} else {
+						Some(
+							ep.attributes
+								.iter()
+								.map(|(k, v)| (k.clone(), Arc::new(cel::Expression::new_permissive(v))))
+								.collect(),
+						)
+					},
 				})
 			},
 			Some(tps::Kind::RequestHeaderModifier(rhm)) => {

@@ -132,11 +132,17 @@ async fn apply_request_policies(
 	.apply(response_policies.headers())?;
 
 	if let Some(x) = response_policies.ext_proc.as_mut() {
-		x.mutate_request(req).await?
+		x.mutate_request(req, Some(build_ctx(&exec, log)?)).await?
 	} else {
 		http::PolicyResponse::default()
 	}
 	.apply(response_policies.headers())?;
+
+	// Extract metadata and attributes for CEL context
+	if log.cel.ctx().with_extproc(req) {
+		// Reset the cached executor so downstream filters see updated context
+		let _ = exec.take();
+	}
 
 	if let Some(j) = &policies.transformation
 		&& j.has_request()
@@ -300,11 +306,17 @@ async fn apply_gateway_policies(
 	}
 
 	if let Some(x) = ext_proc {
-		x.mutate_request(req).await?
+		x.mutate_request(req, Some(build_ctx(&exec, log)?)).await?
 	} else {
 		http::PolicyResponse::default()
 	}
 	.apply(response_headers)?;
+
+	// Extract dynamic metadata for CEL context
+	if log.cel.ctx().with_extproc(req) {
+		// Reset the cached executor so downstream filters see updated context
+		let _ = exec.take();
+	}
 
 	if let Some(j) = &policies.transformation
 		&& j.has_request()
@@ -1816,13 +1828,15 @@ impl ResponsePolicies {
 		// ext_proc is only intended to run on responses from upstream
 		if is_upstream_response {
 			if let Some(x) = self.ext_proc.as_mut() {
-				x.mutate_response(resp).await?
+				x.mutate_response(resp, Some(build_ctx(&exec, log)?))
+					.await?
 			} else {
 				PolicyResponse::default()
 			}
 			.apply(&mut self.response_headers)?;
 			if let Some(x) = self.gateway_ext_proc.as_mut() {
-				x.mutate_response(resp).await?
+				x.mutate_response(resp, Some(build_ctx(&exec, log)?))
+					.await?
 			} else {
 				PolicyResponse::default()
 			}

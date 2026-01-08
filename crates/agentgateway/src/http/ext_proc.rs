@@ -14,9 +14,10 @@ use tokio::sync::mpsc::{Receiver, Sender};
 use tokio_stream::StreamExt;
 use tokio_stream::wrappers::ReceiverStream;
 
+use crate::cel::{Executor, Expression};
 use crate::http::ext_proc::proto::{
 	BodyMutation, BodyResponse, HeaderMutation, HeaderValueOption, HeadersResponse, HttpBody,
-	HttpHeaders, HttpTrailers, ImmediateResponse, ProcessingRequest, ProcessingResponse,
+	HttpHeaders, HttpTrailers, ImmediateResponse, Metadata, ProcessingRequest, ProcessingResponse,
 	processing_response,
 };
 use crate::http::filters::BackendRequestTimeout;
@@ -25,6 +26,11 @@ use crate::proxy::ProxyError;
 use crate::proxy::httpproxy::PolicyClient;
 use crate::types::agent::SimpleBackendReference;
 use crate::*;
+use serde_json::Value as JsonValue;
+
+#[cfg(test)]
+#[path = "ext_proc_tests.rs"]
+mod tests;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -42,9 +48,11 @@ pub enum Error {
 	InvalidHeaderValue(#[from] http::header::InvalidHeaderValue),
 }
 
-#[cfg(test)]
-#[path = "ext_proc_tests.rs"]
-mod tests;
+#[derive(Debug, Clone, Default)]
+pub struct ExtProcDynamicMetadata {
+	/// Flat key-value metadata for direct extproc.field access in CEL
+	pub metadata: HashMap<String, JsonValue>,
+}
 
 #[allow(warnings)]
 #[allow(clippy::derive_partial_eq_without_eq)]
@@ -79,6 +87,9 @@ impl InferenceRouting {
 				client,
 				self.target.clone(),
 				self.failure_mode,
+				// TODO(mk): add metadata, attributes?
+				None,
+				None,
 			)),
 		}
 	}
@@ -93,7 +104,7 @@ impl InferencePoolRouter {
 			return Ok((None, Default::default()));
 		};
 		let r = std::mem::take(req);
-		let (new_req, pr) = ext_proc.mutate_request(r).await?;
+		let (new_req, pr) = ext_proc.mutate_request(r, None).await?;
 		*req = new_req;
 		let dest = req
 			.headers()
@@ -113,7 +124,8 @@ impl InferencePoolRouter {
 			return Ok(Default::default());
 		};
 		let r = std::mem::take(resp);
-		let (new_resp, pr) = ext_proc.mutate_response(r).await?;
+		// TODO(mk): Add executor InferencePoolRouter?
+		let (new_resp, pr) = ext_proc.mutate_response(r, None).await?;
 		*resp = new_resp;
 		Ok(pr.unwrap_or_default())
 	}
@@ -121,10 +133,18 @@ impl InferencePoolRouter {
 
 #[apply(schema!)]
 pub struct ExtProc {
+	/// Reference to the external processing service backend
 	#[serde(flatten)]
 	pub target: Arc<SimpleBackendReference>,
+	/// Behavior when the ext_proc service is unavailable or returns an error
 	#[serde(default)]
 	pub failure_mode: FailureMode,
+	/// Maps to the `metadata_context.filter_metadata` field in ProcessingRequest, and allows dynamic CEL expressions.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub metadata: Option<HashMap<String, Arc<cel::Expression>>>,
+	/// Maps to the `attributes` field in ProcessingRequest, and allows dynamic CEL expressions.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub attributes: Option<HashMap<String, Arc<cel::Expression>>>,
 }
 
 impl ExtProc {
@@ -134,8 +154,27 @@ impl ExtProc {
 				client,
 				self.target.clone(),
 				self.failure_mode,
+				self.metadata.clone(),
+				self.attributes.clone(),
 			)),
 		}
+	}
+
+	pub fn expressions(&self) -> Box<dyn Iterator<Item = &Expression> + '_> {
+		let metadata = self
+			.metadata
+			.as_ref()
+			.into_iter()
+			.flat_map(|m| m.values().map(|v| v.as_ref()));
+
+		let attributes = self
+			.attributes
+			.as_ref()
+			.into_iter()
+			.flat_map(|m| m.values().map(|v| v.as_ref()));
+
+		// TODO(mk): is this safe
+		Box::new(metadata.chain(attributes))
 	}
 }
 
@@ -148,12 +187,13 @@ impl ExtProcRequest {
 	pub async fn mutate_request(
 		&mut self,
 		req: &mut http::Request,
+		exec: Option<&Executor<'_>>,
 	) -> Result<PolicyResponse, ProxyError> {
 		let Some(ext_proc) = &mut self.ext_proc else {
 			return Ok(PolicyResponse::default());
 		};
 		let r = std::mem::take(req);
-		let (new_req, pr) = ext_proc.mutate_request(r).await?;
+		let (new_req, pr) = ext_proc.mutate_request(r, exec).await?;
 		*req = new_req;
 		Ok(pr.unwrap_or_default())
 	}
@@ -161,12 +201,13 @@ impl ExtProcRequest {
 	pub async fn mutate_response(
 		&mut self,
 		resp: &mut http::Response,
+		exec: Option<&Executor<'_>>,
 	) -> Result<PolicyResponse, ProxyError> {
 		let Some(ext_proc) = &mut self.ext_proc else {
 			return Ok(PolicyResponse::default());
 		};
 		let r = std::mem::take(resp);
-		let (new_resp, pr) = ext_proc.mutate_response(r).await?;
+		let (new_resp, pr) = ext_proc.mutate_response(r, exec).await?;
 		*resp = new_resp;
 		Ok(pr.unwrap_or_default())
 	}
@@ -180,6 +221,8 @@ struct ExtProcInstance {
 	tx_req: Sender<ProcessingRequest>,
 	rx_resp_for_request: Option<Receiver<ProcessingResponse>>,
 	rx_resp_for_response: Option<Receiver<ProcessingResponse>>,
+	metadata: Option<HashMap<String, Arc<cel::Expression>>>,
+	attributes: Option<HashMap<String, Arc<cel::Expression>>>,
 }
 
 impl ExtProcInstance {
@@ -187,6 +230,8 @@ impl ExtProcInstance {
 		client: PolicyClient,
 		target: Arc<SimpleBackendReference>,
 		failure_mode: FailureMode,
+		metadata: Option<HashMap<String, Arc<cel::Expression>>>,
+		attributes: Option<HashMap<String, Arc<cel::Expression>>>,
 	) -> ExtProcInstance {
 		trace!("connecting to {:?}", target);
 		let chan = GrpcReferenceChannel {
@@ -247,6 +292,8 @@ impl ExtProcInstance {
 			tx_req,
 			rx_resp_for_request: Some(rx_resp_for_request),
 			rx_resp_for_response: Some(rx_resp_for_response),
+			metadata,
+			attributes,
 		}
 	}
 
@@ -257,6 +304,7 @@ impl ExtProcInstance {
 	pub async fn mutate_request(
 		&mut self,
 		req: http::Request,
+		exec: Option<&Executor<'_>>,
 	) -> Result<(http::Request, Option<PolicyResponse>), Error> {
 		let headers = req_to_header_map(&req);
 		let buffer = http::buffer_limit(&req);
@@ -272,17 +320,30 @@ impl ExtProcInstance {
 		} else {
 			(None, body)
 		};
-
 		let end_of_stream = body.is_end_stream();
-		let preq = processing_request(Request::RequestHeaders(HttpHeaders {
-			headers,
-			attributes: Default::default(),
-			end_of_stream,
-		}));
+
+		let (metadata, attributes) = if let Some(exec) = exec {
+			(
+				build_metadata(exec, &self.metadata),
+				build_attributes(exec, &self.attributes),
+			)
+		} else {
+			(None, HashMap::new())
+		};
+
+		let preq = processing_request(
+			Request::RequestHeaders(HttpHeaders {
+				headers,
+				end_of_stream,
+			}),
+			metadata.clone(),
+			attributes.clone(),
+		);
 		let had_body = !end_of_stream;
 
 		// Send the request headers to ext_proc.
 		self.send_request(preq).await?;
+
 		// The EPP will await for our headers and body. The body is going to be streaming in.
 		// We will spin off a task that is going to pipe the body to the ext_proc server as we read it.
 		let tx = self.tx_req.clone();
@@ -294,15 +355,23 @@ impl ExtProcInstance {
 					let preq = if frame.is_data() {
 						let frame = frame.into_data().expect("already checked");
 						trace!("sending request body chunk...",);
-						processing_request(Request::RequestBody(HttpBody {
-							body: frame.into(),
-							end_of_stream: false,
-						}))
+						processing_request(
+							Request::RequestBody(HttpBody {
+								body: frame.into(),
+								end_of_stream: false,
+							}),
+							metadata.clone(),
+							attributes.clone(),
+						)
 					} else if frame.is_trailers() {
 						let frame = frame.into_trailers().expect("already checked");
-						processing_request(Request::RequestTrailers(HttpTrailers {
-							trailers: to_header_map(&frame),
-						}))
+						processing_request(
+							Request::RequestTrailers(HttpTrailers {
+								trailers: to_header_map(&frame),
+							}),
+							metadata.clone(),
+							attributes.clone(),
+						)
 					} else {
 						panic!("unknown type")
 					};
@@ -313,10 +382,14 @@ impl ExtProcInstance {
 					};
 				}
 				// Now that the body is done, send end of stream
-				let preq = processing_request(Request::RequestBody(HttpBody {
-					body: Default::default(),
-					end_of_stream: true,
-				}));
+				let preq = processing_request(
+					Request::RequestBody(HttpBody {
+						body: Default::default(),
+						end_of_stream: true,
+					}),
+					metadata,
+					attributes,
+				);
 				let _ = tx.send(preq).await;
 
 				trace!("body request done");
@@ -365,6 +438,10 @@ impl ExtProcInstance {
 					tx_chunkh.take();
 					return;
 				}
+				// Extract dynamic metadata from ext_proc response
+				if let Some(dm) = &presp.dynamic_metadata {
+					let _ = Self::extract_dynamic_metadata(req.as_mut(), dm);
+				}
 				let Some(tx_chunk) = tx_chunkh.as_mut() else {
 					return;
 				};
@@ -395,6 +472,7 @@ impl ExtProcInstance {
 	pub async fn mutate_response(
 		&mut self,
 		req: http::Response,
+		exec: Option<&Executor<'_>>,
 	) -> Result<(http::Response, Option<PolicyResponse>), Error> {
 		if self.skipped.load(Ordering::SeqCst) {
 			return Ok((req, None));
@@ -403,11 +481,23 @@ impl ExtProcInstance {
 		let (parts, body) = req.into_parts();
 
 		let end_of_stream = body.is_end_stream();
-		let preq = processing_request(Request::ResponseHeaders(HttpHeaders {
-			headers,
-			attributes: Default::default(),
-			end_of_stream,
-		}));
+		let (metadata, attributes) = if let Some(exec) = exec {
+			(
+				build_metadata(exec, &self.metadata),
+				build_attributes(exec, &self.attributes),
+			)
+		} else {
+			(None, HashMap::new())
+		};
+		let preq = processing_request(
+			Request::ResponseHeaders(HttpHeaders {
+				headers,
+				end_of_stream,
+			}),
+			metadata.clone(),
+			attributes.clone(),
+		);
+
 		let had_body = !end_of_stream;
 
 		// Send the request headers to ext_proc.
@@ -422,15 +512,23 @@ impl ExtProcInstance {
 				while let Some(Ok(frame)) = stream.next().await {
 					let preq = if frame.is_data() {
 						let frame = frame.into_data().expect("already checked");
-						processing_request(Request::ResponseBody(HttpBody {
-							body: frame.into(),
-							end_of_stream: false,
-						}))
+						processing_request(
+							Request::ResponseBody(HttpBody {
+								body: frame.into(),
+								end_of_stream: false,
+							}),
+							metadata.clone(),
+							attributes.clone(),
+						)
 					} else if frame.is_trailers() {
 						let frame = frame.into_trailers().expect("already checked");
-						processing_request(Request::ResponseTrailers(HttpTrailers {
-							trailers: to_header_map(&frame),
-						}))
+						processing_request(
+							Request::ResponseTrailers(HttpTrailers {
+								trailers: to_header_map(&frame),
+							}),
+							metadata.clone(),
+							attributes.clone(),
+						)
 					} else {
 						panic!("unknown type")
 					};
@@ -441,10 +539,14 @@ impl ExtProcInstance {
 					};
 				}
 				// Now that the body is done, send end of stream
-				let preq = processing_request(Request::ResponseBody(HttpBody {
-					body: Default::default(),
-					end_of_stream: true,
-				}));
+				let preq = processing_request(
+					Request::ResponseBody(HttpBody {
+						body: Default::default(),
+						end_of_stream: true,
+					}),
+					metadata.clone(),
+					attributes.clone(),
+				);
 				let _ = tx.send(preq).await;
 				trace!("body response done");
 			});
@@ -507,6 +609,36 @@ impl ExtProcInstance {
 			}
 		});
 		rx_done.await.map_err(|_| Error::ResponseDropped)?
+	}
+
+	fn extract_dynamic_metadata(
+		req: Option<&mut http::Request>,
+		metadata: &prost_wkt_types::Struct,
+	) -> Result<(), Error> {
+		let Some(req) = req else {
+			return Ok(());
+		};
+
+		let mut dynamic_metadata = ExtProcDynamicMetadata::default();
+
+		for (key, value) in &metadata.fields {
+			match serde_json::to_value(value)
+				.map_err(|_e| Error::BodyBuffer("Failed to convert protobuf value".to_string()))
+			{
+				Ok(json_val) => {
+					dynamic_metadata.metadata.insert(key.clone(), json_val);
+				},
+				Err(e) => {
+					warn!("Failed to convert ext_proc metadata field {}: {:?}", key, e);
+				},
+			}
+		}
+
+		if !dynamic_metadata.metadata.is_empty() {
+			req.extensions_mut().insert(Arc::new(dynamic_metadata));
+		}
+
+		Ok(())
 	}
 }
 
@@ -849,12 +981,67 @@ fn to_header_map_extra(
 	Some(proto::HeaderMap { headers: h })
 }
 
-fn processing_request(data: Request) -> ProcessingRequest {
+fn build_metadata(
+	exec: &Executor<'_>,
+	metadata: &Option<HashMap<String, Arc<cel::Expression>>>,
+) -> Option<Metadata> {
+	let Some(meta) = &metadata else {
+		return None;
+	};
+	// TODO(mk): double check if need to fall back to req envoy.filters.http.jwt_authn
+	Some(Metadata {
+		filter_metadata: meta
+			.iter()
+			.filter_map(|(k, v)| match eval_to_pb(exec, v) {
+				Ok(r) => Some((k.to_string(), r)),
+				Err(e) => {
+					trace!("failed to evaluate metadata: {e}");
+					None
+				},
+			})
+			.collect(),
+	})
+}
+
+fn build_attributes(
+	exec: &Executor<'_>,
+	attributes: &Option<HashMap<String, Arc<cel::Expression>>>,
+) -> HashMap<String, prost_wkt_types::Struct> {
+	let Some(attrs) = &attributes else {
+		return HashMap::new();
+	};
+
+	attrs
+		.iter()
+		.filter_map(|(k, v)| match eval_to_pb(exec, v) {
+			Ok(r) => Some((k.clone(), r)),
+			Err(e) => {
+				trace!("failed to evaluate attribute: {}", e);
+				None
+			},
+		})
+		.collect()
+}
+
+fn eval_to_pb(exec: &Executor, v: &Expression) -> anyhow::Result<prost_wkt_types::Struct> {
+	let res = exec.eval(v)?;
+	let js = res.json().map_err(|_| cel::Error::JsonConvert)?;
+	let pb = serde_json::from_value(js).map_err(|e| ProxyError::Processing(e.into()))?;
+	Ok(pb)
+}
+
+// TODO(mk): Probably worth removing this
+fn processing_request(
+	data: Request,
+	metadata_context: Option<Metadata>,
+	attributes: HashMap<String, prost_wkt_types::Struct>,
+) -> ProcessingRequest {
 	ProcessingRequest {
 		observability_mode: false,
-		attributes: Default::default(),
 		protocol_config: Default::default(),
 		request: Some(data),
+		metadata_context,
+		attributes,
 	}
 }
 
