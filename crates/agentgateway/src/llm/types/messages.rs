@@ -145,8 +145,20 @@ impl RequestType for Request {
 					.as_ref()
 					.and_then(|c| match c {
 						RequestContent::Text(t) => Some(strng::new(t)),
-						// TODO?
-						RequestContent::Array(_) => None,
+						RequestContent::Array(parts) if !parts.is_empty() => {
+							let text = parts.iter().filter_map(|part| part.text.as_deref()).fold(
+								String::new(),
+								|mut acc, s| {
+									if !acc.is_empty() {
+										acc.push(' ');
+									}
+									acc.push_str(s);
+									acc
+								},
+							);
+							Some(strng::new(&text))
+						},
+						_ => None,
 					})
 					.unwrap_or_default();
 				SimpleChatCompletionMessage {
