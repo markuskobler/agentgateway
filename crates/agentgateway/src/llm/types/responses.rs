@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -75,14 +77,62 @@ impl RawInputItem {
 	}
 }
 
+#[derive(Debug, Deserialize, Clone, Serialize, PartialEq)]
+#[serde(transparent)]
+pub struct RawTextParam(Value);
+
+impl RawTextParam {
+	pub fn as_value(&self) -> &Value {
+		&self.0
+	}
+}
+
+#[derive(Debug, Deserialize, Clone, Serialize, PartialEq)]
+#[serde(transparent)]
+pub struct RawReasoningParam(Value);
+
+impl RawReasoningParam {
+	pub fn as_value(&self) -> &Value {
+		&self.0
+	}
+}
+
+#[derive(Debug, Deserialize, Clone, Serialize, PartialEq)]
+#[serde(transparent)]
+pub struct RawTool(Value);
+
+impl RawTool {
+	pub fn as_value(&self) -> &Value {
+		&self.0
+	}
+}
+
+#[derive(Debug, Deserialize, Clone, Serialize, PartialEq)]
+#[serde(transparent)]
+pub struct RawToolChoice(Value);
+
+impl RawToolChoice {
+	pub fn as_value(&self) -> &Value {
+		&self.0
+	}
+}
+
+/// Raw Responses API request.
+///
+/// `input` stays loose so assistant history and other non-strict item shapes keep working,
+/// while common top-level controls are promoted into named fields for cleaner provider
+/// translation. Less common / future fields still flow through `rest` unchanged.
 #[derive(Debug, Deserialize, Clone, Serialize)]
 pub struct Request {
 	// Required field for prompt enrichment/guards
 	pub input: RequestInput,
 
-	// Fields we actually read for routing/telemetry
+	// Stable top-level fields we use for routing / provider translation
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub model: Option<String>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub instructions: Option<String>,
 
 	#[serde(skip_serializing_if = "Option::is_none")]
 	pub max_output_tokens: Option<u32>,
@@ -97,9 +147,40 @@ pub struct Request {
 	pub stream: Option<bool>,
 
 	#[serde(skip_serializing_if = "Option::is_none")]
+	pub text: Option<RawTextParam>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub reasoning: Option<RawReasoningParam>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub tools: Option<Vec<RawTool>>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub tool_choice: Option<RawToolChoice>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub parallel_tool_calls: Option<bool>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub metadata: Option<HashMap<String, String>>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub service_tier: Option<typed::ServiceTier>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub store: Option<bool>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub safety_identifier: Option<String>,
+
+	/// Compatibility shim for clients that still send a chat-completions style `user` field.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	pub user: Option<String>,
+
+	#[serde(skip_serializing_if = "Option::is_none")]
 	pub vendor_extensions: Option<RequestVendorExtensions>,
 
-	// Everything else (tools, reasoning, etc.) - passthrough
+	// Everything else remains passthrough.
 	#[serde(flatten, default)]
 	pub rest: serde_json::Value,
 }
@@ -524,11 +605,11 @@ pub mod typed {
 		IncompleteDetails, InputContent, InputItem, InputMessage, InputParam, InputRole,
 		InputTextContent, InputTokenDetails, Item, MessageItem, OutputContent, OutputItem,
 		OutputMessage, OutputMessageContent, OutputStatus, OutputTextContent, OutputTokenDetails,
-		ReasoningEffort, Response, ResponseCompletedEvent, ResponseContentPartAddedEvent,
+		Reasoning, ReasoningEffort, Response, ResponseCompletedEvent, ResponseContentPartAddedEvent,
 		ResponseContentPartDoneEvent, ResponseCreatedEvent, ResponseErrorEvent, ResponseFailedEvent,
 		ResponseFunctionCallArgumentsDeltaEvent, ResponseFunctionCallArgumentsDoneEvent,
 		ResponseIncompleteEvent, ResponseOutputItemAddedEvent, ResponseOutputItemDoneEvent,
-		ResponseTextDeltaEvent, ResponseTextParam, ResponseUsage, Role, Status,
+		ResponseTextDeltaEvent, ResponseTextParam, ResponseUsage, Role, ServiceTier, Status,
 		TextResponseFormatConfiguration, Tool, ToolChoiceFunction, ToolChoiceOptions, ToolChoiceParam,
 	};
 	use serde::{Deserialize, Serialize};

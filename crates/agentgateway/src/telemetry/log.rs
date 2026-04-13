@@ -56,12 +56,23 @@ use opentelemetry_sdk::logs::SdkLoggerProvider;
 pub struct AsyncLog<T>(Arc<AtomicCell<Option<T>>>);
 
 impl<T> AsyncLog<T> {
+	fn take_with_retries(&self) -> Option<T> {
+		for _ in 0..100 {
+			if let Some(value) = self.0.take() {
+				return Some(value);
+			}
+			std::hint::spin_loop();
+		}
+		None
+	}
+
 	// non_atomic_mutate is a racey method to modify the current value.
 	// If there is no current value, a default is used.
 	// This is NOT atomically safe; during the mutation, loads() on the item will be empty.
-	// This is ok for our usage cases
+	// Use a few retries so readers taking the log at stream shutdown do not spuriously
+	// observe `None` while a mutation is in flight.
 	pub fn non_atomic_mutate(&self, f: impl FnOnce(&mut T)) {
-		let Some(mut cur) = self.0.take() else {
+		let Some(mut cur) = self.take_with_retries() else {
 			return;
 		};
 		f(&mut cur);
@@ -74,7 +85,7 @@ impl<T> AsyncLog<T> {
 		self.0.store(v)
 	}
 	pub fn take(&self) -> Option<T> {
-		self.0.take()
+		self.take_with_retries()
 	}
 }
 

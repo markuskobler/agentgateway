@@ -280,6 +280,16 @@ pub enum RequestResult {
 	Rejected(Response),
 }
 
+#[allow(clippy::large_enum_variant)]
+enum PreparedRequest<T> {
+	Ready {
+		req: T,
+		parts: Parts,
+		llm_info: LLMRequest,
+	},
+	Rejected(Response),
+}
+
 impl AIProvider {
 	pub fn provider(&self) -> Strng {
 		match self {
@@ -555,7 +565,7 @@ impl AIProvider {
 			});
 		}
 		self
-			.process_request(
+			.process_non_responses_request(
 				backend_info,
 				policies,
 				InputFormat::Completions,
@@ -580,7 +590,7 @@ impl AIProvider {
 			.await?;
 
 		self
-			.process_request(
+			.process_non_responses_request(
 				backend_info,
 				policies,
 				InputFormat::Messages,
@@ -605,7 +615,7 @@ impl AIProvider {
 			.await?;
 
 		self
-			.process_request(
+			.process_non_responses_request(
 				backend_info,
 				policies,
 				InputFormat::Embeddings,
@@ -635,8 +645,8 @@ impl AIProvider {
 			parts.headers.remove("session_id");
 		}
 
-		self
-			.process_request(
+		let (req, mut parts, llm_info) = match self
+			.prepare_request(
 				backend_info,
 				policies,
 				InputFormat::Responses,
@@ -645,7 +655,20 @@ impl AIProvider {
 				tokenize,
 				log,
 			)
-			.await
+			.await?
+		{
+			PreparedRequest::Ready {
+				req,
+				parts,
+				llm_info,
+			} => (req, parts, llm_info),
+			PreparedRequest::Rejected(resp) => return Ok(RequestResult::Rejected(resp)),
+		};
+
+		let new_request = self.serialize_responses_request(&req, &parts.headers, policies)?;
+		parts.headers.remove(header::CONTENT_LENGTH);
+		let req = Request::from_parts(parts, Body::from(new_request));
+		Ok(RequestResult::Success(req, llm_info))
 	}
 
 	pub async fn process_count_tokens_request(
@@ -686,7 +709,7 @@ impl AIProvider {
 		}
 
 		self
-			.process_request(
+			.process_non_responses_request(
 				backend_info,
 				policies,
 				InputFormat::CountTokens,
@@ -731,7 +754,7 @@ impl AIProvider {
 		};
 
 		self
-			.process_request(
+			.process_non_responses_request(
 				backend_info,
 				policies,
 				InputFormat::Detect,
@@ -744,16 +767,16 @@ impl AIProvider {
 	}
 
 	#[allow(clippy::too_many_arguments)]
-	async fn process_request(
+	async fn prepare_request<T: RequestType>(
 		&self,
 		backend_info: &crate::http::auth::BackendInfo,
 		policies: Option<&Policy>,
 		original_format: InputFormat,
-		mut req: impl RequestType,
-		mut parts: ::http::request::Parts,
+		mut req: T,
+		mut parts: Parts,
 		tokenize: bool,
 		log: &mut Option<&mut RequestLog>,
-	) -> Result<RequestResult, AIError> {
+	) -> Result<PreparedRequest<T>, AIError> {
 		match (self, original_format) {
 			(_, InputFormat::Detect) => {
 				// All providers support detect; this is a passthrough!
@@ -762,10 +785,14 @@ impl AIProvider {
 				// All providers support completions input
 			},
 			(
-				AIProvider::OpenAI(_) | AIProvider::Azure(_) | AIProvider::Bedrock(_),
+				AIProvider::OpenAI(_)
+				| AIProvider::Azure(_)
+				| AIProvider::Bedrock(_)
+				| AIProvider::Gemini(_),
 				InputFormat::Responses,
 			) => {
-				// OpenAI supports responses input (Bedrock supports responses input via translation)
+				// OpenAI supports responses input.
+				// Bedrock supports responses via translation and Gemini via chat-completions translation.
 			},
 			(
 				AIProvider::Anthropic(_)
@@ -823,7 +850,7 @@ impl AIProvider {
 						warn!("failed to call prompt guard webhook: {e}");
 						AIError::PromptWebhookError
 					})? {
-					return Ok(RequestResult::Rejected(dr));
+					return Ok(PreparedRequest::Rejected(dr));
 				}
 			}
 		}
@@ -836,6 +863,64 @@ impl AIProvider {
 			llm_info.prompt = Some(req.get_messages().into());
 		}
 		parts.extensions.insert(llm_info.clone());
+
+		Ok(PreparedRequest::Ready {
+			req,
+			parts,
+			llm_info,
+		})
+	}
+
+	fn serialize_responses_request(
+		&self,
+		req: &types::responses::Request,
+		headers: &::http::HeaderMap,
+		policies: Option<&Policy>,
+	) -> Result<Vec<u8>, AIError> {
+		match self {
+			AIProvider::OpenAI(_) | AIProvider::Azure(_) => req.to_openai(),
+			AIProvider::Gemini(_) => conversion::gemini::translate_responses_request(req),
+			AIProvider::Bedrock(provider) => req.to_bedrock(
+				provider,
+				Some(headers),
+				policies.and_then(|p| p.prompt_caching.as_ref()),
+			),
+			_ => Err(AIError::UnsupportedConversion(strng::literal!(
+				"responses request not supported for this provider"
+			))),
+		}
+	}
+
+	#[allow(clippy::too_many_arguments)]
+	async fn process_non_responses_request(
+		&self,
+		backend_info: &crate::http::auth::BackendInfo,
+		policies: Option<&Policy>,
+		original_format: InputFormat,
+		req: impl RequestType,
+		parts: ::http::request::Parts,
+		tokenize: bool,
+		log: &mut Option<&mut RequestLog>,
+	) -> Result<RequestResult, AIError> {
+		let (req, mut parts, llm_info) = match self
+			.prepare_request(
+				backend_info,
+				policies,
+				original_format,
+				req,
+				parts,
+				tokenize,
+				log,
+			)
+			.await?
+		{
+			PreparedRequest::Ready {
+				req,
+				parts,
+				llm_info,
+			} => (req, parts, llm_info),
+			PreparedRequest::Rejected(resp) => return Ok(RequestResult::Rejected(resp)),
+		};
 
 		let request_model = llm_info.request_model.as_str();
 		let new_request = if original_format == InputFormat::CountTokens {
@@ -1064,6 +1149,9 @@ impl AIProvider {
 					AIError::ResponseParsing(e)
 				})?,
 			)),
+			(AIProvider::Gemini(_), InputFormat::Responses) => {
+				conversion::gemini::from_completions::translate_response(bytes, &req.request_model)
+			},
 			// Vertex messages: passthrough only for Anthropic models, otherwise translate from completions
 			(AIProvider::Vertex(p), InputFormat::Messages) => {
 				if p.is_anthropic_model(Some(&req.request_model)) {
@@ -1192,15 +1280,19 @@ impl AIProvider {
 			(_, InputFormat::Detect) => {
 				types::detect::passthrough_stream(AmendOnDrop::new(log, rate_limit), resp)
 			},
-			// Responses with OpenAI: just passthrough
+			// Responses with OpenAI/Azure/Vertex: just passthrough
 			(
-				AIProvider::OpenAI(_)
-				| AIProvider::Gemini(_)
-				| AIProvider::Azure(_)
-				| AIProvider::Vertex(_),
+			  AIProvider::OpenAI(_) | AIProvider::Azure(_) | AIProvider::Vertex(_),
 				InputFormat::Responses,
 			) => resp.map(|b| {
 				conversion::responses::passthrough_stream(b, buffer, AmendOnDrop::new(log, rate_limit))
+			}),
+			(AIProvider::Gemini(_), InputFormat::Responses) => resp.map(|b| {
+				conversion::gemini::from_completions::translate_stream(
+					b,
+					buffer,
+					AmendOnDrop::new(log, rate_limit),
+				)
 			}),
 			// Vertex messages: passthrough only for Anthropic models, otherwise translate from completions
 			(AIProvider::Vertex(_), InputFormat::Messages) if is_vertex_anthropic => resp.map(|b| {
@@ -1330,7 +1422,7 @@ impl AIProvider {
 				// Passthrough; nothing needed
 				Ok(bytes.clone())
 			},
-			(AIProvider::Gemini(_), InputFormat::Completions) => {
+			(AIProvider::Gemini(_), InputFormat::Completions | InputFormat::Responses) => {
 				conversion::completions::translate_google_error(bytes)
 			},
 			(AIProvider::Gemini(_), InputFormat::Embeddings) => {

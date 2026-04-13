@@ -520,6 +520,24 @@ mod gemini {
 	use super::*;
 	send_completions_tests!("gemini", "GEMINI_API_KEY", "gemini-2.5-flash");
 	send_completions_tool_tests!("gemini", "GEMINI_API_KEY", "gemini-2.5-flash");
+
+	provider_model_test!(
+		responses,
+		"gemini",
+		"GEMINI_API_KEY",
+		"gemini-2.5-flash",
+		send_responses,
+		false,
+	);
+	provider_model_test!(
+		responses_streaming,
+		"gemini",
+		"GEMINI_API_KEY",
+		"gemini-2.5-flash",
+		send_responses,
+		true,
+	);
+
 	send_messages_tests!("gemini", "GEMINI_API_KEY", "gemini-2.5-flash");
 	send_messages_image_tests!(
 		"gemini",
@@ -669,9 +687,11 @@ async fn assert_log_with_output_range(
 	.unwrap();
 	let output = log
 		.get("gen_ai.usage.output_tokens")
-		.unwrap()
+		.unwrap_or_else(|| panic!("missing gen_ai.usage.output_tokens in request log: {log}"))
 		.as_i64()
-		.unwrap();
+		.unwrap_or_else(|| {
+			panic!("gen_ai.usage.output_tokens was not an integer in request log: {log}")
+		});
 	assert!(
 		(min..max).contains(&output),
 		"unexpected output tokens: {output}; expected [{min}, {max})"
@@ -1123,7 +1143,38 @@ async fn send_responses(gw: &AgentGateway, stream: bool) {
 		.await;
 
 	let test_id = test_id_from_response(&resp);
-	assert_eq!(resp.status(), StatusCode::OK);
+	let status = resp.status();
+
+	if status != StatusCode::OK {
+		let body = resp.into_body();
+		let bytes = http_body_util::BodyExt::collect(body)
+			.await
+			.unwrap()
+			.to_bytes();
+		println!("Error response body: {:?}", String::from_utf8_lossy(&bytes));
+		panic!("Request failed with status {status}");
+	}
+
+	let body = resp.into_body();
+	let bytes = http_body_util::BodyExt::collect(body)
+		.await
+		.unwrap()
+		.to_bytes();
+	let body_str = String::from_utf8_lossy(&bytes);
+	if stream {
+		assert!(
+			body_str.contains("data: "),
+			"Streaming response missing 'data: ' prefix: {}",
+			body_str
+		);
+	} else {
+		assert!(
+			!body_str.contains("data: "),
+			"Non-streaming response contains 'data: ' prefix: {}",
+			body_str
+		);
+	}
+
 	assert_log("/v1/responses", stream, &test_id).await;
 }
 
@@ -1142,7 +1193,38 @@ pub async fn send_messages(gw: &AgentGateway, stream: bool) {
 		.await;
 
 	let test_id = test_id_from_response(&resp);
-	assert_eq!(resp.status(), StatusCode::OK);
+	let status = resp.status();
+
+	if status != StatusCode::OK {
+		let body = resp.into_body();
+		let bytes = http_body_util::BodyExt::collect(body)
+			.await
+			.unwrap()
+			.to_bytes();
+		println!("Error response body: {:?}", String::from_utf8_lossy(&bytes));
+		panic!("Request failed with status {status}");
+	}
+
+	let body = resp.into_body();
+	let bytes = http_body_util::BodyExt::collect(body)
+		.await
+		.unwrap()
+		.to_bytes();
+	let body_str = String::from_utf8_lossy(&bytes);
+	if stream {
+		assert!(
+			body_str.contains("data: "),
+			"Streaming response missing 'data: ' prefix: {}",
+			body_str
+		);
+	} else {
+		assert!(
+			!body_str.contains("data: "),
+			"Non-streaming response contains 'data: ' prefix: {}",
+			body_str
+		);
+	}
+
 	assert_log("/v1/messages", stream, &test_id).await;
 }
 

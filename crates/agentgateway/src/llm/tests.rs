@@ -144,6 +144,7 @@ const ANTHROPIC: &str = "anthropic";
 const BEDROCK: &str = "bedrock";
 const VERTEX: &str = "vertex";
 const OPENAI: &str = "openai";
+const GEMINI: &str = "gemini";
 const COMPLETIONS: &str = "completions";
 const BEDROCK_TITAN: &str = "bedrock-titan";
 const BEDROCK_COHERE: &str = "bedrock-cohere";
@@ -165,10 +166,11 @@ mod requests {
 		("reasoning", &[COMPLETIONS, BEDROCK, VERTEX]),
 	];
 	const RESPONSES_REQUESTS: &[(&str, &[&str])] = &[
-		("basic", &[BEDROCK]),
-		("instructions", &[BEDROCK]),
-		("input-list", &[BEDROCK]),
-		("parallel-tool-call", &[BEDROCK]),
+		("basic", &[BEDROCK, GEMINI]),
+		("instructions", &[BEDROCK, GEMINI]),
+		("input-list", &[BEDROCK, GEMINI]),
+		("parallel-tool-call", &[BEDROCK, GEMINI]),
+		("assistant-history", &[GEMINI]),
 	];
 	pub const COUNT_TOKENS_REQUESTS: &[(&str, &[&str])] = &[
 		("basic", &[ANTHROPIC, BEDROCK, VERTEX]),
@@ -256,12 +258,14 @@ mod requests {
 
 		let bed_request =
 			|i| conversion::bedrock::from_responses::translate(&i, &bedrock_provider, None, None);
+		let gemini_request = |i| conversion::gemini::translate_responses_request(&i);
 
 		for (name, providers) in RESPONSES_REQUESTS {
 			let test = &format!("requests/responses/{name}.json");
 			for provider in *providers {
 				match *provider {
 					BEDROCK => test_request(BEDROCK, test, bed_request),
+					GEMINI => test_request(GEMINI, test, gemini_request),
 					other => panic!("unsupported provider in RESPONSES_REQUESTS: {other}"),
 				}
 			}
@@ -373,6 +377,7 @@ mod response {
 	const BEDROCK_TO_MESSAGES: &str = "bedrock-messages";
 	const BEDROCK_TO_COMPLETIONS: &str = "bedrock-completions";
 	const BEDROCK_TO_RESPONSES: &str = "bedrock-responses";
+	const GEMINI_TO_RESPONSES: &str = "gemini-responses";
 	const RESPONSES_TO_RESPONSES: &str = "responses-responses";
 	const RESPONSES_TO_DETECT: &str = "responses-detect";
 
@@ -413,6 +418,12 @@ mod response {
 		("gemini_with_completion_tokens", ALL_COMPLETIONS),
 	];
 	const COMPLETIONS_STREAM_RESPONSES: &[(&str, &[&str])] = &[("stream", ALL_COMPLETIONS)];
+	const GEMINI_RESPONSES: &[(&str, &[&str])] = &[
+		("basic", &[GEMINI_TO_RESPONSES]),
+		("gemini_zero_completion_tokens", &[GEMINI_TO_RESPONSES]),
+		("gemini_with_completion_tokens", &[GEMINI_TO_RESPONSES]),
+	];
+	const GEMINI_STREAM_RESPONSES: &[(&str, &[&str])] = &[("stream", &[GEMINI_TO_RESPONSES])];
 
 	const EMBEDDING_RESPONSES: &[(&str, &[&str])] = &[
 		("response/bedrock-titan/embeddings.json", &[BEDROCK_TITAN]),
@@ -481,6 +492,20 @@ mod response {
 				test_streaming_response_for_provider(provider, test).await
 			}
 		}
+
+		for (name, providers) in GEMINI_RESPONSES {
+			let test = &format!("response/completions/{name}.json");
+			for provider in *providers {
+				test_response_for_provider(provider, test)
+			}
+		}
+
+		for (name, providers) in GEMINI_STREAM_RESPONSES {
+			let test = &format!("response/completions/{name}.json");
+			for provider in *providers {
+				test_streaming_response_for_provider(provider, test).await
+			}
+		}
 	}
 
 	#[tokio::test]
@@ -537,6 +562,10 @@ mod response {
 		let (p, r) = match provider {
 			RESPONSES_TO_RESPONSES => (
 				AIProvider::OpenAI(openai::Provider { model: None }),
+				dummy_llm_req(InputFormat::Responses),
+			),
+			GEMINI_TO_RESPONSES => (
+				AIProvider::Gemini(gemini::Provider { model: None }),
 				dummy_llm_req(InputFormat::Responses),
 			),
 			COMPLETIONS_TO_COMPLETIONS => (
@@ -1141,4 +1170,435 @@ fn completions_response_missing_message_and_usage_fields() {
 	assert_eq!(usage.prompt_tokens, 5);
 	assert_eq!(usage.completion_tokens, 0);
 	assert_eq!(usage.total_tokens, 12);
+}
+
+#[test]
+fn responses_request_extracts_semi_typed_top_level_fields() {
+	let request: types::responses::Request = serde_json::from_value(json!({
+		"model": "google/gemini-2.5-flash",
+		"input": "Hello",
+		"instructions": "Be concise",
+		"text": {
+			"format": { "type": "json_object" },
+			"verbosity": "low"
+		},
+		"reasoning": { "effort": "low", "generate_summary": true },
+		"tools": [{
+			"type": "function",
+			"name": "lookup_weather",
+			"parameters": { "type": "object" }
+		}],
+		"tool_choice": "auto",
+		"parallel_tool_calls": true,
+		"metadata": { "team": "agents" },
+		"service_tier": "default",
+		"store": false,
+		"safety_identifier": "user-123",
+		"future_field": { "keep": true }
+	}))
+	.expect("valid responses request");
+
+	assert_eq!(request.instructions.as_deref(), Some("Be concise"));
+	assert!(request.text.is_some());
+	assert!(request.reasoning.is_some());
+	assert!(request.tools.as_ref().is_some_and(|tools| tools.len() == 1));
+	assert!(request.tool_choice.is_some());
+	assert_eq!(request.parallel_tool_calls, Some(true));
+	assert_eq!(
+		request.metadata.as_ref().and_then(|m| m.get("team")),
+		Some(&"agents".to_string())
+	);
+	assert_eq!(request.store, Some(false));
+	assert_eq!(request.safety_identifier.as_deref(), Some("user-123"));
+	assert!(request.rest.get("instructions").is_none());
+	assert!(request.rest.get("text").is_none());
+	assert!(request.rest.get("tools").is_none());
+	assert_eq!(
+		request.rest.get("future_field"),
+		Some(&json!({ "keep": true }))
+	);
+}
+
+#[test]
+fn responses_json_schema_text_format_maps_to_gemini_response_format() {
+	let request: types::responses::Request = serde_json::from_value(json!({
+		"model": "google/gemini-2.5-flash",
+		"input": "Return structured output",
+		"text": {
+			"format": {
+				"type": "json_schema",
+				"name": "answer_schema",
+				"schema": {
+					"type": "object",
+					"properties": { "answer": { "type": "number" } },
+					"required": ["answer"],
+					"additionalProperties": false
+				},
+				"strict": true
+			}
+		}
+	}))
+	.expect("valid responses request");
+
+	let translated = conversion::gemini::translate_responses_request(&request)
+		.expect("responses->gemini translation");
+	let translated: Value =
+		serde_json::from_slice(&translated).expect("translated request should be valid json");
+
+	assert_eq!(translated["response_format"]["type"], json!("json_schema"));
+	let json_schema = translated["response_format"]["json_schema"]
+		.as_object()
+		.expect("json_schema object");
+	assert_eq!(json_schema.get("name"), Some(&json!("answer_schema")));
+	assert_eq!(
+		json_schema.get("schema"),
+		Some(&json!({
+			"type": "object",
+			"properties": { "answer": { "type": "number" } },
+			"required": ["answer"],
+			"additionalProperties": false
+		}))
+	);
+	assert_eq!(json_schema.get("strict"), Some(&json!(true)));
+	assert!(
+		!json_schema.contains_key("type"),
+		"json_schema payload must not contain the outer type wrapper"
+	);
+}
+
+#[test]
+fn gemini_response_translation_infers_missing_completion_tokens_from_total_tokens() {
+	let bytes = serde_json::to_vec(&json!({
+		"id": "chatcmpl-test",
+		"object": "chat.completion",
+		"created": 0,
+		"model": "google/gemini-2.5-flash",
+		"choices": [{
+			"index": 0,
+			"message": {
+				"role": "assistant",
+				"content": "Hello"
+			},
+			"finish_reason": "stop"
+		}],
+		"usage": {
+			"prompt_tokens": 5,
+			"total_tokens": 12
+		}
+	}))
+	.expect("completion response should serialize");
+
+	let translated = conversion::gemini::from_completions::translate_response(
+		&Bytes::from(bytes),
+		"google/gemini-2.5-flash",
+	)
+	.expect("completion response translation should succeed");
+	let translated: types::responses::Response = serde_json::from_slice(
+		&translated
+			.serialize()
+			.expect("translated response should serialize"),
+	)
+	.expect("translated response should parse");
+
+	let usage = translated.usage.as_ref().expect("usage should be present");
+	assert_eq!(usage.input_tokens, 5);
+	assert_eq!(usage.output_tokens, 7);
+	assert_eq!(translated.to_llm_response(false).total_tokens, Some(12));
+}
+
+#[test]
+fn gemini_response_translation_populates_non_empty_output_item_ids() {
+	let bytes = serde_json::to_vec(&json!({
+		"id": "chatcmpl-test",
+		"object": "chat.completion",
+		"created": 0,
+		"model": "google/gemini-2.5-flash",
+		"choices": [{
+			"index": 0,
+			"message": {
+				"role": "assistant",
+				"content": "Hello from Gemini",
+				"tool_calls": [{
+					"id": "call_123",
+					"type": "function",
+					"function": {
+						"name": "lookup_weather",
+						"arguments": "{\"city\":\"Paris\"}"
+					}
+				}]
+			},
+			"finish_reason": "tool_calls"
+		}],
+		"usage": {
+			"prompt_tokens": 5,
+			"completion_tokens": 3,
+			"total_tokens": 8
+		}
+	}))
+	.expect("completion response should serialize");
+
+	let translated = conversion::gemini::from_completions::translate_response(
+		&Bytes::from(bytes),
+		"google/gemini-2.5-flash",
+	)
+	.expect("completion response translation should succeed");
+	let translated: types::responses::Response = serde_json::from_slice(
+		&translated
+			.serialize()
+			.expect("translated response should serialize"),
+	)
+	.expect("translated response should parse");
+
+	assert_eq!(translated.output.len(), 2);
+	match &translated.output[0] {
+		types::responses::typed::OutputItem::Message(message) => {
+			assert!(
+				!message.id.is_empty(),
+				"message output item id should be non-empty"
+			);
+		},
+		other => panic!("expected message output item, got {other:?}"),
+	}
+	match &translated.output[1] {
+		types::responses::typed::OutputItem::FunctionCall(call) => {
+			assert!(
+				call.id.as_ref().is_some_and(|id| !id.is_empty()),
+				"function call output item id should be non-empty"
+			);
+		},
+		other => panic!("expected function call output item, got {other:?}"),
+	}
+}
+
+#[tokio::test]
+async fn gemini_stream_translation_estimates_tokens_from_reasoning_content() {
+	let stream = concat!(
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"role":"assistant","reasoning_content":"Thinking..."},"finish_reason":null}],"usage":null}"#,
+		"\n\n",
+		"data: [DONE]\n\n"
+	);
+	let log = AsyncLog::default();
+	log.store(Some(LLMInfo::new(
+		response::dummy_llm_req(InputFormat::Responses),
+		LLMResponse::default(),
+	)));
+	let translated = conversion::gemini::from_completions::translate_stream(
+		Body::from(stream),
+		1024 * 1024,
+		AmendOnDrop::new(log.clone(), LLMResponsePolicies::default()),
+	);
+	let _translated = translated.collect().await.unwrap().to_bytes();
+
+	let llm_response = log.take().expect("stream log should be present").response;
+	assert_eq!(
+		llm_response.provider_model.as_deref(),
+		Some("google/gemini-2.5-flash")
+	);
+	assert!(
+		llm_response.output_tokens.is_some_and(|tokens| tokens > 0),
+		"reasoning_content should contribute to output token estimation"
+	);
+}
+
+#[tokio::test]
+async fn gemini_stream_translation_handles_native_gemini_chunk_shape() {
+	let stream = concat!(
+		r#"data: {"responseId":"resp_123","modelVersion":"gemini-2.5-flash","candidates":[{"content":{"parts":[{"text":"Hello"}]}}]}"#,
+		"\n\n",
+		r#"data: {"responseId":"resp_123","modelVersion":"gemini-2.5-flash","candidates":[{"finishReason":"STOP"}],"usageMetadata":{"promptTokenCount":5,"candidatesTokenCount":2,"totalTokenCount":7}}"#,
+		"\n\n",
+		"data: [DONE]\n\n"
+	);
+	let log = AsyncLog::default();
+	log.store(Some(LLMInfo::new(
+		response::dummy_llm_req(InputFormat::Responses),
+		LLMResponse::default(),
+	)));
+	let translated = conversion::gemini::from_completions::translate_stream(
+		Body::from(stream),
+		1024 * 1024,
+		AmendOnDrop::new(log.clone(), LLMResponsePolicies::default()),
+	);
+	let translated = translated.collect().await.unwrap().to_bytes();
+	let translated = String::from_utf8(translated.to_vec()).expect("stream should be utf-8 sse");
+	assert!(
+		translated.contains(r#"response.output_text.delta"#),
+		"native Gemini chunks should produce output text deltas: {translated}"
+	);
+
+	let llm_response = log.take().expect("stream log should be present").response;
+	assert_eq!(
+		llm_response.provider_model.as_deref(),
+		Some("gemini-2.5-flash")
+	);
+	assert_eq!(llm_response.input_tokens, Some(5));
+	assert_eq!(llm_response.output_tokens, Some(2));
+	assert_eq!(llm_response.total_tokens, Some(7));
+}
+
+#[tokio::test]
+async fn gemini_stream_translation_estimates_output_tokens_without_done_or_usage() {
+	let stream = concat!(
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}],"usage":null}"#,
+		"\n\n",
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"content":"Hello world"},"finish_reason":null}],"usage":null}"#,
+		"\n\n"
+	);
+	let log = AsyncLog::default();
+	log.store(Some(LLMInfo::new(
+		response::dummy_llm_req(InputFormat::Responses),
+		LLMResponse::default(),
+	)));
+	let translated = conversion::gemini::from_completions::translate_stream(
+		Body::from(stream),
+		1024 * 1024,
+		AmendOnDrop::new(log.clone(), LLMResponsePolicies::default()),
+	);
+	let _translated = translated.collect().await.unwrap().to_bytes();
+
+	let llm_response = log.take().expect("stream log should be present").response;
+	assert!(
+		llm_response.output_tokens.is_some_and(|tokens| tokens > 0),
+		"stream log should estimate output tokens even when Gemini ends without [DONE] or usage"
+	);
+}
+
+#[tokio::test]
+async fn gemini_stream_translation_estimates_output_tokens_when_usage_is_missing() {
+	let stream = concat!(
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}],"usage":null}"#,
+		"\n\n",
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"content":"Hello world"},"finish_reason":null}],"usage":null}"#,
+		"\n\n",
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":null}"#,
+		"\n\n",
+		"data: [DONE]\n\n"
+	);
+	let log = AsyncLog::default();
+	log.store(Some(LLMInfo::new(
+		response::dummy_llm_req(InputFormat::Responses),
+		LLMResponse::default(),
+	)));
+	let translated = conversion::gemini::from_completions::translate_stream(
+		Body::from(stream),
+		1024 * 1024,
+		AmendOnDrop::new(log.clone(), LLMResponsePolicies::default()),
+	);
+	let translated = translated.collect().await.unwrap().to_bytes();
+	let translated = String::from_utf8(translated.to_vec()).expect("stream should be utf-8 sse");
+	assert!(
+		translated.contains(r#"response.completed"#),
+		"stream should still complete without provider usage: {translated}"
+	);
+
+	let llm_response = log.take().expect("stream log should be present").response;
+	assert_eq!(
+		llm_response.provider_model.as_deref(),
+		Some("google/gemini-2.5-flash")
+	);
+	assert!(
+		llm_response.output_tokens.is_some_and(|tokens| tokens > 0),
+		"stream log should estimate output tokens when Gemini omits usage"
+	);
+}
+
+#[tokio::test]
+async fn gemini_stream_translation_infers_missing_completion_tokens_from_total_tokens() {
+	let stream = concat!(
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"role":"assistant","content":""},"finish_reason":null}],"usage":null}"#,
+		"\n\n",
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{"content":"Hello"},"finish_reason":null}],"usage":null}"#,
+		"\n\n",
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[{"index":0,"delta":{},"finish_reason":"stop"}],"usage":null}"#,
+		"\n\n",
+		r#"data: {"id":"chatcmpl-test","object":"chat.completion.chunk","created":0,"model":"google/gemini-2.5-flash","service_tier":null,"system_fingerprint":null,"choices":[],"usage":{"prompt_tokens":5,"total_tokens":12}}"#,
+		"\n\n",
+		"data: [DONE]\n\n"
+	);
+	let log = AsyncLog::default();
+	log.store(Some(LLMInfo::new(
+		response::dummy_llm_req(InputFormat::Responses),
+		LLMResponse::default(),
+	)));
+	let translated = conversion::gemini::from_completions::translate_stream(
+		Body::from(stream),
+		1024 * 1024,
+		AmendOnDrop::new(log.clone(), LLMResponsePolicies::default()),
+	);
+	let translated = translated.collect().await.unwrap().to_bytes();
+	let translated = String::from_utf8(translated.to_vec()).expect("stream should be utf-8 sse");
+	assert!(
+		translated.contains(r#"output_tokens":7"#),
+		"stream should normalize missing completion_tokens in final usage: {translated}"
+	);
+
+	let llm_response = log.take().expect("stream log should be present").response;
+	assert_eq!(llm_response.input_tokens, Some(5));
+	assert_eq!(llm_response.output_tokens, Some(7));
+	assert_eq!(llm_response.total_tokens, Some(12));
+}
+
+#[tokio::test]
+async fn gemini_stream_translation_populates_non_empty_message_item_ids() {
+	let fixture = fs::read(fixture_path("response/completions/stream.json"))
+		.expect("failed to read Gemini streaming fixture");
+	let translated = conversion::gemini::from_completions::translate_stream(
+		Body::from(fixture),
+		1024 * 1024,
+		AmendOnDrop::new(AsyncLog::default(), LLMResponsePolicies::default()),
+	);
+	let translated = translated.collect().await.unwrap().to_bytes();
+	let translated = String::from_utf8(translated.to_vec()).expect("stream should be utf-8 sse");
+
+	assert!(
+		!translated.contains(r#""id":"""#),
+		"stream output items should not use empty ids"
+	);
+	assert!(
+		!translated.contains(r#""item_id":"""#),
+		"stream delta events should not use empty item ids"
+	);
+	assert!(
+		translated.contains(r#""id":"msg_"#),
+		"stream should emit a generated message item id"
+	);
+	assert!(
+		translated.contains(r#""item_id":"msg_"#),
+		"stream deltas should reference the generated message item id"
+	);
+}
+
+#[tokio::test]
+async fn gemini_provider_stream_translation_populates_non_empty_message_item_ids() {
+	let provider = AIProvider::Gemini(gemini::Provider { model: None });
+	let mut resp = Response::new(Body::from(
+		fs::read(fixture_path("response/completions/stream.json"))
+			.expect("failed to read Gemini streaming fixture"),
+	));
+	resp.headers_mut().insert(
+		crate::http::x_headers::X_AMZN_REQUESTID,
+		"request_id".parse().unwrap(),
+	);
+
+	let translated = provider
+		.process_streaming(
+			response::dummy_llm_req(InputFormat::Responses),
+			LLMResponsePolicies::default(),
+			AsyncLog::default(),
+			false,
+			resp,
+		)
+		.await
+		.expect("provider streaming translation should succeed");
+	let translated = translated.collect().await.unwrap().to_bytes();
+	let translated = String::from_utf8(translated.to_vec()).expect("stream should be utf-8 sse");
+
+	assert!(
+		!translated.contains(r#""id":"""#),
+		"provider stream output items should not use empty ids"
+	);
+	assert!(
+		!translated.contains(r#""item_id":"""#),
+		"provider stream delta events should not use empty item ids"
+	);
 }

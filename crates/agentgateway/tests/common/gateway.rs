@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use agentgateway::http::{Body, Response};
@@ -20,7 +21,14 @@ fn generate_id() -> String {
 		.unwrap()
 		.as_micros();
 
-	format!("{:x}", timestamp)
+	// Used to avoid test collisions
+	static NEXT_ID: AtomicU64 = AtomicU64::new(0);
+
+	format!(
+		"{:x}-{:x}",
+		timestamp,
+		NEXT_ID.fetch_add(1, Ordering::Relaxed)
+	)
 }
 
 pub struct AgentGateway {
