@@ -98,6 +98,14 @@ pub struct NamedAIProvider {
 	pub host_override: Option<Target>,
 	pub path_override: Option<Strng>,
 	pub path_prefix: Option<Strng>,
+	/// Overrides the provider key used to look up pricing in the model catalog. Defaults to the
+	/// provider's own name. Lets OpenAI-compatible upstreams be priced under their real provider id.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub cost_provider: Option<Strng>,
+	/// Overrides the model key used to look up pricing in the model catalog. Defaults to the
+	/// upstream-reported model (falling back to the request model).
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub cost_model: Option<Strng>,
 	/// Whether to tokenize on the request flow. This enables us to do more accurate rate limits,
 	/// since we know (part of) the cost of the request upfront.
 	/// This comes with the cost of an expensive operation.
@@ -170,6 +178,14 @@ pub struct LLMRequest {
 	pub cache_convention: CacheTokenConvention,
 	pub request_model: Strng,
 	pub provider: Strng,
+	/// Overrides the provider key used to look up pricing in the model catalog. When unset, the
+	/// catalog is keyed by `provider`. Useful for OpenAI-compatible upstreams (Fireworks, Together,
+	/// ...) which the gateway connects to as `openai` but should be priced under their own provider.
+	pub cost_provider: Option<Strng>,
+	/// Overrides the model key used to look up pricing in the model catalog. When unset, the catalog
+	/// is keyed by the upstream-reported model (falling back to `request_model`). Useful when the wire
+	/// model id (e.g. `accounts/fireworks/models/...`) differs from the catalog's model id.
+	pub cost_model: Option<Strng>,
 	pub streaming: bool,
 	pub params: LLMRequestParams,
 	pub prompt: Option<Arc<Vec<SimpleChatCompletionMessage>>>,

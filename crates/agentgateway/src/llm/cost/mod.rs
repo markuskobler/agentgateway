@@ -70,15 +70,23 @@ impl ModelCatalog {
 	}
 
 	pub fn project(&self, info: &LLMInfo) -> CostProjection {
-		let provider = info.request.provider.as_str();
+		// A configured `cost_provider`/`cost_model` overrides the catalog lookup key. This lets an
+		// OpenAI-compatible upstream (which the gateway speaks to as `openai`) be priced under its
+		// real provider id, and lets the wire model id be mapped to the catalog's model id.
+		let provider = info
+			.request
+			.cost_provider
+			.as_deref()
+			.unwrap_or_else(|| info.request.provider.as_str());
 		let model = info
-			.response
-			.provider_model
-			.as_ref()
-			.unwrap_or(&info.request.request_model);
+			.request
+			.cost_model
+			.as_deref()
+			.or(info.response.provider_model.as_deref())
+			.unwrap_or_else(|| info.request.request_model.as_str());
 		self.snapshot.load().project(
 			provider,
-			model.as_str(),
+			model,
 			&info.response,
 			info.request.cache_convention,
 		)
@@ -766,5 +774,100 @@ mod tests {
 		);
 		assert_eq!(status, CostLookupStatus::Exact);
 		assert_eq!(cost, Some(3.0));
+	}
+
+	fn catalog_with(json: &str) -> ModelCatalog {
+		ModelCatalog {
+			snapshot: ArcSwap::from_pointee(CatalogSnapshot::parse(json).unwrap()),
+		}
+	}
+
+	// 1M input tokens, no output — priced purely on the input rate for easy assertions.
+	fn one_million_input(
+		provider: &str,
+		request_model: &str,
+		cost_provider: Option<&str>,
+		cost_model: Option<&str>,
+		provider_model: Option<&str>,
+	) -> LLMInfo {
+		use crate::llm::{InputFormat, LLMRequest};
+		LLMInfo {
+			request: LLMRequest {
+				input_tokens: None,
+				input_format: InputFormat::Completions,
+				native_format: None,
+				cache_convention: CacheTokenConvention::InputIncludesCache,
+				request_model: request_model.into(),
+				provider: provider.into(),
+				cost_provider: cost_provider.map(Into::into),
+				cost_model: cost_model.map(Into::into),
+				streaming: false,
+				params: Default::default(),
+				prompt: None,
+			},
+			response: LLMResponse {
+				input_tokens: Some(1_000_000),
+				output_tokens: Some(0),
+				provider_model: provider_model.map(Into::into),
+				..Default::default()
+			},
+		}
+	}
+
+	const FIREWORKS_CATALOG: &str = r#"{"providers":{"fireworks-ai":{"models":{
+		"llama-v3p1-70b":{"rates":{"input":"0.9","output":"0.9"}}
+	}}}}"#;
+
+	#[test]
+	fn cost_provider_override_prices_openai_compatible_upstream() {
+		let cat = catalog_with(FIREWORKS_CATALOG);
+
+		// The gateway speaks to Fireworks as `openai`, which the catalog doesn't list.
+		let unmatched = cat.project(&one_million_input(
+			"openai",
+			"llama-v3p1-70b",
+			None,
+			None,
+			None,
+		));
+		assert_eq!(unmatched.status, CostLookupStatus::Missing);
+
+		// costProvider redirects the lookup to the real provider id.
+		let priced = cat.project(&one_million_input(
+			"openai",
+			"llama-v3p1-70b",
+			Some("fireworks-ai"),
+			None,
+			None,
+		));
+		assert_eq!(priced.status, CostLookupStatus::Exact);
+		assert_eq!(priced.amount(), Some(0.9), "1M input @ $0.9/M");
+	}
+
+	#[test]
+	fn cost_model_override_maps_wire_model_to_catalog_id() {
+		let cat = catalog_with(FIREWORKS_CATALOG);
+		let wire = "accounts/fireworks/models/llama-v3p1-70b-instruct";
+
+		// Wire model id (request + echoed provider_model) differs from the catalog id.
+		let unmatched = cat.project(&one_million_input(
+			"openai",
+			wire,
+			Some("fireworks-ai"),
+			None,
+			Some(wire),
+		));
+		assert_eq!(unmatched.status, CostLookupStatus::Missing);
+
+		// costModel supplies the catalog id, overriding even the echoed provider_model.
+		let priced = cat.project(&one_million_input(
+			"openai",
+			wire,
+			Some("fireworks-ai"),
+			Some("llama-v3p1-70b"),
+			Some(wire),
+		));
+		assert_eq!(priced.status, CostLookupStatus::Exact);
+		assert_eq!(priced.amount(), Some(0.9));
 	}
 }

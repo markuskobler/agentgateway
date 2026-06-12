@@ -6342,6 +6342,20 @@
             "null"
           ]
         },
+        "costProvider": {
+          "description": "Override the provider id used to look up pricing in the model catalog. Defaults to the\nprovider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)\nunder their real provider id rather than `openai`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "costModel": {
+          "description": "Override the model id used to look up pricing in the model catalog. Defaults to the\nupstream-reported model (falling back to the request model).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "tokenize": {
           "description": "Whether to tokenize on the request flow. This enables us to do more accurate rate limits,\nsince we know (part of) the cost of the request upfront.\nThis comes with the cost of an expensive operation.",
           "type": "boolean",
@@ -8624,6 +8638,22 @@
             "null"
           ],
           "deprecated": true,
+          "default": null
+        },
+        "costProvider": {
+          "description": "Override the provider id used to look up pricing in the model catalog. Defaults to the\nprovider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)\nunder their real provider id rather than `openai`.",
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "costModel": {
+          "description": "Override the model id used to look up pricing in the model catalog. Defaults to the\nupstream-reported model (falling back to the request model). Use this when the wire model id\n(e.g. `accounts/fireworks/models/...`) differs from the catalog's model id.",
+          "type": [
+            "string",
+            "null"
+          ],
           "default": null
         },
         "tokenize": {

@@ -173,6 +173,8 @@ pub fn llm_named_provider(
 		host_override: Some(Target::Address(*mock.address())),
 		path_override: None,
 		path_prefix: None,
+		cost_provider: None,
+		cost_model: None,
 		tokenize,
 		policies: None,
 	}
@@ -208,6 +210,8 @@ pub fn custom_llm_backend_with_formats(
 		host_override: None,
 		path_override: None,
 		path_prefix: None,
+		cost_provider: None,
+		cost_model: None,
 		tokenize: false,
 		inline_policies: vec![],
 	};

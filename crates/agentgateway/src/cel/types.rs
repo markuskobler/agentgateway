@@ -1378,6 +1378,8 @@ impl From<llm::LLMRequest> for LLMContext {
 			cache_convention: _,
 			request_model,
 			provider,
+			cost_provider: _,
+			cost_model: _,
 			streaming,
 			params,
 			prompt,

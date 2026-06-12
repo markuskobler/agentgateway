@@ -1408,6 +1408,10 @@ pub(crate) fn backend_with_policies_from_proto(
 						host_override,
 						path_override: provider_config.path_override.as_ref().map(strng::new),
 						path_prefix: provider_config.path_prefix.as_ref().map(strng::new),
+						// TODO: surface cost_provider/cost_model through the xDS Provider proto so the
+						// catalog identity override is configurable from the controller, not just locally.
+						cost_provider: None,
+						cost_model: None,
 						inline_policies: pols,
 					};
 					local_provider_group.push((provider_name, np));

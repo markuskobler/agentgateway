@@ -2382,6 +2382,8 @@
 |`binds[].listeners[].routes[].backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
 |`binds[].listeners[].routes[].backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
 |`binds[].listeners[].routes[].backends[].ai.pathPrefix`|string|Override the default base path prefix for this provider.|
+|`binds[].listeners[].routes[].backends[].ai.costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`binds[].listeners[].routes[].backends[].ai.costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model).|
 |`binds[].listeners[].routes[].backends[].ai.tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
 |`binds[].listeners[].routes[].backends[].ai.policies`|object||
 |`binds[].listeners[].routes[].backends[].ai.policies.requestHeaderModifier`|object|Modify request headers before forwarding to this backend.|
@@ -3632,6 +3634,8 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].pathPrefix`|string|Override the default base path prefix for this provider.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model).|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies`|object||
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.requestHeaderModifier`|object|Modify request headers before forwarding to this backend.|
@@ -9303,6 +9307,8 @@
 |`backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
 |`backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
 |`backends[].ai.pathPrefix`|string|Override the default base path prefix for this provider.|
+|`backends[].ai.costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`backends[].ai.costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model).|
 |`backends[].ai.tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
 |`backends[].ai.policies`|object||
 |`backends[].ai.policies.requestHeaderModifier`|object|Modify request headers before forwarding to this backend.|
@@ -10553,6 +10559,8 @@
 |`backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
 |`backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
 |`backends[].ai.groups[].providers[].pathPrefix`|string|Override the default base path prefix for this provider.|
+|`backends[].ai.groups[].providers[].costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`backends[].ai.groups[].providers[].costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model).|
 |`backends[].ai.groups[].providers[].tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
 |`backends[].ai.groups[].providers[].policies`|object||
 |`backends[].ai.groups[].providers[].policies.requestHeaderModifier`|object|Modify request headers before forwarding to this backend.|
@@ -15287,6 +15295,8 @@
 |`routeGroups[].routes[].backends[].ai.hostOverride`|string|Override the upstream host for this provider.|
 |`routeGroups[].routes[].backends[].ai.pathOverride`|string|Override the upstream path for this provider.|
 |`routeGroups[].routes[].backends[].ai.pathPrefix`|string|Override the default base path prefix for this provider.|
+|`routeGroups[].routes[].backends[].ai.costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`routeGroups[].routes[].backends[].ai.costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model).|
 |`routeGroups[].routes[].backends[].ai.tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
 |`routeGroups[].routes[].backends[].ai.policies`|object||
 |`routeGroups[].routes[].backends[].ai.policies.requestHeaderModifier`|object|Modify request headers before forwarding to this backend.|
@@ -16537,6 +16547,8 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].hostOverride`|string|Override the upstream host for this provider.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].pathOverride`|string|Override the upstream path for this provider.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].pathPrefix`|string|Override the default base path prefix for this provider.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model).|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].tokenize`|boolean|Whether to tokenize on the request flow. This enables us to do more accurate rate limits,<br>since we know (part of) the cost of the request upfront.<br>This comes with the cost of an expensive operation.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies`|object||
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.requestHeaderModifier`|object|Modify request headers before forwarding to this backend.|
@@ -19000,6 +19012,8 @@
 |`llm.models[].params.hostOverride`|string|Override the upstream host for this provider.|
 |`llm.models[].params.pathOverride`|string|Override the upstream path for this provider.|
 |`llm.models[].params.pathPrefix`|string|Override the default base path prefix for this provider.|
+|`llm.models[].params.costProvider`|string|Override the provider id used to look up pricing in the model catalog. Defaults to the<br>provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)<br>under their real provider id rather than `openai`.|
+|`llm.models[].params.costModel`|string|Override the model id used to look up pricing in the model catalog. Defaults to the<br>upstream-reported model (falling back to the request model). Use this when the wire model id<br>(e.g. `accounts/fireworks/models/...`) differs from the catalog's model id.|
 |`llm.models[].params.tokenize`|boolean|Whether to tokenize the request before forwarding it upstream.|
 |`llm.models[].provider`|object|provider of the LLM we are connecting too|
 |`llm.models[].provider.custom`|object||
@@ -19009,7 +19023,10 @@
 |`llm.models[].provider.custom.formats[].path`|string||
 |`llm.models[].passthrough`|enum|passthrough controls how requests are handled.<br>By default, requests will be parsed and translated as needed.<br>With passthrough, they will be unmodified and optionally inspected (with `detect`).<br>In this mode, requests must be sent in the native format of the provider.<br>Possible values: `detect`, `opaque`.|
 |`llm.models[].authorization`|object|authorization configures HTTP authorization rules for requests to this model.|
-|`llm.models[].authorization.rules`|[]string|CEL authorization rules to evaluate for a request.|
+|`llm.models[].authorization.rules`|[]object|CEL authorization rules to evaluate for a request.|
+|`llm.models[].authorization.rules[].allow`|string|Allow the request when this CEL expression is true.|
+|`llm.models[].authorization.rules[].deny`|string|Deny the request when this CEL expression is true.|
+|`llm.models[].authorization.rules[].require`|string|Require this CEL expression to be true.|
 |`llm.models[].defaults`|object|defaults allows setting default values for the request. If these are not present in the request body, they will be set.<br>To override even when set, use `overrides`.|
 |`llm.models[].overrides`|object|overrides allows setting values for the request, overriding any existing values|
 |`llm.models[].transformation`|object|transformation allows setting values from CEL expressions for the request, overriding any existing values.|

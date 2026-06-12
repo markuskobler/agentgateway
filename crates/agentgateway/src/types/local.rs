@@ -620,6 +620,16 @@ pub struct LocalLLMParams {
 	#[serde(default)]
 	#[deprecated(note = "use baseUrl instead")]
 	path_prefix: Option<Strng>,
+	/// Override the provider id used to look up pricing in the model catalog. Defaults to the
+	/// provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)
+	/// under their real provider id rather than `openai`.
+	#[serde(default)]
+	cost_provider: Option<Strng>,
+	/// Override the model id used to look up pricing in the model catalog. Defaults to the
+	/// upstream-reported model (falling back to the request model). Use this when the wire model id
+	/// (e.g. `accounts/fireworks/models/...`) differs from the catalog's model id.
+	#[serde(default)]
+	cost_model: Option<Strng>,
 	/// Whether to tokenize the request before forwarding it upstream.
 	#[serde(default)]
 	tokenize: bool,
@@ -915,6 +925,15 @@ pub struct LocalNamedAIProvider {
 	pub path_override: Option<Strng>,
 	/// Override the default base path prefix for this provider.
 	pub path_prefix: Option<Strng>,
+	/// Override the provider id used to look up pricing in the model catalog. Defaults to the
+	/// provider's own name. Use this to price OpenAI-compatible upstreams (Fireworks, Together, ...)
+	/// under their real provider id rather than `openai`.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub cost_provider: Option<Strng>,
+	/// Override the model id used to look up pricing in the model catalog. Defaults to the
+	/// upstream-reported model (falling back to the request model).
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub cost_model: Option<Strng>,
 	/// Whether to tokenize on the request flow. This enables us to do more accurate rate limits,
 	/// since we know (part of) the cost of the request upfront.
 	/// This comes with the cost of an expensive operation.
@@ -954,6 +973,8 @@ impl LocalAIBackend {
 						host_override: p.host_override,
 						path_override: p.path_override,
 						path_prefix: p.path_prefix,
+						cost_provider: p.cost_provider,
+						cost_model: p.cost_model,
 						tokenize: p.tokenize,
 						inline_policies: policies,
 					},
@@ -2372,6 +2393,8 @@ request.path.endsWith(":streamRawPredict") || request.path.endsWith(":rawPredict
 			host_override: p.host_override,
 			path_override: p.path_override,
 			path_prefix: p.path_prefix,
+			cost_provider: p.cost_provider,
+			cost_model: p.cost_model,
 			tokenize: p.tokenize,
 			inline_policies: pols,
 		};

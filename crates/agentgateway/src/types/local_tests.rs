@@ -266,6 +266,41 @@ llm:
 }
 
 #[tokio::test]
+async fn test_llm_cost_override_config() {
+	// Fireworks-style OpenAI-compatible upstream: connect as `openai`, but price under the
+	// real provider/model id via costProvider/costModel.
+	let normalized = normalize_test_config(
+		r#"
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: accounts/fireworks/models/llama-v3p1-70b-instruct
+      hostOverride: "api.fireworks.ai:443"
+      pathPrefix: "/inference/v1/chat/completions"
+      costProvider: fireworks-ai
+      costModel: llama-v3p1-70b
+"#,
+	)
+	.await
+	.expect("LLM cost override config should normalize");
+
+	let ai = normalized
+		.backends
+		.iter()
+		.find_map(|backend| match &backend.backend {
+			Backend::AI(_, ai) => Some(ai),
+			_ => None,
+		})
+		.expect("expected generated AI backend");
+	let (provider, _handle) = ai.select_provider().expect("expected selected provider");
+	assert!(matches!(provider.provider, AIProvider::OpenAI(_)));
+	assert_eq!(provider.cost_provider.as_deref(), Some("fireworks-ai"));
+	assert_eq!(provider.cost_model.as_deref(), Some("llama-v3p1-70b"));
+}
+
+#[tokio::test]
 async fn test_mcp_simple_config() {
 	test_config_parsing("mcp_simple").await;
 }

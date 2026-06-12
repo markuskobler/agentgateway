@@ -288,6 +288,8 @@ impl super::RequestType for Request {
 			cache_convention: crate::llm::CacheTokenConvention::pending(),
 			request_model: model,
 			provider,
+			cost_provider: None,
+			cost_model: None,
 			streaming: self.stream.unwrap_or_default(),
 			params: LLMRequestParams {
 				temperature: self.temperature.map(Into::into),

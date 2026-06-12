@@ -2183,10 +2183,14 @@ async fn make_backend_call(
 						.map_err(|e| ProxyError::Processing(e.into()))?,
 						_ => unreachable!(),
 					};
-					let (mut req, llm_request) = match r {
+					let (mut req, mut llm_request) = match r {
 						RequestResult::Success(r, lr) => (r, lr),
 						RequestResult::Rejected(dr) => return Err(ProxyResponse::DirectResponse(Box::new(dr))),
 					};
+					// Carry the configured cost-catalog identity overrides onto the request so pricing can
+					// resolve under a provider/model id that differs from the wire provider/model.
+					llm_request.cost_provider = llm.cost_provider.clone();
+					llm_request.cost_model = llm.cost_model.clone();
 					dtrace::trace(|trace| {
 						trace.llm_request_detected(
 							llm_provider.clone(),
@@ -2268,6 +2272,8 @@ async fn make_backend_call(
 								request_model,
 								streaming: true,
 								provider: llm.provider.provider(),
+								cost_provider: llm.cost_provider.clone(),
+								cost_model: llm.cost_model.clone(),
 								input_tokens: None,
 								params: Default::default(),
 								prompt: Default::default(),

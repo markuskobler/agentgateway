@@ -1334,6 +1334,8 @@ async fn llm_custom_rerank() {
 		host_override: Some(Target::Address(*mock.address())),
 		path_override: None,
 		path_prefix: None,
+		cost_provider: None,
+		cost_model: None,
 		tokenize: false,
 		policies: serde_json::from_value(json!({
 			"ai": {"routes": {"/v1/rerank": "rerank"}}

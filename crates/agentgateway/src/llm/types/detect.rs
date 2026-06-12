@@ -87,6 +87,8 @@ impl RequestType for Request {
 				.map(Into::into)
 				.unwrap_or_default(),
 			provider,
+			cost_provider: None,
+			cost_model: None,
 			streaming: self
 				.lookup(lookups::STREAM, |v| v.as_bool())
 				.unwrap_or_default(),
@@ -195,6 +197,8 @@ mod tests {
 			cache_convention: crate::llm::CacheTokenConvention::pending(),
 			request_model: strng::new("unknown"),
 			provider: strng::new("aws.bedrock"),
+			cost_provider: None,
+			cost_model: None,
 			streaming: false,
 			params: Default::default(),
 			prompt: None,

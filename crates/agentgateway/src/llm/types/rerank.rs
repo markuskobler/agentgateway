@@ -112,6 +112,8 @@ impl RequestType for Request {
 			cache_convention: crate::llm::CacheTokenConvention::pending(),
 			request_model: model,
 			provider,
+			cost_provider: None,
+			cost_model: None,
 			streaming: false,
 			params: LLMRequestParams::default(),
 			prompt: Default::default(),
