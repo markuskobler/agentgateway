@@ -859,10 +859,11 @@ pub mod from_messages {
 			.collect_vec();
 
 		// Function tools with reasoning_effort are not supported for GPT models.
-		let reasoning_effort = if !tools.is_empty() && model.starts_with("gpt-") {
-			Some(completions::ReasoningEffort::None)
-		} else {
-			reasoning_effort
+		let reasoning_effort = match reasoning_effort {
+			Some(_) if !tools.is_empty() && model.starts_with("gpt-") => {
+				Some(completions::ReasoningEffort::None)
+			},
+			other => other,
 		};
 
 		let mut parallel_tool_calls = None;
