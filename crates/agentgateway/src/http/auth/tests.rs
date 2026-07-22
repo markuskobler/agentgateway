@@ -1,4 +1,4 @@
-use secrecy::SecretString;
+use secrecy::{ExposeSecret, SecretString};
 use serde_json::Map;
 
 use super::*;
@@ -836,6 +836,20 @@ MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgltxBTVDLg7C6vE1T
 -----END PRIVATE KEY-----
 ";
 
+const TEST_JWT_SIGN_EC_CERT: &str = "-----BEGIN CERTIFICATE-----
+MIIBEzCBugIBATAKBggqhkjOPQQDAjAWMRQwEgYDVQQDDAt0ZXN0LWNsaWVudDAe
+Fw0yNjA3MjIwNDE0NThaFw0zNjA3MTkwNDE0NThaMBYxFDASBgNVBAMMC3Rlc3Qt
+Y2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWM7udBHga09KxC5kxq6G
+hrZ9M3Y8S9ZThq/XxsOcDhnFztPhp+RebCMRskzNBcJ1BxTc9kqIsWUeXbcYTXPi
+6DAKBggqhkjOPQQDAgNIADBFAiEAgECXIs3VPrp++0UvPRk1fVXbIo+p19qOQG8e
+a/ilbAkCIDgWcfFL3rujLODULW5JbYq9n2xykz5cFTkvLAoAury0
+-----END CERTIFICATE-----
+";
+
+const TEST_JWT_SIGN_EC_CERT_DER_BASE64: &str = "MIIBEzCBugIBATAKBggqhkjOPQQDAjAWMRQwEgYDVQQDDAt0ZXN0LWNsaWVudDAeFw0yNjA3MjIwNDE0NThaFw0zNjA3MTkwNDE0NThaMBYxFDASBgNVBAMMC3Rlc3QtY2xpZW50MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEWM7udBHga09KxC5kxq6GhrZ9M3Y8S9ZThq/XxsOcDhnFztPhp+RebCMRskzNBcJ1BxTc9kqIsWUeXbcYTXPi6DAKBggqhkjOPQQDAgNIADBFAiEAgECXIs3VPrp++0UvPRk1fVXbIo+p19qOQG8ea/ilbAkCIDgWcfFL3rujLODULW5JbYq9n2xykz5cFTkvLAoAury0";
+
+const TEST_JWT_SIGN_EC_CERT_SHA256: &str = "LA9ZC2X4Pp6GweXI77YHyao7DPcTLuQKuNmauXVPCcs";
+
 const TEST_JWT_SIGN_RSA_KEY: &str = "-----BEGIN PRIVATE KEY-----
 MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDcmuLma5j1MBQs
 yXsGn15tsQEjEQusgFfVahUxPIFdyI0X60Hfv89rYVClkxOFI92GA63XDu5Ez6jO
@@ -1226,6 +1240,84 @@ async fn test_backend_auth_jwt_sign_rsa() {
 	assert_eq!(payload["iss"], "acct.user");
 	assert_eq!(payload["aud"], serde_json::json!(["svc-a", "svc-b"]));
 	assert_eq!(payload["lifetime"], 3600);
+}
+
+#[test]
+fn test_jwt_sign_ps256_and_certificate_headers() {
+	let claims = || {
+		[(
+			"iss".to_string(),
+			serde_json::Value::String("acct.user".into()),
+		)]
+		.into_iter()
+		.collect()
+	};
+	let ps256 = JwtSignAuth::try_new(
+		TEST_JWT_SIGN_RSA_KEY,
+		oauth::SigningAlg::Ps256,
+		None,
+		claims(),
+		None,
+		None,
+	)
+	.expect("PS256 jwtSign auth should build");
+	let token = ps256.token().expect("PS256 token should sign");
+	let (header, _) = decode_jwt_parts(token.expose_secret());
+	assert_eq!(header["alg"], "PS256");
+
+	for (certificate_header, field, expected) in [
+		(
+			oauth::CertificateHeader::X5c,
+			"x5c",
+			serde_json::json!([TEST_JWT_SIGN_EC_CERT_DER_BASE64]),
+		),
+		(
+			oauth::CertificateHeader::X5tS256,
+			"x5t#S256",
+			serde_json::json!(TEST_JWT_SIGN_EC_CERT_SHA256),
+		),
+	] {
+		let auth = JwtSignAuth::try_new_with_certificate(
+			TEST_JWT_SIGN_EC_KEY,
+			oauth::SigningAlg::Es256,
+			None,
+			claims(),
+			None,
+			None,
+			Some((TEST_JWT_SIGN_EC_CERT, certificate_header)),
+		)
+		.expect("certificate jwtSign auth should build");
+		let token = auth.token().expect("certificate token should sign");
+		let (header, _) = decode_jwt_parts(token.expose_secret());
+		assert_eq!(header[field], expected);
+	}
+}
+
+#[test]
+fn test_jwt_sign_certificate_and_header_are_required_together() {
+	let missing_header: Result<BackendAuth, _> = serde_json::from_value(serde_json::json!({
+		"jwtSign": {
+			"signingKey": TEST_JWT_SIGN_EC_KEY,
+			"certificate": TEST_JWT_SIGN_EC_CERT,
+			"alg": "ES256",
+			"claims": {"iss": "acct.user"}
+		}
+	}));
+	assert!(
+		missing_header.is_err_and(|error| error.to_string().contains("certificateHeader is required"))
+	);
+
+	let missing_certificate: Result<BackendAuth, _> = serde_json::from_value(serde_json::json!({
+		"jwtSign": {
+			"signingKey": TEST_JWT_SIGN_EC_KEY,
+			"certificateHeader": "x5c",
+			"alg": "ES256",
+			"claims": {"iss": "acct.user"}
+		}
+	}));
+	assert!(
+		missing_certificate.is_err_and(|error| error.to_string().contains("certificate is required"))
+	);
 }
 
 #[tokio::test]

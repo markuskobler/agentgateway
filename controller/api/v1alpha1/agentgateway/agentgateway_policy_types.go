@@ -1857,10 +1857,21 @@ const (
 
 // JwtSignAuth supplies a short-lived JWT signed with a private key to the
 // backend. Tokens are reused until shortly before expiry.
+// +kubebuilder:validation:XValidation:rule="has(self.certificateRef) == has(self.certificateHeader)",message="certificateRef and certificateHeader must be set together"
 type JwtSignAuth struct {
-	// Secret providing the `signingKey` key with a PEM-encoded RSA or EC private key.
+	// Secret providing a PEM-encoded RSA or EC private key. The key defaults to
+	// `signingKey`.
 	// +required
-	SigningKeyRef LocalSecretObjectRef `json:"signingKeyRef"`
+	SigningKeyRef LocalSecretKeyRef `json:"signingKeyRef"`
+
+	// PEM-encoded X.509 certificate chain, leaf first, for certificateHeader.
+	// The key defaults to `certificate`.
+	// +optional
+	CertificateRef *LocalSecretKeyRef `json:"certificateRef,omitempty"`
+
+	// JWS certificate header. Required when certificateRef is set.
+	// +optional
+	CertificateHeader *OAuthPrivateKeyJWTCertificateHeader `json:"certificateHeader,omitempty"`
 
 	// JWS signing algorithm. Defaults to RS256.
 	// +optional
