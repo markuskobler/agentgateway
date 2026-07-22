@@ -3564,6 +3564,7 @@
         "RS256",
         "RS384",
         "RS512",
+        "PS256",
         "ES256",
         "ES384"
       ]
@@ -3877,6 +3878,28 @@
               "description": "PEM-encoded private signing key (RSA or EC, matching `alg`).",
               "$ref": "#/$defs/FileOrInline"
             },
+            "certificate": {
+              "description": "PEM-encoded X.509 certificate chain, leaf first. The leaf public key must\ncorrespond to `signing_key` for token endpoints to validate assertions.\nA mismatch or comparison failure is logged and does not prevent loading.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/FileOrInline"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "certificateHeader": {
+              "description": "JWS certificate header emitted from `certificate`. Required when `certificate` is set.",
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/CertificateHeader"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "alg": {
               "$ref": "#/$defs/SigningAlg",
               "default": "RS256"
@@ -3902,6 +3925,20 @@
             "signingKey",
             "assertionAudience"
           ]
+        }
+      ]
+    },
+    "CertificateHeader": {
+      "oneOf": [
+        {
+          "description": "Send the X.509 certificate chain in `x5c`.",
+          "type": "string",
+          "const": "x5c"
+        },
+        {
+          "description": "Send the leaf certificate's SHA-256 thumbprint in `x5t#S256`.",
+          "type": "string",
+          "const": "x5t#S256"
         }
       ]
     },
@@ -3974,11 +4011,11 @@
             "type": "string"
           }
         },
-        "subjectTokenSource": {
-          "description": "Overrides where the exchanged `id_token` is read from; defaults to the Authorization\nBearer header. Set to a CEL `expression` to extract it from a claim of the validated\ninbound token (e.g. `{ expression: \"jwt.the_id_token\" }`).",
+        "subjectToken": {
+          "description": "Subject token sent to the identity provider. Defaults to an OpenID Connect ID token read\nfrom the Authorization Bearer header.",
           "anyOf": [
             {
-              "$ref": "#/$defs/AuthorizationLocation"
+              "$ref": "#/$defs/CrossAppAccessSubjectToken"
             },
             {
               "type": "null"
@@ -4089,6 +4126,22 @@
       "required": [
         "clientAuth"
       ]
+    },
+    "CrossAppAccessSubjectToken": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "description": "Where to read the subject token. Defaults to the Authorization Bearer header.",
+          "$ref": "#/$defs/AuthorizationLocation",
+          "default": {
+            "header": {
+              "name": "authorization",
+              "prefix": "Bearer "
+            }
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "HTTP": {
       "type": "object",
