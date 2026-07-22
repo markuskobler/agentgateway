@@ -5,13 +5,12 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::Context;
-use jsonwebtoken::Header;
 use parking_lot::Mutex;
 use secrecy::SecretString;
 
 use super::AuthorizationLocation;
+use super::jwt_signing::{ParsedEncodingKey, signing_header};
 use super::oauth::SigningAlg;
-use super::oauth::client_auth::ParsedEncodingKey;
 use crate::resource_manager::{ResourceFetcher, ResourceRef};
 use crate::serdes::FileOrInline;
 use crate::*;
@@ -228,9 +227,7 @@ fn validate_config(
 }
 
 fn parse_signing_key(alg: SigningAlg, pem: &str) -> Result<ParsedEncodingKey, String> {
-	alg
-		.encoding_key(pem.as_bytes())
-		.map(ParsedEncodingKey)
+	ParsedEncodingKey::parse(alg, pem.as_bytes())
 		.map_err(|e| format!("failed to parse jwtSign signingKey: {e}"))
 }
 
@@ -300,9 +297,9 @@ impl JwtSignAuth {
 		claims.insert("iat".to_string(), iat.into());
 		claims.insert("exp".to_string(), exp.into());
 
-		let mut header = Header::new(self.alg.algorithm());
-		header.kid = self.kid.clone();
-		let token = jsonwebtoken::encode(&header, &serde_json::Value::Object(claims), &signing_key.0)
+		let header = signing_header(self.alg, self.kid.clone(), None, None);
+		let token = signing_key
+			.encode(&header, &serde_json::Value::Object(claims))
 			.context("failed to sign backend JWT")?;
 		Ok(CachedJwt {
 			token: token.into(),
