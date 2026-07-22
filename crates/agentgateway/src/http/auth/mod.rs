@@ -6,6 +6,7 @@ pub mod jwt_sign;
 pub mod oauth;
 
 use std::borrow::Cow;
+use std::time::Duration;
 
 use ::http::HeaderValue;
 pub use aws::{AwsAssumeRole, AwsAuth};
@@ -27,6 +28,8 @@ use crate::proxy::ProxyError::ProcessingString;
 use crate::serdes::deser_key_from_file;
 use crate::types::agent::{BackendTarget, Target};
 use crate::*;
+
+const CLOUD_AUTH_TIMEOUT: Duration = Duration::from_secs(5);
 
 #[apply(schema!)]
 pub enum BackendAuth {

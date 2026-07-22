@@ -1166,7 +1166,10 @@ fn backend_auth_from_proto(
 			)?))
 		},
 		Some(proto::agent::backend_auth_policy::Kind::CrossAppAccess(s)) => {
-			BackendAuth::CrossAppAccess(Box::new(auth::oauth::CrossAppAccessAuth::from_proto(s)?))
+			BackendAuth::CrossAppAccess(Box::new(auth::oauth::CrossAppAccessAuth::from_proto(
+				s,
+				diagnostics,
+			)?))
 		},
 		Some(proto::agent::backend_auth_policy::Kind::JwtSign(j)) => {
 			let location = optional_authorization_location(j.authorization_location.as_ref())?;
@@ -3472,6 +3475,8 @@ fn convert_webhook(
 
 	Ok(llm::policy::Webhook {
 		target,
+		// CEL header expressions are not yet exposed via the XDS API.
+		headers: Default::default(),
 		forward_header_matches,
 		failure_mode,
 	})
