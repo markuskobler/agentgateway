@@ -28,7 +28,7 @@ pub(crate) mod client_auth;
 mod cross_app_access;
 mod transport;
 
-pub use super::jwt_signing::SigningAlg;
+pub use super::jwt_signing::{CertificateHeader, SigningAlg};
 use cache::{InMemoryTokenCache, TokenCacheResult};
 use client_auth::sign_client_assertion;
 pub use client_auth::{OAuthClientAuth, OAuthClientAuthMethod, PrivateKeyJwt};

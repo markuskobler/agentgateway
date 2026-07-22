@@ -1693,19 +1693,33 @@ func buildJwtSignAuthPolicy(ctx PolicyCtx, auth *agentgateway.JwtSignAuth, names
 		Kid:                   auth.KeyID,
 		Claims:                claims,
 		AuthorizationLocation: translateAuthorizationLocation(auth.Location),
+		CertificateHeader:     translateJwtSignCertificateHeader(auth.CertificateHeader),
+	}
+	if (auth.CertificateRef == nil) != (auth.CertificateHeader == nil) {
+		errs = append(errs, errors.New("jwtSign certificateRef and certificateHeader must be set together"))
 	}
 
 	if auth.TTL != nil {
 		jwtSign.Ttl = durationpb.New(auth.TTL.Duration)
 	}
 
-	data, err := ctx.ResolveCredentialRef(auth.SigningKeyRef, namespace)
+	data, key, err := ctx.ResolveCredentialKeyRef(auth.SigningKeyRef, namespace, wellknown.SigningKey)
 	if err != nil {
 		errs = append(errs, err)
-	} else if value, exists := kubeutils.GetSecretDataValue(data, wellknown.SigningKey); !exists || value == "" {
-		errs = append(errs, fmt.Errorf("secret %s/%s missing %s value", namespace, auth.SigningKeyRef.Name, wellknown.SigningKey))
+	} else if value, exists := kubeutils.GetSecretDataValue(data, key); !exists || value == "" {
+		errs = append(errs, fmt.Errorf("secret %s/%s missing %s value", namespace, auth.SigningKeyRef.Name, key))
 	} else {
 		jwtSign.SigningKey = value
+	}
+	if auth.CertificateRef != nil {
+		data, key, err := ctx.ResolveCredentialKeyRef(*auth.CertificateRef, namespace, wellknown.Certificate)
+		if err != nil {
+			errs = append(errs, err)
+		} else if value, exists := kubeutils.GetSecretDataValue(data, key); !exists || value == "" {
+			errs = append(errs, fmt.Errorf("secret %s/%s missing %s value", namespace, auth.CertificateRef.Name, key))
+		} else {
+			jwtSign.Certificate = &value
+		}
 	}
 
 	return &api.BackendAuthPolicy{
@@ -1726,11 +1740,27 @@ func translateJwtSignSigningAlg(alg *agentgateway.OAuthPrivateKeyJWTSigningAlgor
 		return api.JwtSign_RS384, nil
 	case agentgateway.OAuthPrivateKeyJWTSigningAlgorithmRS512:
 		return api.JwtSign_RS512, nil
+	case agentgateway.OAuthPrivateKeyJWTSigningAlgorithmPS256:
+		return api.JwtSign_PS256, nil
 	case agentgateway.OAuthPrivateKeyJWTSigningAlgorithmES256:
 		return api.JwtSign_ES256, nil
 	case agentgateway.OAuthPrivateKeyJWTSigningAlgorithmES384:
 		return api.JwtSign_ES384, nil
 	default:
 		return api.JwtSign_SIGNING_ALG_UNSPECIFIED, fmt.Errorf("unsupported jwtSign signing algorithm %q", *alg)
+	}
+}
+
+func translateJwtSignCertificateHeader(header *agentgateway.OAuthPrivateKeyJWTCertificateHeader) api.JwtSign_CertificateHeader {
+	if header == nil {
+		return api.JwtSign_CERTIFICATE_HEADER_UNSPECIFIED
+	}
+	switch *header {
+	case agentgateway.OAuthPrivateKeyJWTCertificateHeaderX5C:
+		return api.JwtSign_X5C
+	case agentgateway.OAuthPrivateKeyJWTCertificateHeaderX5TS256:
+		return api.JwtSign_X5T_S256
+	default:
+		return api.JwtSign_CERTIFICATE_HEADER_UNSPECIFIED
 	}
 }

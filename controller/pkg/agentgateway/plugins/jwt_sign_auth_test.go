@@ -4,9 +4,12 @@ import (
 	"strings"
 	"testing"
 
+	"istio.io/istio/pkg/ptr"
+	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/agentgateway/agentgateway/api"
 	"github.com/agentgateway/agentgateway/controller/api/v1alpha1/agentgateway"
 )
 
@@ -24,7 +27,7 @@ func TestJwtSignRejectsUnsupportedSigningAlg(t *testing.T) {
 				BackendSimple: agentgateway.BackendSimple{
 					Auth: &agentgateway.BackendAuth{
 						JwtSign: &agentgateway.JwtSignAuth{
-							SigningKeyRef: agentgateway.LocalSecretObjectRef{Name: "jwt-sign-secret"},
+							SigningKeyRef: agentgateway.LocalSecretKeyRef{Name: "jwt-sign-secret"},
 							Alg:           &badAlg,
 							Claims:        map[string]apiextensionsv1.JSON{"iss": {Raw: []byte(`"acct.user"`)}},
 						},
@@ -55,7 +58,7 @@ func TestJwtSignRejectsReservedClaims(t *testing.T) {
 					BackendSimple: agentgateway.BackendSimple{
 						Auth: &agentgateway.BackendAuth{
 							JwtSign: &agentgateway.JwtSignAuth{
-								SigningKeyRef: agentgateway.LocalSecretObjectRef{Name: "jwt-sign-secret"},
+								SigningKeyRef: agentgateway.LocalSecretKeyRef{Name: "jwt-sign-secret"},
 								Claims: map[string]apiextensionsv1.JSON{
 									"iss":    {Raw: []byte(`"acct.user"`)},
 									reserved: {Raw: []byte(`123`)},
@@ -74,5 +77,65 @@ func TestJwtSignRejectsReservedClaims(t *testing.T) {
 		if p != nil {
 			t.Fatalf("translateBackendAuth() policy = %v, want nil policy on reserved claim %q", p, reserved)
 		}
+	}
+}
+
+func TestJwtSignTranslatesPS256CertificateAndSecretKeyOverrides(t *testing.T) {
+	ctx := oauthTestPolicyCtx(t, &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "jwt-sign-secret", Namespace: "default"},
+		Data: map[string][]byte{
+			"private.pem":     []byte("private key"),
+			"certificate.pem": []byte("certificate"),
+		},
+	})
+	auth := &agentgateway.JwtSignAuth{
+		SigningKeyRef: agentgateway.LocalSecretKeyRef{
+			Name: "jwt-sign-secret",
+			Key:  ptr.Of("private.pem"),
+		},
+		CertificateRef: &agentgateway.LocalSecretKeyRef{
+			Name: "jwt-sign-secret",
+			Key:  ptr.Of("certificate.pem"),
+		},
+		CertificateHeader: ptr.Of(agentgateway.OAuthPrivateKeyJWTCertificateHeaderX5TS256),
+		Alg:               ptr.Of(agentgateway.OAuthPrivateKeyJWTSigningAlgorithmPS256),
+		Claims:            map[string]apiextensionsv1.JSON{"iss": {Raw: []byte(`"acct.user"`)}},
+	}
+
+	policy, err := buildJwtSignAuthPolicy(ctx, auth, "default")
+	if err != nil {
+		t.Fatalf("buildJwtSignAuthPolicy() error = %v", err)
+	}
+	jwtSign := policy.GetJwtSign()
+	if jwtSign.GetAlg() != api.JwtSign_PS256 {
+		t.Fatalf("alg = %v, want PS256", jwtSign.GetAlg())
+	}
+	if jwtSign.GetSigningKey() != "private key" {
+		t.Fatalf("signing key = %q, want custom key value", jwtSign.GetSigningKey())
+	}
+	if jwtSign.GetCertificate() != "certificate" {
+		t.Fatalf("certificate = %q, want custom key value", jwtSign.GetCertificate())
+	}
+	if jwtSign.GetCertificateHeader() != api.JwtSign_X5T_S256 {
+		t.Fatalf("certificate header = %v, want X5T_S256", jwtSign.GetCertificateHeader())
+	}
+}
+
+func TestJwtSignRequiresCertificateAndHeaderTogether(t *testing.T) {
+	ctx := oauthTestPolicyCtx(t, &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{Name: "jwt-sign-secret", Namespace: "default"},
+		Data:       map[string][]byte{"signingKey": []byte("private key")},
+	})
+	auth := &agentgateway.JwtSignAuth{
+		SigningKeyRef: agentgateway.LocalSecretKeyRef{Name: "jwt-sign-secret"},
+		CertificateRef: &agentgateway.LocalSecretKeyRef{
+			Name: "jwt-sign-secret",
+		},
+		Claims: map[string]apiextensionsv1.JSON{"iss": {Raw: []byte(`"acct.user"`)}},
+	}
+
+	_, err := buildJwtSignAuthPolicy(ctx, auth, "default")
+	if err == nil || !strings.Contains(err.Error(), "certificateRef and certificateHeader must be set together") {
+		t.Fatalf("buildJwtSignAuthPolicy() error = %v, want certificate pair error", err)
 	}
 }

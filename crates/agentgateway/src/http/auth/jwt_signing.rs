@@ -88,7 +88,7 @@ impl fmt::Debug for ParsedEncodingKey {
 	}
 }
 
-#[derive(Default)]
+#[derive(Clone, Debug, Default)]
 pub(crate) struct CertificateHeaders {
 	pub(crate) x5c: Option<Vec<String>>,
 	pub(crate) x5t_s256: Option<String>,

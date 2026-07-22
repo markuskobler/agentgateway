@@ -397,6 +397,13 @@ message JwtSign {
     RS512                   = 3;
     ES256                   = 4;
     ES384                   = 5;
+    PS256                   = 6;
+  }
+
+  enum CertificateHeader {
+    CERTIFICATE_HEADER_UNSPECIFIED = 0;
+    X5C                            = 1;
+    X5T_S256                       = 2;
   }
 
   // PEM-encoded private signing key. RSA keys are used with RS* algorithms;
@@ -414,6 +421,10 @@ message JwtSign {
   // Where the signed token is written. Defaults to the Authorization header
   // with a "Bearer " prefix.
   AuthorizationLocation authorization_location = 6;
+  // PEM-encoded X.509 certificate chain used by certificate_header, leaf first.
+  optional string certificate = 7;
+  // Optional JWS certificate header. Requires certificate.
+  CertificateHeader certificate_header = 8;
 }
 
 // GCP-specific backend authentication.

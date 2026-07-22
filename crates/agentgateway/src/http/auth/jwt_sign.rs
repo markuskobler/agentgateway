@@ -9,7 +9,10 @@ use parking_lot::Mutex;
 use secrecy::SecretString;
 
 use super::AuthorizationLocation;
-use super::jwt_signing::{ParsedEncodingKey, signing_header};
+use super::jwt_signing::{
+	CertificateHeader, CertificateHeaders, ParsedEncodingKey, load_certificate_headers,
+	signing_header,
+};
 use super::oauth::SigningAlg;
 use crate::resource_manager::{ResourceFetcher, ResourceRef};
 use crate::serdes::FileOrInline;
@@ -47,9 +50,50 @@ fn ttl_secs_ceil(ttl: Duration) -> u64 {
 /// [`JwtSignAuth::resolve`] (file paths), so file-based keys register with the
 /// resource manager and reload when the file changes.
 #[derive(Clone)]
-enum SigningKey {
-	Parsed(ParsedEncodingKey),
+enum PemSource {
+	Inline(String),
 	File(PathBuf),
+}
+
+impl From<FileOrInline> for PemSource {
+	fn from(value: FileOrInline) -> Self {
+		match value {
+			FileOrInline::Inline(pem) => Self::Inline(pem),
+			FileOrInline::File { file } => Self::File(file),
+		}
+	}
+}
+
+impl PemSource {
+	async fn load(
+		&self,
+		resources: &ResourceFetcher,
+		context: &'static str,
+	) -> anyhow::Result<String> {
+		match self {
+			Self::Inline(pem) => Ok(pem.clone()),
+			Self::File(path) => {
+				let pem = resources
+					.fetch(ResourceRef::File(path.clone()))
+					.await
+					.with_context(|| format!("failed to load jwtSign {context}"))?;
+				String::from_utf8(pem.to_vec())
+					.with_context(|| format!("jwtSign {context} is not valid UTF-8"))
+			},
+		}
+	}
+}
+
+#[derive(Clone)]
+enum SigningMaterial {
+	Resolved {
+		key: ParsedEncodingKey,
+		certificate_headers: CertificateHeaders,
+	},
+	Deferred {
+		signing_key: PemSource,
+		certificate: Option<(PemSource, CertificateHeader)>,
+	},
 }
 
 #[derive(Clone)]
@@ -100,11 +144,13 @@ fn token_is_fresh(expires_at: u64, now: u64) -> bool {
 pub struct JwtSignAuth {
 	#[serde(skip)]
 	#[cfg_attr(feature = "schema", schemars(skip))]
-	signing_key: SigningKey,
+	signing_material: SigningMaterial,
 	#[serde(default)]
 	alg: SigningAlg,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	kid: Option<String>,
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	certificate_header: Option<CertificateHeader>,
 	claims: BTreeMap<String, serde_json::Value>,
 	#[serde(default, skip_serializing_if = "Option::is_none")]
 	ttl: Option<Duration>,
@@ -118,9 +164,10 @@ pub struct JwtSignAuth {
 impl fmt::Debug for JwtSignAuth {
 	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 		f.debug_struct("JwtSignAuth")
-			.field("signing_key", &"<redacted>")
+			.field("signing_material", &"<redacted>")
 			.field("alg", &self.alg)
 			.field("kid", &self.kid)
+			.field("certificate_header", &self.certificate_header)
 			.field("claims", &self.claims)
 			.field("ttl", &self.ttl)
 			.field("location", &self.location)
@@ -135,9 +182,10 @@ impl serde::Serialize for JwtSignAuth {
 	{
 		use serde::ser::SerializeStruct;
 
-		let mut state = serializer.serialize_struct("JwtSignAuth", 5)?;
+		let mut state = serializer.serialize_struct("JwtSignAuth", 6)?;
 		state.serialize_field("alg", &self.alg)?;
 		state.serialize_field("kid", &self.kid)?;
+		state.serialize_field("certificateHeader", &self.certificate_header)?;
 		state.serialize_field("claims", &self.claims)?;
 		state.serialize_field(
 			"ttl",
@@ -155,6 +203,17 @@ struct RawJwtSignAuth {
 	/// PEM-encoded private signing key (RSA or EC, matching `alg`).
 	#[cfg_attr(feature = "schema", schemars(with = "crate::serdes::FileOrInline"))]
 	signing_key: FileOrInline,
+	/// PEM-encoded X.509 certificate chain, leaf first. Required when
+	/// `certificateHeader` is set.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	#[cfg_attr(
+		feature = "schema",
+		schemars(with = "Option<crate::serdes::FileOrInline>")
+	)]
+	certificate: Option<FileOrInline>,
+	/// Optional JWS certificate header. Required when `certificate` is set.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	certificate_header: Option<CertificateHeader>,
 	/// JWS signing algorithm. Defaults to RS256.
 	#[serde(default)]
 	alg: SigningAlg,
@@ -185,17 +244,22 @@ impl TryFrom<RawJwtSignAuth> for JwtSignAuth {
 
 	fn try_from(raw: RawJwtSignAuth) -> Result<Self, Self::Error> {
 		validate_config(&raw.claims, raw.ttl)?;
-		// Inline keys are parsed eagerly so misconfigurations fail at parse
-		// time. File keys are deferred to `resolve`, which fetches through the
-		// resource manager so the file is watched and changes reload the config.
-		let signing_key = match raw.signing_key {
-			FileOrInline::Inline(pem) => SigningKey::Parsed(parse_signing_key(raw.alg, pem.trim())?),
-			FileOrInline::File { file } => SigningKey::File(file),
+		let certificate = match (raw.certificate, raw.certificate_header) {
+			(Some(certificate), Some(header)) => Some((PemSource::from(certificate), header)),
+			(Some(_), None) => {
+				return Err("jwtSign certificateHeader is required when certificate is set".into());
+			},
+			(None, Some(_)) => {
+				return Err("jwtSign certificate is required when certificateHeader is set".into());
+			},
+			(None, None) => None,
 		};
+		let signing_material = build_signing_material(raw.alg, raw.signing_key.into(), certificate)?;
 		Ok(Self {
-			signing_key,
+			signing_material,
 			alg: raw.alg,
 			kid: raw.kid,
+			certificate_header: raw.certificate_header,
 			claims: raw.claims,
 			ttl: raw.ttl,
 			location: raw.location,
@@ -231,6 +295,43 @@ fn parse_signing_key(alg: SigningAlg, pem: &str) -> Result<ParsedEncodingKey, St
 		.map_err(|e| format!("failed to parse jwtSign signingKey: {e}"))
 }
 
+fn resolve_signing_material(
+	alg: SigningAlg,
+	signing_key_pem: &str,
+	certificate: Option<(&str, CertificateHeader)>,
+) -> Result<SigningMaterial, String> {
+	let key = parse_signing_key(alg, signing_key_pem.trim())?;
+	let certificate_headers = match certificate {
+		Some((certificate_pem, header)) => {
+			load_certificate_headers(certificate_pem.trim(), header, signing_key_pem.trim())?
+		},
+		None => CertificateHeaders::default(),
+	};
+	Ok(SigningMaterial::Resolved {
+		key,
+		certificate_headers,
+	})
+}
+
+fn build_signing_material(
+	alg: SigningAlg,
+	signing_key: PemSource,
+	certificate: Option<(PemSource, CertificateHeader)>,
+) -> Result<SigningMaterial, String> {
+	match (&signing_key, &certificate) {
+		(PemSource::Inline(signing_key_pem), None) => {
+			resolve_signing_material(alg, signing_key_pem, None)
+		},
+		(PemSource::Inline(signing_key_pem), Some((PemSource::Inline(certificate_pem), header))) => {
+			resolve_signing_material(alg, signing_key_pem, Some((certificate_pem, *header)))
+		},
+		_ => Ok(SigningMaterial::Deferred {
+			signing_key,
+			certificate,
+		}),
+	}
+}
+
 impl JwtSignAuth {
 	pub fn try_new(
 		signing_key_pem: &str,
@@ -240,12 +341,26 @@ impl JwtSignAuth {
 		ttl: Option<Duration>,
 		location: Option<AuthorizationLocation>,
 	) -> Result<Self, String> {
+		Self::try_new_with_certificate(signing_key_pem, alg, kid, claims, ttl, location, None)
+	}
+
+	pub(crate) fn try_new_with_certificate(
+		signing_key_pem: &str,
+		alg: SigningAlg,
+		kid: Option<String>,
+		claims: BTreeMap<String, serde_json::Value>,
+		ttl: Option<Duration>,
+		location: Option<AuthorizationLocation>,
+		certificate: Option<(&str, CertificateHeader)>,
+	) -> Result<Self, String> {
 		validate_config(&claims, ttl)?;
-		let signing_key = SigningKey::Parsed(parse_signing_key(alg, signing_key_pem)?);
+		let certificate_header = certificate.map(|(_, header)| header);
+		let signing_material = resolve_signing_material(alg, signing_key_pem, certificate)?;
 		Ok(Self {
-			signing_key,
+			signing_material,
 			alg,
 			kid,
+			certificate_header,
 			claims,
 			ttl,
 			location,
@@ -253,20 +368,30 @@ impl JwtSignAuth {
 		})
 	}
 
-	/// Resolves a file-based signing key through the resource manager, which
-	/// registers the file so changes trigger a config reload. Inline keys are
-	/// already parsed and are left untouched.
+	/// Resolves file-backed signing material through the resource manager so
+	/// key or certificate changes trigger a config reload.
 	pub async fn resolve(&mut self, resources: &ResourceFetcher) -> anyhow::Result<()> {
-		if let SigningKey::File(path) = &self.signing_key {
-			let pem = resources
-				.fetch(ResourceRef::File(path.clone()))
-				.await
-				.context("failed to load jwtSign signingKey")?;
-			let pem = std::str::from_utf8(&pem).context("jwtSign signingKey is not valid UTF-8")?;
-			self.signing_key =
-				SigningKey::Parsed(parse_signing_key(self.alg, pem.trim()).map_err(anyhow::Error::msg)?);
-			self.cache.clear();
-		}
+		let SigningMaterial::Deferred {
+			signing_key,
+			certificate,
+		} = self.signing_material.clone()
+		else {
+			return Ok(());
+		};
+		let signing_key_pem = signing_key.load(resources, "signingKey").await?;
+		let certificate_pem = match &certificate {
+			Some((source, header)) => Some((source.load(resources, "certificate").await?, *header)),
+			None => None,
+		};
+		self.signing_material = resolve_signing_material(
+			self.alg,
+			&signing_key_pem,
+			certificate_pem
+				.as_ref()
+				.map(|(pem, header)| (pem.as_str(), *header)),
+		)
+		.map_err(anyhow::Error::msg)?;
+		self.cache.clear();
 		Ok(())
 	}
 
@@ -279,8 +404,12 @@ impl JwtSignAuth {
 	}
 
 	fn sign_at(&self, now: u64) -> anyhow::Result<CachedJwt> {
-		let SigningKey::Parsed(signing_key) = &self.signing_key else {
-			anyhow::bail!("jwtSign file-based signingKey was not resolved at config load");
+		let SigningMaterial::Resolved {
+			key: signing_key,
+			certificate_headers,
+		} = &self.signing_material
+		else {
+			anyhow::bail!("jwtSign file-backed signing material was not resolved at config load");
 		};
 		let ttl = self.ttl.unwrap_or(DEFAULT_TTL);
 		let skew = CLOCK_SKEW_FUDGE.as_secs();
@@ -297,7 +426,12 @@ impl JwtSignAuth {
 		claims.insert("iat".to_string(), iat.into());
 		claims.insert("exp".to_string(), exp.into());
 
-		let header = signing_header(self.alg, self.kid.clone(), None, None);
+		let header = signing_header(
+			self.alg,
+			self.kid.clone(),
+			certificate_headers.x5c.clone(),
+			certificate_headers.x5t_s256.clone(),
+		);
 		let token = signing_key
 			.encode(&header, &serde_json::Value::Object(claims))
 			.context("failed to sign backend JWT")?;
