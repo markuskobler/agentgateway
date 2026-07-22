@@ -9,7 +9,7 @@ use url::form_urlencoded;
 use wiremock::matchers::{method, path};
 use wiremock::{Mock, MockServer, ResponseTemplate};
 
-use super::client_auth::RawPrivateKeyJwt;
+use super::client_auth::{RawOAuthClientAuthConfig, RawPrivateKeyJwt};
 use super::cross_app_access::{
 	CrossAppAccessAuthConfig, CrossAppAccessEndpoint, CrossAppAccessSubjectToken,
 };
@@ -636,7 +636,7 @@ async fn id_jag_chained_exchange_client_error_is_upstream_failure() {
 async fn private_key_jwt_sends_client_assertion_form_fields() {
 	let mock = mock_token_endpoint(ResponseTemplate::new(200).set_body_json(token_body())).await;
 	let private_key = PrivateKeyJwt::try_from(RawPrivateKeyJwt {
-		signing_key: FileOrInline::Inline(TEST_EC_PRIVATE_KEY_PEM.to_string()),
+		signing_key: FileOrInline::Inline(TEST_EC_PRIVATE_KEY_PEM.to_string()).into(),
 		alg: SigningAlg::Es256,
 		kid: Some("kid-1".into()),
 		assertion_audience: "https://issuer.example/token".into(),
@@ -684,6 +684,34 @@ async fn private_key_jwt_sends_client_assertion_form_fields() {
 }
 
 #[test]
+fn private_key_jwt_debug_redacts_signing_key() {
+	let raw_client_secret: RawOAuthClientAuthConfig = serde_json::from_value(json!({
+		"clientId": "gateway-client",
+		"clientSecret": "super-secret",
+	}))
+	.unwrap();
+	let raw_client_secret_debug = format!("{raw_client_secret:?}");
+	assert!(!raw_client_secret_debug.contains("super-secret"));
+	assert!(raw_client_secret_debug.contains("[REDACTED]"));
+
+	let raw = RawPrivateKeyJwt {
+		signing_key: FileOrInline::Inline(TEST_EC_PRIVATE_KEY_PEM.to_string()).into(),
+		alg: SigningAlg::Es256,
+		kid: Some("kid-1".into()),
+		assertion_audience: "https://issuer.example/token".into(),
+	};
+	let raw_debug = format!("{raw:?}");
+	assert!(!raw_debug.contains(TEST_EC_PRIVATE_KEY_PEM));
+	assert!(raw_debug.contains("[REDACTED]"));
+
+	let private_key = PrivateKeyJwt::try_from(raw).unwrap();
+	let debug = format!("{private_key:?}");
+	assert!(!debug.contains(TEST_EC_PRIVATE_KEY_PEM));
+	assert!(debug.contains("signing_key: \"[REDACTED]\""));
+	assert!(debug.contains("alg: Es256"));
+}
+
+#[test]
 fn private_key_jwt_rejects_bad_key_at_deserialize_time() {
 	let err = serde_json::from_str::<OAuthTokenExchangeAuth>(
 		r#"{
@@ -699,6 +727,21 @@ fn private_key_jwt_rejects_bad_key_at_deserialize_time() {
 	)
 	.expect_err("bad key must fail during config load");
 	assert!(err.to_string().contains("signing_key"), "got: {err}");
+}
+
+#[test]
+fn client_auth_rejects_empty_client_id_at_deserialize_time() {
+	let err = serde_json::from_str::<OAuthTokenExchangeAuth>(
+		r#"{
+			"host": "localhost:8089",
+			"clientAuth": {
+				"clientId": "",
+				"clientSecret": "secret"
+			}
+		}"#,
+	)
+	.expect_err("empty client id must fail during config load");
+	assert!(err.to_string().contains("client_id"), "got: {err}");
 }
 
 #[test]

@@ -3,11 +3,13 @@ use std::collections::BTreeMap;
 #[cfg(feature = "schema")]
 use super::TokenCacheConfig;
 use super::cache::InMemoryTokenCache;
+use super::client_auth::RawOAuthClientAuthConfig;
 use super::{
 	ChainedExchange, OAuthClientAuth, OAuthGrantType, OAuthTokenExchangeAuth, OAuthTokenType,
 	TokenSpec, default_token_cache, deserialize_token_cache, token_cache_from_proto,
 };
 use crate::http::auth::AuthorizationLocation;
+use crate::resource_manager::ResourceFetcher;
 use crate::types::agent::SimpleBackendReferenceWithPolicies;
 use crate::types::agent_xds::{Diagnostics, authorization_location, resolve_simple_reference};
 use crate::types::proto::{ProtoError, agent};
@@ -78,6 +80,63 @@ pub(super) struct CrossAppAccessSubjectToken {
 	/// Where to read the subject token. Defaults to the Authorization Bearer header.
 	#[serde(default)]
 	pub(super) source: AuthorizationLocation,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct RawCrossAppAccessAuthConfig {
+	/// The user's IdP authorization server, used for the RFC 8693 token exchange.
+	pub(super) identity_provider: RawCrossAppAccessEndpoint,
+	/// The resource authorization server, which exchanges the ID-JAG for an access token.
+	pub(super) resource_authorization_server: RawCrossAppAccessEndpoint,
+	/// Identifier of the resource authorization server. The issued ID-JAG is bound to this audience.
+	pub(super) audience: String,
+	/// `resource` parameters naming the protected resource APIs.
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	pub(super) resources: Vec<String>,
+	/// `scope` values for the requested token, sent space-delimited.
+	#[serde(default, skip_serializing_if = "Vec::is_empty")]
+	pub(super) scopes: Vec<String>,
+	/// Subject token sent to the identity provider. Defaults to an OpenID Connect ID token read
+	/// from the Authorization Bearer header.
+	#[serde(default, skip_serializing_if = "Option::is_none")]
+	pub(super) subject_token: Option<CrossAppAccessSubjectToken>,
+	/// Response cache configuration. Defaults to an in-memory cache with 8192 entries and a 300s
+	/// TTL when the token endpoint omits `expires_in`. Set `maxEntries` to 0 to disable.
+	#[serde(
+		default = "default_token_cache",
+		deserialize_with = "deserialize_token_cache",
+		skip_serializing
+	)]
+	#[cfg_attr(feature = "schema", schemars(with = "Option<TokenCacheConfig>"))]
+	pub(super) cache: Option<InMemoryTokenCache>,
+}
+
+impl RawCrossAppAccessAuthConfig {
+	pub(crate) async fn into_auth(
+		self,
+		resources: &ResourceFetcher,
+	) -> Result<CrossAppAccessAuth, String> {
+		let config = CrossAppAccessAuthConfig {
+			identity_provider: self
+				.identity_provider
+				.into_endpoint("crossAppAccess.identityProvider", resources)
+				.await?,
+			resource_authorization_server: self
+				.resource_authorization_server
+				.into_endpoint("crossAppAccess.resourceAuthorizationServer", resources)
+				.await?,
+			audience: self.audience,
+			resources: self.resources,
+			scopes: self.scopes,
+			subject_token: self.subject_token,
+			cache: self.cache,
+		};
+		let auth = CrossAppAccessAuth::from(config);
+		auth.validate_load()?;
+		Ok(auth)
+	}
 }
 
 impl From<CrossAppAccessAuthConfig> for CrossAppAccessAuth {
@@ -262,6 +321,37 @@ pub(super) struct CrossAppAccessEndpoint {
 	pub(super) path: String,
 	/// Client authentication used when calling the token endpoint.
 	pub(super) client_auth: OAuthClientAuth,
+}
+
+#[serde_with::serde_as]
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub(super) struct RawCrossAppAccessEndpoint {
+	/// Token endpoint backend and policies used when connecting to it.
+	#[serde(flatten)]
+	pub(super) target: SimpleBackendReferenceWithPolicies,
+	/// Token endpoint path on the backend; defaults to "/".
+	#[serde(default, skip_serializing_if = "String::is_empty")]
+	pub(super) path: String,
+	/// Client authentication used when calling the token endpoint.
+	pub(super) client_auth: RawOAuthClientAuthConfig,
+}
+
+impl RawCrossAppAccessEndpoint {
+	async fn into_endpoint(
+		self,
+		context: &str,
+		resources: &ResourceFetcher,
+	) -> Result<CrossAppAccessEndpoint, String> {
+		Ok(CrossAppAccessEndpoint {
+			target: self.target,
+			path: self.path,
+			client_auth: OAuthClientAuth::try_from_raw_config(self.client_auth, resources)
+				.await
+				.map_err(|e| format!("{context}.clientAuth: {e}"))?,
+		})
+	}
 }
 
 impl CrossAppAccessEndpoint {
