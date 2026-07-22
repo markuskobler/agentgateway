@@ -3,6 +3,7 @@ pub mod azure;
 mod copilot;
 pub mod gcp;
 pub mod jwt_sign;
+mod jwt_signing;
 pub mod oauth;
 
 use std::borrow::Cow;
