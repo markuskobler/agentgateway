@@ -31,6 +31,10 @@ const CLOCK_SKEW_FUDGE: Duration = Duration::from_secs(10);
 /// an upstream request is in flight.
 const CACHE_SAFETY_MARGIN: Duration = Duration::from_secs(15);
 
+/// Bound cache reuse so tokens are not served with stale `iat` claims. This is
+/// independent of the configured `ttl`, which controls `exp`.
+const MAX_TOKEN_AGE: Duration = Duration::from_secs(60);
+
 /// Time-based claims the signer owns; user-configured claims must not collide
 /// with these. `iat` and `exp` are always set by the signer. `nbf` is not
 /// emitted (validators treat `iat` as the issue time and a static `nbf` makes
@@ -99,7 +103,7 @@ enum SigningMaterial {
 #[derive(Clone)]
 struct CachedJwt {
 	token: SecretString,
-	expires_at: u64,
+	reusable_until: u64,
 }
 
 #[derive(Clone, Default)]
@@ -113,7 +117,7 @@ impl JwtTokenCache {
 	) -> Result<SecretString, E> {
 		let mut entry = self.0.lock();
 		if let Some(cached) = entry.as_ref()
-			&& token_is_fresh(cached.expires_at, now)
+			&& token_is_fresh(cached, now)
 		{
 			return Ok(cached.token.clone());
 		}
@@ -121,7 +125,7 @@ impl JwtTokenCache {
 		*entry = None;
 		let signed = sign()?;
 		let token = signed.token.clone();
-		if token_is_fresh(signed.expires_at, now) {
+		if token_is_fresh(&signed, now) {
 			*entry = Some(signed);
 		}
 		Ok(token)
@@ -132,12 +136,16 @@ impl JwtTokenCache {
 	}
 }
 
-fn token_is_fresh(expires_at: u64, now: u64) -> bool {
-	expires_at.saturating_sub(now) > CACHE_SAFETY_MARGIN.as_secs()
+fn token_is_fresh(token: &CachedJwt, now: u64) -> bool {
+	token.reusable_until.saturating_sub(now) > CACHE_SAFETY_MARGIN.as_secs()
+}
+
+fn token_reusable_until(iat: u64, exp: u64) -> u64 {
+	exp.min(iat.saturating_add(MAX_TOKEN_AGE.as_secs()))
 }
 
 /// Supplies a short-lived JWT signed with a private key to the backend. Tokens
-/// are reused until shortly before expiry to avoid repeated signing work.
+/// are reused until shortly before either expiry or the maximum token age.
 #[derive(Clone, serde::Deserialize)]
 #[serde(try_from = "RawJwtSignAuth", rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -225,7 +233,8 @@ struct RawJwtSignAuth {
 	/// and `nbf` are reserved for the signer and cannot be configured here.
 	#[cfg_attr(feature = "schema", schemars(extend("minProperties" = 1)))]
 	claims: BTreeMap<String, serde_json::Value>,
-	/// Token lifetime used for `exp`. Defaults to 300s.
+	/// Token lifetime used for `exp`. Defaults to 300s. Cache reuse is also
+	/// bounded by the token's issue time and may be shorter than this lifetime.
 	#[serde(
 		default,
 		with = "crate::serdes::serde_dur_option",
@@ -243,7 +252,7 @@ impl TryFrom<RawJwtSignAuth> for JwtSignAuth {
 	type Error = String;
 
 	fn try_from(raw: RawJwtSignAuth) -> Result<Self, Self::Error> {
-		validate_config(&raw.claims, raw.ttl)?;
+		validate_config(&raw.claims, raw.ttl, raw.location.as_ref())?;
 		let certificate = match (raw.certificate, raw.certificate_header) {
 			(Some(certificate), Some(header)) => Some((PemSource::from(certificate), header)),
 			(Some(_), None) => {
@@ -271,6 +280,7 @@ impl TryFrom<RawJwtSignAuth> for JwtSignAuth {
 fn validate_config(
 	claims: &BTreeMap<String, serde_json::Value>,
 	ttl: Option<Duration>,
+	location: Option<&AuthorizationLocation>,
 ) -> Result<(), String> {
 	if claims.is_empty() {
 		return Err("jwtSign requires at least one claim".into());
@@ -286,6 +296,12 @@ fn validate_config(
 		&& ttl.as_secs() == 0
 	{
 		return Err("jwtSign ttl must be at least one second".into());
+	}
+	if matches!(location, Some(AuthorizationLocation::Expression(_))) {
+		return Err(
+			"jwtSign location cannot be an expression because signed tokens must be inserted into requests"
+				.into(),
+		);
 	}
 	Ok(())
 }
@@ -353,7 +369,7 @@ impl JwtSignAuth {
 		location: Option<AuthorizationLocation>,
 		certificate: Option<(&str, CertificateHeader)>,
 	) -> Result<Self, String> {
-		validate_config(&claims, ttl)?;
+		validate_config(&claims, ttl, location.as_ref())?;
 		let certificate_header = certificate.map(|(_, header)| header);
 		let signing_material = resolve_signing_material(alg, signing_key_pem, certificate)?;
 		Ok(Self {
@@ -437,7 +453,7 @@ impl JwtSignAuth {
 			.context("failed to sign backend JWT")?;
 		Ok(CachedJwt {
 			token: token.into(),
-			expires_at: exp,
+			reusable_until: token_reusable_until(iat, exp),
 		})
 	}
 }
@@ -452,11 +468,17 @@ mod cache_tests {
 
 	use super::*;
 
-	fn cached(token: &str, expires_at: u64) -> CachedJwt {
+	fn cached(token: &str, reusable_until: u64) -> CachedJwt {
 		CachedJwt {
 			token: token.to_string().into(),
-			expires_at,
+			reusable_until,
 		}
+	}
+
+	#[test]
+	fn reuse_deadline_is_bounded_by_expiration_and_token_age() {
+		assert_eq!(token_reusable_until(100, 120), 120);
+		assert_eq!(token_reusable_until(100, 1000), 160);
 	}
 
 	#[test]
@@ -535,7 +557,7 @@ mod cache_tests {
 					cache
 						.get_or_insert_with(100, || {
 							calls.fetch_add(1, Ordering::Relaxed);
-							Ok::<_, Infallible>(cached("shared", 200))
+							Ok::<_, Infallible>(cached("shared", 160))
 						})
 						.unwrap()
 				})
@@ -546,5 +568,34 @@ mod cache_tests {
 			assert_eq!(worker.join().unwrap().expose_secret(), "shared");
 		}
 		assert_eq!(calls.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn cache_refreshes_at_reuse_deadline() {
+		let cache = JwtTokenCache::default();
+		let calls = AtomicUsize::new(0);
+		let first = cache
+			.get_or_insert_with(100, || {
+				calls.fetch_add(1, Ordering::Relaxed);
+				Ok::<_, Infallible>(cached("first", 150))
+			})
+			.unwrap();
+		let hit = cache
+			.get_or_insert_with(134, || {
+				calls.fetch_add(1, Ordering::Relaxed);
+				Ok::<_, Infallible>(cached("unexpected", 194))
+			})
+			.unwrap();
+		let refreshed = cache
+			.get_or_insert_with(135, || {
+				calls.fetch_add(1, Ordering::Relaxed);
+				Ok::<_, Infallible>(cached("second", 195))
+			})
+			.unwrap();
+
+		assert_eq!(first.expose_secret(), "first");
+		assert_eq!(hit.expose_secret(), "first");
+		assert_eq!(refreshed.expose_secret(), "second");
+		assert_eq!(calls.load(Ordering::Relaxed), 2);
 	}
 }

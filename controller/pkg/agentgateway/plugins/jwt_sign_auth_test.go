@@ -91,11 +91,11 @@ func TestJwtSignTranslatesPS256CertificateAndSecretKeyOverrides(t *testing.T) {
 	auth := &agentgateway.JwtSignAuth{
 		SigningKeyRef: agentgateway.LocalSecretKeyRef{
 			Name: "jwt-sign-secret",
-			Key:  ptr.Of("private.pem"),
+			Key:  new("private.pem"),
 		},
 		CertificateRef: &agentgateway.LocalSecretKeyRef{
 			Name: "jwt-sign-secret",
-			Key:  ptr.Of("certificate.pem"),
+			Key:  new("certificate.pem"),
 		},
 		CertificateHeader: ptr.Of(agentgateway.OAuthPrivateKeyJWTCertificateHeaderX5TS256),
 		Alg:               ptr.Of(agentgateway.OAuthPrivateKeyJWTSigningAlgorithmPS256),

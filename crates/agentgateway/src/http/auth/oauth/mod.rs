@@ -28,12 +28,13 @@ pub(crate) mod client_auth;
 mod cross_app_access;
 mod transport;
 
-pub use super::jwt_signing::{CertificateHeader, SigningAlg};
 use cache::{InMemoryTokenCache, TokenCacheResult};
 use client_auth::sign_client_assertion;
 pub use client_auth::{OAuthClientAuth, OAuthClientAuthMethod, PrivateKeyJwt};
 pub use cross_app_access::CrossAppAccessAuth;
 pub(super) use transport::FetchError;
+
+pub use super::jwt_signing::{CertificateHeader, SigningAlg};
 
 #[apply(schema!)]
 pub struct OAuthTokenExchangeAuth {
