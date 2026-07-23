@@ -29,6 +29,10 @@ const CLOCK_SKEW_FUDGE: Duration = Duration::from_secs(10);
 /// an upstream request is in flight.
 const CACHE_SAFETY_MARGIN: Duration = Duration::from_secs(15);
 
+/// Snowflake rejects key-pair JWTs received more than 60 seconds after `iat`.
+/// Bound cache reuse by that limit independently of the configured `exp`.
+const MAX_IAT_AGE: Duration = Duration::from_secs(60);
+
 /// Time-based claims the signer owns; user-configured claims must not collide
 /// with these. `iat` and `exp` are always set by the signer. `nbf` is not
 /// emitted (validators treat `iat` as the issue time and a static `nbf` makes
@@ -57,6 +61,7 @@ enum SigningKey {
 struct CachedJwt {
 	token: SecretString,
 	expires_at: u64,
+	issued_at: u64,
 }
 
 #[derive(Clone, Default)]
@@ -70,7 +75,7 @@ impl JwtTokenCache {
 	) -> Result<SecretString, E> {
 		let mut entry = self.0.lock();
 		if let Some(cached) = entry.as_ref()
-			&& token_is_fresh(cached.expires_at, now)
+			&& token_is_fresh(cached, now)
 		{
 			return Ok(cached.token.clone());
 		}
@@ -78,7 +83,7 @@ impl JwtTokenCache {
 		*entry = None;
 		let signed = sign()?;
 		let token = signed.token.clone();
-		if token_is_fresh(signed.expires_at, now) {
+		if token_is_fresh(&signed, now) {
 			*entry = Some(signed);
 		}
 		Ok(token)
@@ -89,8 +94,11 @@ impl JwtTokenCache {
 	}
 }
 
-fn token_is_fresh(expires_at: u64, now: u64) -> bool {
-	expires_at.saturating_sub(now) > CACHE_SAFETY_MARGIN.as_secs()
+fn token_is_fresh(token: &CachedJwt, now: u64) -> bool {
+	let reusable_until = token
+		.expires_at
+		.min(token.issued_at.saturating_add(MAX_IAT_AGE.as_secs()));
+	reusable_until.saturating_sub(now) > CACHE_SAFETY_MARGIN.as_secs()
 }
 
 /// Supplies a short-lived JWT signed with a private key to the backend. Tokens
@@ -185,7 +193,7 @@ impl TryFrom<RawJwtSignAuth> for JwtSignAuth {
 	type Error = String;
 
 	fn try_from(raw: RawJwtSignAuth) -> Result<Self, Self::Error> {
-		validate_config(&raw.claims, raw.ttl)?;
+		validate_config(&raw.claims, raw.ttl, raw.location.as_ref())?;
 		// Inline keys are parsed eagerly so misconfigurations fail at parse
 		// time. File keys are deferred to `resolve`, which fetches through the
 		// resource manager so the file is watched and changes reload the config.
@@ -208,6 +216,7 @@ impl TryFrom<RawJwtSignAuth> for JwtSignAuth {
 fn validate_config(
 	claims: &BTreeMap<String, serde_json::Value>,
 	ttl: Option<Duration>,
+	location: Option<&AuthorizationLocation>,
 ) -> Result<(), String> {
 	if claims.is_empty() {
 		return Err("jwtSign requires at least one claim".into());
@@ -223,6 +232,12 @@ fn validate_config(
 		&& ttl.as_secs() == 0
 	{
 		return Err("jwtSign ttl must be at least one second".into());
+	}
+	if matches!(location, Some(AuthorizationLocation::Expression(_))) {
+		return Err(
+			"jwtSign location cannot be an expression because signed tokens must be inserted into requests"
+				.into(),
+		);
 	}
 	Ok(())
 }
@@ -243,7 +258,7 @@ impl JwtSignAuth {
 		ttl: Option<Duration>,
 		location: Option<AuthorizationLocation>,
 	) -> Result<Self, String> {
-		validate_config(&claims, ttl)?;
+		validate_config(&claims, ttl, location.as_ref())?;
 		let signing_key = SigningKey::Parsed(parse_signing_key(alg, signing_key_pem)?);
 		Ok(Self {
 			signing_key,
@@ -307,6 +322,7 @@ impl JwtSignAuth {
 		Ok(CachedJwt {
 			token: token.into(),
 			expires_at: exp,
+			issued_at: iat,
 		})
 	}
 }
@@ -321,10 +337,11 @@ mod cache_tests {
 
 	use super::*;
 
-	fn cached(token: &str, expires_at: u64) -> CachedJwt {
+	fn cached(token: &str, expires_at: u64, issued_at: u64) -> CachedJwt {
 		CachedJwt {
 			token: token.to_string().into(),
 			expires_at,
+			issued_at,
 		}
 	}
 
@@ -340,20 +357,20 @@ mod cache_tests {
 		let first = cache
 			.get_or_insert_with(100, || {
 				calls.fetch_add(1, Ordering::Relaxed);
-				Ok::<_, Infallible>(cached("first", 200))
+				Ok::<_, Infallible>(cached("first", 200, 150))
 			})
 			.unwrap();
 		let hit = cache
 			.clone()
 			.get_or_insert_with(184, || {
 				calls.fetch_add(1, Ordering::Relaxed);
-				Ok::<_, Infallible>(cached("unexpected", 300))
+				Ok::<_, Infallible>(cached("unexpected", 300, 184))
 			})
 			.unwrap();
 		let refreshed = cache
 			.get_or_insert_with(185, || {
 				calls.fetch_add(1, Ordering::Relaxed);
-				Ok::<_, Infallible>(cached("second", 300))
+				Ok::<_, Infallible>(cached("second", 300, 185))
 			})
 			.unwrap();
 
@@ -371,7 +388,7 @@ mod cache_tests {
 			cache
 				.get_or_insert_with(100, || {
 					calls.fetch_add(1, Ordering::Relaxed);
-					Ok::<_, Infallible>(cached("short", 115))
+					Ok::<_, Infallible>(cached("short", 115, 100))
 				})
 				.unwrap();
 		}
@@ -404,7 +421,7 @@ mod cache_tests {
 					cache
 						.get_or_insert_with(100, || {
 							calls.fetch_add(1, Ordering::Relaxed);
-							Ok::<_, Infallible>(cached("shared", 200))
+							Ok::<_, Infallible>(cached("shared", 200, 100))
 						})
 						.unwrap()
 				})
@@ -415,5 +432,34 @@ mod cache_tests {
 			assert_eq!(worker.join().unwrap().expose_secret(), "shared");
 		}
 		assert_eq!(calls.load(Ordering::Relaxed), 1);
+	}
+
+	#[test]
+	fn cache_refreshes_before_iat_is_too_old() {
+		let cache = JwtTokenCache::default();
+		let calls = AtomicUsize::new(0);
+		let first = cache
+			.get_or_insert_with(100, || {
+				calls.fetch_add(1, Ordering::Relaxed);
+				Ok::<_, Infallible>(cached("first", 1000, 90))
+			})
+			.unwrap();
+		let hit = cache
+			.get_or_insert_with(134, || {
+				calls.fetch_add(1, Ordering::Relaxed);
+				Ok::<_, Infallible>(cached("unexpected", 1000, 134))
+			})
+			.unwrap();
+		let refreshed = cache
+			.get_or_insert_with(135, || {
+				calls.fetch_add(1, Ordering::Relaxed);
+				Ok::<_, Infallible>(cached("second", 1000, 135))
+			})
+			.unwrap();
+
+		assert_eq!(first.expose_secret(), "first");
+		assert_eq!(hit.expose_secret(), "first");
+		assert_eq!(refreshed.expose_secret(), "second");
+		assert_eq!(calls.load(Ordering::Relaxed), 2);
 	}
 }
