@@ -24,15 +24,17 @@ use crate::types::proto::{ProtoError, agent as proto};
 use crate::{apply, cel, schema_enum};
 
 mod cache;
-mod client_auth;
+pub(crate) mod client_auth;
 mod cross_app_access;
 mod transport;
 
 use cache::{InMemoryTokenCache, TokenCacheResult};
 use client_auth::sign_client_assertion;
-pub use client_auth::{OAuthClientAuth, OAuthClientAuthMethod, PrivateKeyJwt, SigningAlg};
+pub use client_auth::{OAuthClientAuth, OAuthClientAuthMethod, PrivateKeyJwt};
 pub use cross_app_access::CrossAppAccessAuth;
 pub(super) use transport::FetchError;
+
+pub use super::jwt_signing::{CertificateHeader, SigningAlg};
 
 #[apply(schema!)]
 pub struct OAuthTokenExchangeAuth {

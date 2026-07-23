@@ -1171,8 +1171,78 @@ fn backend_auth_from_proto(
 				diagnostics,
 			)?))
 		},
+		Some(proto::agent::backend_auth_policy::Kind::JwtSign(j)) => {
+			let location = optional_authorization_location(j.authorization_location.as_ref())?;
+			let certificate =
+				jwt_sign_certificate_from_proto(j.certificate.as_deref(), j.certificate_header)?;
+			let claims = j
+				.claims
+				.into_iter()
+				.map(|(key, value)| {
+					let value = serde_json::to_value(value).unwrap_or(serde_json::Value::Null);
+					(key, value)
+				})
+				.collect();
+			BackendAuth::JwtSign(Box::new(
+				auth::jwt_sign::JwtSignAuth::try_new_with_certificate(
+					j.signing_key.trim(),
+					jwt_sign_alg_from_proto(j.alg)?,
+					j.kid,
+					claims,
+					j.ttl.map(convert_duration),
+					location,
+					certificate,
+				)
+				.map_err(ProtoError::Generic)?,
+			))
+		},
 		None => return Err(ProtoError::MissingRequiredField),
 	})
+}
+
+fn jwt_sign_alg_from_proto(alg: i32) -> Result<auth::oauth::SigningAlg, ProtoError> {
+	use auth::oauth::SigningAlg;
+	use proto::agent::jwt_sign::SigningAlg as ProtoSigningAlg;
+
+	match ProtoSigningAlg::try_from(alg) {
+		Ok(ProtoSigningAlg::Unspecified) => Ok(SigningAlg::Rs256),
+		Ok(ProtoSigningAlg::Rs256) => Ok(SigningAlg::Rs256),
+		Ok(ProtoSigningAlg::Rs384) => Ok(SigningAlg::Rs384),
+		Ok(ProtoSigningAlg::Rs512) => Ok(SigningAlg::Rs512),
+		Ok(ProtoSigningAlg::Ps256) => Ok(SigningAlg::Ps256),
+		Ok(ProtoSigningAlg::Es256) => Ok(SigningAlg::Es256),
+		Ok(ProtoSigningAlg::Es384) => Ok(SigningAlg::Es384),
+		Err(_) => Err(ProtoError::EnumParse("unknown jwt_sign signing alg".into())),
+	}
+}
+
+fn jwt_sign_certificate_from_proto(
+	certificate: Option<&str>,
+	header: i32,
+) -> Result<Option<(&str, auth::oauth::CertificateHeader)>, ProtoError> {
+	use auth::oauth::CertificateHeader;
+	use proto::agent::jwt_sign::CertificateHeader as ProtoCertificateHeader;
+
+	let header = match ProtoCertificateHeader::try_from(header) {
+		Ok(ProtoCertificateHeader::Unspecified) => None,
+		Ok(ProtoCertificateHeader::X5c) => Some(CertificateHeader::X5c),
+		Ok(ProtoCertificateHeader::X5tS256) => Some(CertificateHeader::X5tS256),
+		Err(_) => {
+			return Err(ProtoError::EnumParse(
+				"unknown jwt_sign certificate header".into(),
+			));
+		},
+	};
+	match (certificate, header) {
+		(Some(certificate), Some(header)) => Ok(Some((certificate, header))),
+		(Some(_), None) => Err(ProtoError::Generic(
+			"jwt_sign certificate_header is required when certificate is set".into(),
+		)),
+		(None, Some(_)) => Err(ProtoError::Generic(
+			"jwt_sign certificate is required when certificate_header is set".into(),
+		)),
+		(None, None) => Ok(None),
+	}
 }
 
 fn listener_protocol_from_proto(

@@ -2,18 +2,15 @@ use std::fmt;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use anyhow::Context;
-use base64::Engine;
-use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
-use jsonwebtoken::{Algorithm, EncodingKey, Header};
-use rustls::pki_types::PrivateKeyDer;
-use rustls::pki_types::pem::PemObject;
 use secrecy::{ExposeSecret, SecretString};
-use sha2::{Digest, Sha256};
-use tracing::warn;
 
+pub(super) use super::super::jwt_signing::CertificateHeader;
+use super::super::jwt_signing::{
+	CertificateHeaders, ParsedEncodingKey, SigningAlg, load_certificate_headers, signing_header,
+};
+use crate::ser_redact;
 use crate::serdes::FileOrInline;
 use crate::types::proto::{ProtoError, agent as proto};
-use crate::{apply, schema_enum, ser_redact};
 
 // Keep privateKeyJwt assertions short-lived to limit replay exposure while
 // allowing reasonable clock skew and token endpoint latency.
@@ -289,13 +286,15 @@ impl TryFrom<RawPrivateKeyJwt> for PrivateKeyJwt {
 		}
 		// TODO: file-based keys are loaded once at config load; consider reload/rotation (K8s secret remounts need a restart)
 		let signing_key_pem = raw.signing_key.expose_secret();
-		let signing_key = raw
-			.alg
-			.encoding_key(signing_key_pem.trim().as_bytes())
+		let signing_key = ParsedEncodingKey::parse(raw.alg, signing_key_pem.trim().as_bytes())
 			.map_err(|e| format!("failed to parse oauth private_key_jwt signing_key: {e}"))?;
 		let certificate_headers = match (raw.certificate, raw.certificate_header) {
 			(Some(certificate), Some(certificate_header)) => {
-				load_certificate_headers(certificate, certificate_header, signing_key_pem)?
+				let certificate_pem = certificate
+					.0
+					.load()
+					.map_err(|e| format!("failed to load oauth private_key_jwt certificate: {e}"))?;
+				load_certificate_headers(certificate_pem.trim(), certificate_header, signing_key_pem)?
 			},
 			(Some(_), None) => {
 				return Err(
@@ -310,112 +309,13 @@ impl TryFrom<RawPrivateKeyJwt> for PrivateKeyJwt {
 			(None, None) => CertificateHeaders::default(),
 		};
 		Ok(Self {
-			signing_key: ParsedEncodingKey(signing_key),
+			signing_key,
 			alg: raw.alg,
 			kid: raw.kid,
 			x5c: certificate_headers.x5c,
 			x5t_s256: certificate_headers.x5t_s256,
 			assertion_audience: raw.assertion_audience,
 		})
-	}
-}
-
-#[derive(Default)]
-struct CertificateHeaders {
-	x5c: Option<Vec<String>>,
-	x5t_s256: Option<String>,
-}
-
-fn load_certificate_headers(
-	certificate: RedactedCertificate,
-	certificate_header: CertificateHeader,
-	signing_key_pem: &str,
-) -> Result<CertificateHeaders, String> {
-	let certificate_pem = certificate
-		.0
-		.load()
-		.map_err(|e| format!("failed to load oauth private_key_jwt certificate: {e}"))?;
-	let certificates = pem::parse_many(certificate_pem)
-		.map_err(|e| format!("failed to parse oauth private_key_jwt certificate: {e}"))?;
-	let leaf = certificates.first().ok_or_else(|| {
-		"failed to parse oauth private_key_jwt certificate: no PEM blocks found".to_string()
-	})?;
-
-	for certificate in &certificates {
-		if certificate.tag() != "CERTIFICATE" {
-			return Err(format!(
-				"failed to parse oauth private_key_jwt certificate: expected CERTIFICATE PEM block, found {}",
-				certificate.tag()
-			));
-		}
-		x509_parser::parse_x509_certificate(certificate.contents())
-			.map_err(|e| format!("failed to parse oauth private_key_jwt certificate: {e}"))?;
-	}
-
-	warn_if_certificate_key_mismatch(signing_key_pem, leaf.contents());
-
-	Ok(match certificate_header {
-		CertificateHeader::X5c => CertificateHeaders {
-			x5c: Some(
-				certificates
-					.into_iter()
-					.map(|certificate| STANDARD.encode(certificate.contents()))
-					.collect(),
-			),
-			x5t_s256: None,
-		},
-		CertificateHeader::X5tS256 => CertificateHeaders {
-			x5c: None,
-			x5t_s256: Some(URL_SAFE_NO_PAD.encode(Sha256::digest(leaf.contents()))),
-		},
-	})
-}
-
-fn warn_if_certificate_key_mismatch(signing_key_pem: &str, leaf_certificate_der: &[u8]) {
-	match certificate_key_matches(signing_key_pem, leaf_certificate_der) {
-		Ok(true) => {},
-		Ok(false) => {
-			warn!("oauth private_key_jwt certificate public key does not match signing_key");
-		},
-		Err(error) => {
-			warn!(%error, "unable to compare oauth private_key_jwt certificate public key with signing_key");
-		},
-	}
-}
-
-fn certificate_key_matches(
-	signing_key_pem: &str,
-	leaf_certificate_der: &[u8],
-) -> Result<bool, String> {
-	let signing_key = PrivateKeyDer::from_pem_slice(signing_key_pem.as_bytes()).map_err(|e| {
-		format!("failed to validate oauth private_key_jwt signing_key against certificate: {e}")
-	})?;
-	let signing_key = crate::transport::tls::provider()
-		.key_provider
-		.load_private_key(signing_key)
-		.map_err(|e| {
-			format!("failed to validate oauth private_key_jwt signing_key against certificate: {e}")
-		})?;
-	let signing_key_spki = signing_key.public_key().ok_or_else(|| {
-		"failed to validate oauth private_key_jwt signing_key against certificate: public key is unavailable"
-			.to_string()
-	})?;
-	let (_, certificate) = x509_parser::parse_x509_certificate(leaf_certificate_der)
-		.map_err(|e| format!("failed to parse oauth private_key_jwt certificate: {e}"))?;
-	Ok(signing_key_spki.as_ref() == certificate.public_key().raw)
-}
-
-struct ParsedEncodingKey(EncodingKey);
-
-impl Clone for ParsedEncodingKey {
-	fn clone(&self) -> Self {
-		Self(self.0.clone())
-	}
-}
-
-impl fmt::Debug for ParsedEncodingKey {
-	fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-		f.write_str("[REDACTED]")
 	}
 }
 
@@ -533,58 +433,6 @@ impl TryFrom<proto::o_auth_client_auth::PrivateKeyJwt> for PrivateKeyJwt {
 	}
 }
 
-#[apply(schema_enum!)]
-pub enum CertificateHeader {
-	/// Send the X.509 certificate chain in `x5c`.
-	#[serde(rename = "x5c")]
-	X5c,
-	/// Send the leaf certificate's SHA-256 thumbprint in `x5t#S256`.
-	#[serde(rename = "x5t#S256")]
-	X5tS256,
-}
-
-#[apply(schema_enum!)]
-#[derive(Default)]
-pub enum SigningAlg {
-	#[default]
-	#[serde(rename = "RS256")]
-	Rs256,
-	#[serde(rename = "RS384")]
-	Rs384,
-	#[serde(rename = "RS512")]
-	Rs512,
-	#[serde(rename = "PS256")]
-	Ps256,
-	#[serde(rename = "ES256")]
-	Es256,
-	#[serde(rename = "ES384")]
-	Es384,
-}
-
-impl SigningAlg {
-	fn algorithm(self) -> Algorithm {
-		match self {
-			Self::Rs256 => Algorithm::RS256,
-			Self::Rs384 => Algorithm::RS384,
-			Self::Rs512 => Algorithm::RS512,
-			Self::Ps256 => Algorithm::PS256,
-			Self::Es256 => Algorithm::ES256,
-			Self::Es384 => Algorithm::ES384,
-		}
-	}
-
-	fn encoding_key(self, pem: &[u8]) -> anyhow::Result<EncodingKey> {
-		match self {
-			Self::Rs256 | Self::Rs384 | Self::Rs512 | Self::Ps256 => {
-				EncodingKey::from_rsa_pem(pem).context("failed to load RSA signing key")
-			},
-			Self::Es256 | Self::Es384 => {
-				EncodingKey::from_ec_pem(pem).context("failed to load EC signing key")
-			},
-		}
-	}
-}
-
 fn signing_alg_from_proto(alg: i32) -> Result<SigningAlg, ProtoError> {
 	use proto::o_auth_client_auth::private_key_jwt::SigningAlg as ProtoSigningAlg;
 
@@ -645,10 +493,14 @@ pub(super) fn sign_client_assertion(
 		exp: now + CLIENT_ASSERTION_LIFETIME.as_secs(),
 	};
 
-	let mut header = Header::new(private_key.alg.algorithm());
-	header.kid = private_key.kid.clone();
-	header.x5c = private_key.x5c.clone();
-	header.x5t_s256 = private_key.x5t_s256.clone();
-	jsonwebtoken::encode(&header, &claims, &private_key.signing_key.0)
+	let header = signing_header(
+		private_key.alg,
+		private_key.kid.clone(),
+		private_key.x5c.clone(),
+		private_key.x5t_s256.clone(),
+	);
+	private_key
+		.signing_key
+		.encode(&header, &claims)
 		.context("failed to sign client assertion")
 }

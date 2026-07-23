@@ -864,7 +864,7 @@ fn private_key_jwt_rejects_invalid_certificate_in_chain() {
 	})
 	.expect_err("every x5c entry must be a valid X.509 certificate");
 	assert!(
-		err.contains("failed to parse oauth private_key_jwt certificate"),
+		err.contains("failed to parse JWT signing certificate"),
 		"got: {err}"
 	);
 }
