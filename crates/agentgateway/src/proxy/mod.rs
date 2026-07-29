@@ -64,6 +64,7 @@ impl ProxyResponse {
 			ProxyError::McpJwtAuthenticationFailure(_, _) => ProxyResponseReason::JwtAuth,
 			ProxyError::BasicAuthenticationFailure(_) => ProxyResponseReason::BasicAuth,
 			ProxyError::APIKeyAuthenticationFailure(_) => ProxyResponseReason::APIKeyAuth,
+			ProxyError::OAuthSubjectRejected { .. } => ProxyResponseReason::OAuthAuth,
 			ProxyError::ExternalAuthorizationFailed(_) => ProxyResponseReason::ExtAuth,
 			ProxyError::MCP(_) => ProxyResponseReason::MCP,
 			ProxyError::AuthorizationFailed | ProxyError::CsrfValidationFailed => {
@@ -111,6 +112,8 @@ pub enum ProxyResponseReason {
 	BasicAuth,
 	/// API Key authentication failed
 	APIKeyAuth,
+	/// OAuth subject authentication failed
+	OAuthAuth,
 	/// External Authorization failed
 	ExtAuth,
 	/// Authorization failed
@@ -216,6 +219,8 @@ pub enum ProxyError {
 	},
 	#[error("invalid request")]
 	InvalidRequest,
+	#[error("oauth subject token rejected")]
+	OAuthSubjectRejected { bearer_challenge: bool },
 	#[error("method not allowed")]
 	MethodNotAllowed,
 	#[error("request upgrade failed, backend tried {1:?} but {0:?} was requested")]
@@ -256,6 +261,7 @@ impl ProxyError {
 			// Should it be 4xx?
 			ProxyError::FilterError(_) => StatusCode::INTERNAL_SERVER_ERROR,
 			ProxyError::InvalidRequest => StatusCode::BAD_REQUEST,
+			ProxyError::OAuthSubjectRejected { .. } => StatusCode::UNAUTHORIZED,
 			ProxyError::MethodNotAllowed => StatusCode::METHOD_NOT_ALLOWED,
 
 			ProxyError::JwtAuthenticationFailure(_) => StatusCode::UNAUTHORIZED,
@@ -338,6 +344,18 @@ impl ProxyError {
 		let mut rb = ::http::Response::builder().status(code);
 
 		// Apply per-error headers
+		if matches!(
+			self,
+			ProxyError::OAuthSubjectRejected {
+				bearer_challenge: true
+			}
+		) {
+			rb = rb.header(
+				hyper::header::WWW_AUTHENTICATE,
+				r#"Bearer error="invalid_token""#,
+			);
+		}
+
 		if let ProxyError::RateLimitExceeded {
 			limit,
 			remaining,

@@ -334,6 +334,17 @@ impl OAuthTokenExchangeAuth {
 		self.requested_token_type_param()
 	}
 
+	fn subject_uses_authorization_bearer(&self) -> bool {
+		matches!(
+			&self.subject_token.source,
+			AuthorizationLocation::Header {
+				name,
+				prefix: Some(prefix),
+			} if *name == ::http::header::AUTHORIZATION
+				&& prefix.as_str().eq_ignore_ascii_case("Bearer ")
+		)
+	}
+
 	/// Evaluate the configured `additional_params` CEL expressions against the
 	/// incoming request. Fails closed if any expression errors or is not a string.
 	fn evaluate_additional_params(&self, req: &Request) -> anyhow::Result<Vec<(String, String)>> {
@@ -729,7 +740,7 @@ pub(super) async fn apply_token_exchange(
 
 	let access_token = fetch_token(&client, auth, auth.build_exchange_request(req)?)
 		.await
-		.map_err(FetchError::into_proxy_error)?;
+		.map_err(|error| error.into_proxy_error(auth.subject_uses_authorization_bearer()))?;
 
 	let explicit = auth.insert_exchanged_token(req, access_token.expose_secret())?;
 	trace!("attached oauth exchanged access token");
@@ -747,7 +758,7 @@ pub(super) async fn apply_identity_assertion(
 	trace!(audience = %auth.audience(), "performing ID-JAG identity assertion exchange");
 	let access_token = fetch_token(&client, oauth, oauth.build_exchange_request(req)?)
 		.await
-		.map_err(FetchError::into_proxy_error)?;
+		.map_err(|error| error.into_proxy_error(oauth.subject_uses_authorization_bearer()))?;
 
 	let explicit = oauth.insert_exchanged_token(req, access_token.expose_secret())?;
 	trace!("attached ID-JAG exchanged access token");
