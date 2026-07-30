@@ -25,6 +25,7 @@ use crate::types::agent::{BackendTrafficPolicy, SimpleBackendReference};
 
 /// Default token-endpoint timeout, overridable by backend request-timeout policy
 const DEFAULT_TOKEN_ENDPOINT_TIMEOUT: Duration = Duration::from_secs(10);
+const INVALID_GRANT: &str = "invalid_grant";
 
 pub(super) struct TokenEndpointResponse {
 	pub(super) access_token: SecretString,
@@ -37,6 +38,7 @@ pub(in crate::http::auth) enum FetchError {
 	#[error("{source}")]
 	Client {
 		status: ::http::StatusCode,
+		oauth_error: Option<String>,
 		#[source]
 		source: anyhow::Error,
 	},
@@ -45,13 +47,21 @@ pub(in crate::http::auth) enum FetchError {
 }
 
 impl FetchError {
-	pub(in crate::http::auth) fn into_proxy_error(self) -> ProxyError {
+	pub(in crate::http::auth) fn into_proxy_error(self, bearer_challenge: bool) -> ProxyError {
 		match self {
-			FetchError::Client { status, source } => {
+			FetchError::Client {
+				status,
+				oauth_error,
+				source,
+			} => {
 				// The authorization server rejected the request/subject token; surface
 				// as a client error (4xx), not a gateway fault
-				debug!(%status, error = %source, "oauth token exchange rejected by authorization server");
-				ProxyError::InvalidRequest
+				debug!(%status, ?oauth_error, error = %source, "oauth token exchange rejected by authorization server");
+				if oauth_error.as_deref() == Some(INVALID_GRANT) {
+					ProxyError::OAuthSubjectRejected { bearer_challenge }
+				} else {
+					ProxyError::InvalidRequest
+				}
 			},
 			FetchError::Upstream(e) => ProxyError::BackendAuthenticationFailed(e),
 		}
@@ -59,7 +69,7 @@ impl FetchError {
 
 	pub(super) fn chained_exchange(self) -> Self {
 		match self {
-			FetchError::Client { status, source } => {
+			FetchError::Client { status, source, .. } => {
 				debug!(%status, error = %source, "chained oauth token exchange rejected by authorization server");
 				FetchError::Upstream(anyhow!("chained token exchange returned status {status}"))
 			},
@@ -221,8 +231,7 @@ pub(super) async fn request_token(
 		let body = http::read_body_with_limit(resp.into_body(), limit)
 			.await
 			.unwrap_or_default();
-		let body = format_token_endpoint_error_body(&body, 256);
-		return Err(classify_token_endpoint_error(status, body));
+		return Err(classify_token_endpoint_error(status, &body));
 	}
 
 	json::from_body_with_limit::<TokenResponse>(resp.into_body(), limit)
@@ -231,13 +240,23 @@ pub(super) async fn request_token(
 		.into_token(spec.expected_issued_token_type.clone())
 }
 
-fn classify_token_endpoint_error(status: StatusCode, body: String) -> FetchError {
+#[derive(Deserialize)]
+struct TokenEndpointError {
+	error: String,
+}
+
+fn classify_token_endpoint_error(status: StatusCode, body: &[u8]) -> FetchError {
+	let oauth_error = serde_json::from_slice::<TokenEndpointError>(body)
+		.ok()
+		.map(|error| error.error);
+	let body = format_token_endpoint_error_body(body, 256);
 	let detailed = anyhow!("token exchange returned status {status}: {body}");
 	// 401/403 usually mean gateway client auth or token-endpoint policy failed.
 	if status.is_client_error() && !matches!(status, StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN)
 	{
 		FetchError::Client {
 			status,
+			oauth_error,
 			source: detailed,
 		}
 	} else {

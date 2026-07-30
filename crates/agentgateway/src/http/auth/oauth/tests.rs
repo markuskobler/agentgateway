@@ -215,6 +215,23 @@ async fn sent_form_params(mock: &MockServer) -> HashMap<String, String> {
 	form_urlencoded::parse(&req.body).into_owned().collect()
 }
 
+async fn rejected_subject_response(
+	body: &str,
+	source: AuthorizationLocation,
+	mut req: crate::http::Request,
+) -> crate::http::Response {
+	let mock =
+		mock_token_endpoint(ResponseTemplate::new(400).set_body_string(body.to_string())).await;
+	let mut auth = auth(endpoint(&mock));
+	auth.subject_token.source = source;
+	let inputs = backend_info().inputs;
+
+	let error = apply_token_exchange(&inputs, &auth, &mut req)
+		.await
+		.unwrap_err();
+	error.into_response_with_grpc(false)
+}
+
 fn assert_proto_err_contains(proto: proto::OAuthTokenExchange, expected: &str) {
 	let err = OAuthTokenExchangeAuth::from_proto(proto, &mut Diagnostics::default()).unwrap_err();
 	assert!(
@@ -651,6 +668,97 @@ async fn id_jag_chained_exchange_client_error_is_upstream_failure() {
 	assert!(msg.contains("chained token exchange returned status 400"));
 	assert!(!msg.contains("invalid_grant"), "got: {msg}");
 	assert!(!msg.contains("issuer not trusted"), "got: {msg}");
+	let response = err.into_proxy_error(true).into_response_with_grpc(false);
+	assert_eq!(response.status(), ::http::StatusCode::INTERNAL_SERVER_ERROR);
+	assert!(
+		response
+			.headers()
+			.get(::http::header::WWW_AUTHENTICATE)
+			.is_none()
+	);
+}
+
+#[tokio::test]
+async fn invalid_grant_from_bearer_subject_requests_reauthentication() {
+	let req = ::http::Request::builder()
+		.method(::http::Method::GET)
+		.uri("http://upstream/")
+		.header(
+			::http::header::AUTHORIZATION,
+			"Bearer caller-secret-credential",
+		)
+		.body(Body::empty())
+		.unwrap();
+	let response = rejected_subject_response(
+		r#"{"error":"invalid_grant","error_description":"expired credential-token"}"#,
+		AuthorizationLocation::bearer_header(),
+		req,
+	)
+	.await;
+
+	assert_eq!(response.status(), ::http::StatusCode::UNAUTHORIZED);
+	assert_eq!(
+		response.headers().get(::http::header::WWW_AUTHENTICATE),
+		Some(&::http::HeaderValue::from_static(
+			r#"Bearer error="invalid_token""#
+		))
+	);
+	let body = crate::http::read_body_with_limit(response.into_body(), 1024)
+		.await
+		.unwrap();
+	let body = String::from_utf8_lossy(&body);
+	assert!(!body.contains("invalid_grant"), "got: {body}");
+	assert!(!body.contains("expired credential-token"), "got: {body}");
+	assert!(!body.contains("caller-secret-credential"), "got: {body}");
+}
+
+#[tokio::test]
+async fn invalid_grant_from_non_bearer_subject_omits_bearer_challenge() {
+	let source = AuthorizationLocation::Header {
+		name: ::http::HeaderName::from_static("x-subject-token"),
+		prefix: None,
+	};
+	let req = ::http::Request::builder()
+		.method(::http::Method::GET)
+		.uri("http://upstream/")
+		.header("x-subject-token", "subj")
+		.body(Body::empty())
+		.unwrap();
+	let response = rejected_subject_response(
+		r#"{"error":"invalid_grant","error_description":"expired"}"#,
+		source,
+		req,
+	)
+	.await;
+
+	assert_eq!(response.status(), ::http::StatusCode::UNAUTHORIZED);
+	assert!(
+		response
+			.headers()
+			.get(::http::header::WWW_AUTHENTICATE)
+			.is_none()
+	);
+}
+
+#[rstest]
+#[case::invalid_client(r#"{"error":"invalid_client"}"#)]
+#[case::malformed_json(r#"{"error":"invalid_grant""#)]
+#[tokio::test]
+async fn other_token_endpoint_errors_do_not_reject_the_subject(#[case] body: &str) {
+	let response = rejected_subject_response(
+		body,
+		AuthorizationLocation::bearer_header(),
+		incoming_request(),
+	)
+	.await;
+
+	assert_eq!(response.status(), ::http::StatusCode::BAD_REQUEST);
+	assert!(
+		response
+			.headers()
+			.get(::http::header::WWW_AUTHENTICATE)
+			.is_none()
+	);
 }
 
 #[tokio::test]
@@ -1444,7 +1552,15 @@ async fn maps_error_status_by_class(#[case] status: u16, #[case] expect_client_e
 	.unwrap_err();
 	if expect_client_error {
 		assert!(
-			matches!(err, FetchError::Client { status: actual, .. } if actual == ::http::StatusCode::from_u16(status).unwrap()),
+			matches!(
+				err,
+				FetchError::Client {
+					status: actual,
+					ref oauth_error,
+					..
+				} if actual == ::http::StatusCode::from_u16(status).unwrap()
+					&& oauth_error.as_deref() == Some("invalid_grant")
+			),
 			"got: {err:?}"
 		);
 	} else {
