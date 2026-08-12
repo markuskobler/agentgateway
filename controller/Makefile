@@ -610,17 +610,29 @@ CLUSTER_NODE_VERSION ?= v1.36.1@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab
 kind-create: ## Create a KinD cluster
 	kind get clusters | grep $(CLUSTER_NAME) || kind create cluster --name $(CLUSTER_NAME) --image kindest/node:$(CLUSTER_NODE_VERSION)
 
+# github.com intermittently serves 5xx for release/kustomize downloads, which
+# otherwise fails the whole CI run before any test executes.
+RETRIES ?= 5
+define retry
+for attempt in $$(seq $(RETRIES)); do \
+	$(1) && break; \
+	if [ "$$attempt" -eq $(RETRIES) ]; then echo "failed after $(RETRIES) attempts" >&2; exit 1; fi; \
+	echo "attempt $$attempt failed, retrying in $$((attempt * 5))s..." >&2; \
+	sleep $$((attempt * 5)); \
+done
+endef
+
 CONFORMANCE_CHANNEL ?= experimental
 CONFORMANCE_VERSION ?= $(shell go list -m -f '{{.Version}}' sigs.k8s.io/gateway-api)
 .PHONY: gw-api-crds
 gw-api-crds: ## Install the Gateway API CRDs. HACK: Use SSA to avoid the issue with the CRD annotations being too long.
 ifeq ($(shell echo $(CONFORMANCE_VERSION) | grep -q '^v[0-9]' && echo yes),yes)
-	kubectl apply --server-side -f "https://github.com/kubernetes-sigs/gateway-api/releases/download/$(CONFORMANCE_VERSION)/$(CONFORMANCE_CHANNEL)-install.yaml"
+	$(call retry,kubectl apply --server-side -f "https://github.com/kubernetes-sigs/gateway-api/releases/download/$(CONFORMANCE_VERSION)/$(CONFORMANCE_CHANNEL)-install.yaml")
 else
 ifeq ($(CONFORMANCE_CHANNEL), standard)
-	kubectl apply --server-side --kustomize "https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=$(CONFORMANCE_VERSION)"
+	$(call retry,kubectl apply --server-side --kustomize "https://github.com/kubernetes-sigs/gateway-api/config/crd?ref=$(CONFORMANCE_VERSION)")
 else
-	kubectl apply --server-side --kustomize "https://github.com/kubernetes-sigs/gateway-api/config/crd/$(CONFORMANCE_CHANNEL)?ref=$(CONFORMANCE_VERSION)"
+	$(call retry,kubectl apply --server-side --kustomize "https://github.com/kubernetes-sigs/gateway-api/config/crd/$(CONFORMANCE_CHANNEL)?ref=$(CONFORMANCE_VERSION)")
 endif
 endif
 
@@ -630,9 +642,9 @@ GIE_CRD_VERSION ?= $(shell go list -m -f '{{.Version}}' sigs.k8s.io/gateway-api-
 .PHONY: gie-crds
 gie-crds: ## Install the Gateway API Inference Extension CRDs
 ifeq ($(shell echo $(GIE_CRD_VERSION) | grep -q '^v[0-9]' && echo yes),yes)
-	kubectl apply -f "https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/$(GIE_CRD_VERSION)/manifests.yaml"
+	$(call retry,kubectl apply -f "https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/$(GIE_CRD_VERSION)/manifests.yaml")
 else
-	kubectl apply --kustomize "https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd?ref=$(GIE_CRD_VERSION)"
+	$(call retry,kubectl apply --kustomize "https://github.com/kubernetes-sigs/gateway-api-inference-extension/config/crd?ref=$(GIE_CRD_VERSION)")
 endif
 
 # Source the Istio CRDs from the vendored istio.io/istio module so the CRD
