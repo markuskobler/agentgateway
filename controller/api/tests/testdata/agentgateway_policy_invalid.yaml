@@ -1694,3 +1694,76 @@ spec:
         - name: ca-bundle
           kind: Invalid
 ---
+_err: 'delegation and deprecated mayAct cannot both be set'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: oauth-actor-delegation-with-may-act
+spec:
+  backend:
+    auth:
+      oauthTokenExchange:
+        url: https://oauth.example.com/token
+        actorToken:
+          source:
+            header:
+              name: x-actor-token
+          tokenType: Jwt
+          delegation:
+            claim: may_act
+          mayAct: Required
+---
+_err: 'delegation requires tokenType Jwt'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: oauth-actor-delegation-without-jwt
+spec:
+  backend:
+    auth:
+      oauthTokenExchange:
+        url: https://oauth.example.com/token
+        actorToken:
+          source:
+            header:
+              name: x-actor-token
+          tokenType: AccessToken
+          delegation:
+            claim: allowable_actors
+---
+_err: 'claim: Invalid value'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: oauth-actor-empty-delegation-claim
+spec:
+  backend:
+    auth:
+      oauthTokenExchange:
+        url: https://oauth.example.com/token
+        actorToken:
+          source:
+            header:
+              name: x-actor-token
+          tokenType: Jwt
+          delegation:
+            claim: ""
+---
+_err: 'claim: Too long'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: oauth-actor-long-delegation-claim
+spec:
+  backend:
+    auth:
+      oauthTokenExchange:
+        url: https://oauth.example.com/token
+        actorToken:
+          source:
+            header:
+              name: x-actor-token
+          tokenType: Jwt
+          delegation:
+            claim: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+---

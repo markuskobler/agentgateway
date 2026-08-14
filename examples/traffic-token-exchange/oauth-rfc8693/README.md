@@ -99,6 +99,11 @@ Edit `config.yaml` and re-`curl` (hot-reloaded):
 - **Delegation** — add `actorToken: { source: { header: { name: x-actor-token } }, tokenType: ... }`
   to emit `actor_token` / `actor_token_type` (RFC 8693 delegation; the source
   must be set explicitly).
+- **Local delegation authorization** — for JWT actor tokens, add
+  `delegation: { claim: allowable_actors }` under `actorToken` to require a
+  matching non-empty authorization object in that exact top-level subject-token
+  claim before contacting the token endpoint. The deprecated
+  `enforceMayAct: true` form remains accepted and selects `may_act`.
 - **Custom subject source** — `subjectToken: { source: { ... }, tokenType: ... }`
   to read the subject from a non-default header, query param, cookie, or CEL
   expression.

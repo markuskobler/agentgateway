@@ -1823,6 +1823,8 @@ type OAuthTokenSpec struct {
 	TokenType *OAuthTokenType `json:"tokenType,omitempty"`
 }
 
+// +kubebuilder:validation:XValidation:rule="!has(self.delegation) || !has(self.mayAct)",message="delegation and deprecated mayAct cannot both be set"
+// +kubebuilder:validation:XValidation:rule="!has(self.delegation) || (has(self.tokenType) && self.tokenType == 'Jwt')",message="delegation requires tokenType Jwt"
 // +kubebuilder:validation:XValidation:rule="!has(self.mayAct) || self.mayAct != 'Required' || (has(self.tokenType) && self.tokenType == 'Jwt')",message="mayAct Required requires tokenType Jwt"
 type OAuthActorToken struct {
 	// Where to read the actor token. Actor tokens have no default source.
@@ -1834,9 +1836,20 @@ type OAuthActorToken struct {
 	// +optional
 	TokenType *OAuthTokenType `json:"tokenType,omitempty"`
 
-	// may_act claim validation mode. When omitted, may_act is not enforced.
+	// Delegation configures local actor-delegation authorization.
+	// +optional
+	Delegation *OAuthActorTokenDelegation `json:"delegation,omitempty"`
+
+	// Deprecated: use Delegation with claim may_act.
 	// +optional
 	MayAct *OAuthMayActValidationMode `json:"mayAct,omitempty"`
+}
+
+type OAuthActorTokenDelegation struct {
+	// Claim is the exact top-level subject-token claim containing the
+	// delegation authorization object.
+	// +required
+	Claim ShortString `json:"claim"`
 }
 
 // OAuthTokenType is an RFC 8693 token type. The built-in values below are

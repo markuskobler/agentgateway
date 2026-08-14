@@ -1201,10 +1201,9 @@ func BuildOAuthTokenExchange(ctx PolicyCtx, auth *agentgateway.OAuthTokenExchang
 	if auth.RequestedTokenType != nil && *auth.RequestedTokenType == agentgateway.OAuthTokenTypeIDJAG {
 		errs = append(errs, errors.New("oauth requestedTokenType IdJag is only supported by crossAppAccess"))
 	}
-	if auth.ActorToken != nil && ptr.OrDefault(auth.ActorToken.MayAct, "") == agentgateway.OAuthMayActValidationModeRequired && ptr.OrDefault(auth.ActorToken.TokenType, "") != agentgateway.OAuthTokenTypeJWT {
+	if requiresMayAct(auth.ActorToken) && ptr.OrDefault(auth.ActorToken.TokenType, "") != agentgateway.OAuthTokenTypeJWT {
 		errs = append(errs, errors.New("oauth actorToken mayAct Required requires tokenType Jwt"))
 	}
-
 	return oauth, errors.Join(errs...)
 }
 
@@ -1240,13 +1239,31 @@ func translateOAuthActorToken(actor *agentgateway.OAuthActorToken) *api.OAuthTok
 		return nil
 	}
 	res := &api.OAuthTokenExchange_ActorToken{
-		Source:        translateAuthorizationExtractionLocation(&actor.Source),
-		EnforceMayAct: ptr.OrDefault(actor.MayAct, "") == agentgateway.OAuthMayActValidationModeRequired,
+		Source: translateAuthorizationExtractionLocation(&actor.Source),
+	}
+	if actor.Delegation != nil {
+		res.Delegation = oauthActorTokenDelegation(actor.Delegation.Claim)
+	} else if requiresMayAct(actor) {
+		res.Delegation = oauthActorTokenDelegation("may_act")
 	}
 	if actor.TokenType != nil {
 		res.TokenType = translateOAuthTokenType(*actor.TokenType)
 	}
 	return res
+}
+
+func requiresMayAct(actor *agentgateway.OAuthActorToken) bool {
+	if actor == nil {
+		return false
+	}
+	//nolint:staticcheck // Deprecated field remains supported for backward compatibility
+	return ptr.OrDefault(actor.MayAct, "") == agentgateway.OAuthMayActValidationModeRequired
+}
+
+func oauthActorTokenDelegation(claim string) *api.OAuthTokenExchange_Delegation {
+	return &api.OAuthTokenExchange_Delegation{
+		Rule: &api.OAuthTokenExchange_Delegation_Claim{Claim: claim},
+	}
 }
 
 func buildOAuthClientAuth(ctx PolicyCtx, auth *agentgateway.OAuthClientAuth, namespace string) (*api.OAuthClientAuth, error) {

@@ -5428,10 +5428,23 @@ spec:
                                             description: RFC 8693 delegation actor
                                               token. TokenExchange grant only.
                                             properties:
+                                              delegation:
+                                                description: Delegation configures
+                                                  local actor-delegation authorization.
+                                                properties:
+                                                  claim:
+                                                    description: |-
+                                                      Claim is the exact top-level subject-token claim containing the
+                                                      delegation authorization object.
+                                                    maxLength: 256
+                                                    minLength: 1
+                                                    type: string
+                                                required:
+                                                - claim
+                                                type: object
                                               mayAct:
-                                                description: may_act claim validation
-                                                  mode. When omitted, may_act is not
-                                                  enforced.
+                                                description: 'Deprecated: use Delegation
+                                                  with claim may_act.'
                                                 enum:
                                                 - Required
                                                 type: string
@@ -5499,6 +5512,13 @@ spec:
                                             - source
                                             type: object
                                             x-kubernetes-validations:
+                                            - message: delegation and deprecated mayAct
+                                                cannot both be set
+                                              rule: '!has(self.delegation) || !has(self.mayAct)'
+                                            - message: delegation requires tokenType
+                                                Jwt
+                                              rule: '!has(self.delegation) || (has(self.tokenType)
+                                                && self.tokenType == ''Jwt'')'
                                             - message: mayAct Required requires tokenType
                                                 Jwt
                                               rule: '!has(self.mayAct) || self.mayAct
@@ -8668,10 +8688,23 @@ spec:
                                           description: RFC 8693 delegation actor token.
                                             TokenExchange grant only.
                                           properties:
+                                            delegation:
+                                              description: Delegation configures local
+                                                actor-delegation authorization.
+                                              properties:
+                                                claim:
+                                                  description: |-
+                                                    Claim is the exact top-level subject-token claim containing the
+                                                    delegation authorization object.
+                                                  maxLength: 256
+                                                  minLength: 1
+                                                  type: string
+                                              required:
+                                              - claim
+                                              type: object
                                             mayAct:
-                                              description: may_act claim validation
-                                                mode. When omitted, may_act is not
-                                                enforced.
+                                              description: 'Deprecated: use Delegation
+                                                with claim may_act.'
                                               enum:
                                               - Required
                                               type: string
@@ -8739,6 +8772,13 @@ spec:
                                           - source
                                           type: object
                                           x-kubernetes-validations:
+                                          - message: delegation and deprecated mayAct
+                                              cannot both be set
+                                            rule: '!has(self.delegation) || !has(self.mayAct)'
+                                          - message: delegation requires tokenType
+                                              Jwt
+                                            rule: '!has(self.delegation) || (has(self.tokenType)
+                                              && self.tokenType == ''Jwt'')'
                                           - message: mayAct Required requires tokenType
                                               Jwt
                                             rule: '!has(self.mayAct) || self.mayAct
@@ -13987,9 +14027,23 @@ spec:
                             description: RFC 8693 delegation actor token. TokenExchange
                               grant only.
                             properties:
+                              delegation:
+                                description: Delegation configures local actor-delegation
+                                  authorization.
+                                properties:
+                                  claim:
+                                    description: |-
+                                      Claim is the exact top-level subject-token claim containing the
+                                      delegation authorization object.
+                                    maxLength: 256
+                                    minLength: 1
+                                    type: string
+                                required:
+                                - claim
+                                type: object
                               mayAct:
-                                description: may_act claim validation mode. When omitted,
-                                  may_act is not enforced.
+                                description: 'Deprecated: use Delegation with claim
+                                  may_act.'
                                 enum:
                                 - Required
                                 type: string
@@ -14053,6 +14107,12 @@ spec:
                             - source
                             type: object
                             x-kubernetes-validations:
+                            - message: delegation and deprecated mayAct cannot both
+                                be set
+                              rule: '!has(self.delegation) || !has(self.mayAct)'
+                            - message: delegation requires tokenType Jwt
+                              rule: '!has(self.delegation) || (has(self.tokenType)
+                                && self.tokenType == ''Jwt'')'
                             - message: mayAct Required requires tokenType Jwt
                               rule: '!has(self.mayAct) || self.mayAct != ''Required''
                                 || (has(self.tokenType) && self.tokenType == ''Jwt'')'

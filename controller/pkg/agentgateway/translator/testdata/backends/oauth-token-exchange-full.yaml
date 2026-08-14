@@ -80,7 +80,8 @@ output:
       - auth:
           oauthTokenExchange:
             actorToken:
-              enforceMayAct: true
+              delegation:
+                claim: may_act
               source:
                 header:
                   name: X-Actor-Token

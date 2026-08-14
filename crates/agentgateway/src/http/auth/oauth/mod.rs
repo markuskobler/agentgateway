@@ -484,8 +484,32 @@ pub struct TokenSpec {
 	token_type: OAuthTokenType,
 }
 
-#[apply(schema!)]
+#[serde_with::serde_as]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ActorTokenSpec {
+	/// Where the actor token is read from in the incoming request. The CEL
+	/// `expression` source is permitted (extraction only). Unlike subject tokens,
+	/// actor tokens have no default source.
+	source: AuthorizationLocation,
+	/// RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent
+	token_type: OAuthTokenType,
+	/// Local actor-delegation authorization performed before exchanging.
+	#[serde(skip_serializing_if = "Option::is_none")]
+	delegation: Option<DelegationSpec>,
+}
+
+#[apply(schema!)]
+pub struct DelegationSpec {
+	/// Exact top-level subject-token claim containing the delegation object.
+	#[cfg_attr(feature = "schema", schemars(length(min = 1)))]
+	claim: String,
+}
+
+#[derive(Debug, Clone, serde::Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct ActorTokenConfig {
 	/// Where the actor token is read from in the incoming request. The CEL
 	/// `expression` source is permitted (extraction only). Unlike subject tokens,
 	/// actor tokens have no default source.
@@ -494,16 +518,70 @@ pub struct ActorTokenSpec {
 	#[serde(default)]
 	#[cfg_attr(feature = "schema", schemars(with = "String"))]
 	token_type: OAuthTokenType,
-	/// Enforce that the subject's `may_act` claim authorizes the actor before exchanging.
+	/// Local actor-delegation authorization performed before exchanging.
 	#[serde(default)]
-	enforce_may_act: bool,
+	delegation: Option<DelegationSpec>,
+	/// Deprecated: use `delegation.claim` with claim `may_act`.
+	#[serde(default)]
+	enforce_may_act: Option<bool>,
+}
+
+#[cfg(feature = "schema")]
+impl schemars::JsonSchema for ActorTokenSpec {
+	fn schema_name() -> std::borrow::Cow<'static, str> {
+		"ActorTokenSpec".into()
+	}
+
+	fn json_schema(generator: &mut schemars::SchemaGenerator) -> schemars::Schema {
+		ActorTokenConfig::json_schema(generator)
+	}
+}
+
+impl<'de> serde::Deserialize<'de> for ActorTokenSpec {
+	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+	where
+		D: serde::Deserializer<'de>,
+	{
+		let ActorTokenConfig {
+			source,
+			token_type,
+			delegation,
+			enforce_may_act,
+		} = ActorTokenConfig::deserialize(deserializer)?;
+		if delegation.is_some() && enforce_may_act.is_some() {
+			return Err(serde::de::Error::custom(
+				"actorToken.delegation and deprecated actorToken.enforceMayAct cannot both be set",
+			));
+		}
+		let delegation = match enforce_may_act {
+			Some(enforce) => {
+				warn!("actorToken.enforceMayAct is deprecated; use actorToken.delegation.claim");
+				enforce.then(|| DelegationSpec {
+					claim: "may_act".to_string(),
+				})
+			},
+			None => delegation,
+		};
+		Ok(Self {
+			source,
+			token_type,
+			delegation,
+		})
+	}
 }
 
 impl ActorTokenSpec {
 	fn validate_load(&self) -> Result<(), String> {
-		if self.enforce_may_act && self.token_type != OAuthTokenType::Jwt {
+		if self
+			.delegation
+			.as_ref()
+			.is_some_and(|delegation| delegation.claim.is_empty())
+		{
+			return Err("actor_token.delegation.claim must not be empty".into());
+		}
+		if self.delegation.is_some() && self.token_type != OAuthTokenType::Jwt {
 			return Err(format!(
-				"actor_token.enforce_may_act requires actor_token.token_type {TOKEN_TYPE_JWT}"
+				"actor_token.delegation requires actor_token.token_type {TOKEN_TYPE_JWT}"
 			));
 		}
 		Ok(())
@@ -608,6 +686,17 @@ fn actor_token_from_proto(
 			"oauth token exchange actor_token.source must be set".into(),
 		));
 	}
+	let delegation = spec
+		.delegation
+		.map(|delegation| match delegation.rule {
+			Some(proto::o_auth_token_exchange::delegation::Rule::Claim(claim)) if !claim.is_empty() => {
+				Ok(DelegationSpec { claim })
+			},
+			_ => Err(ProtoError::Generic(
+				"oauth token exchange actor_token.delegation.claim must not be empty".into(),
+			)),
+		})
+		.transpose()?;
 	Ok(ActorTokenSpec {
 		source: authorization_location(
 			diagnostics,
@@ -620,7 +709,7 @@ fn actor_token_from_proto(
 		} else {
 			proto_token_type("actor_token.token_type", &spec.token_type)?
 		},
-		enforce_may_act: spec.enforce_may_act,
+		delegation,
 	})
 }
 
@@ -778,54 +867,69 @@ fn actor_token_from_request(
 			debug!("oauth token exchange actor token missing");
 			ProxyError::InvalidRequest
 		})?;
-	if spec.enforce_may_act && !may_act_authorizes(req, subject_token, &token) {
-		debug!("oauth token exchange actor is not authorized by the subject's may_act claim");
+	if let Some(delegation) = &spec.delegation
+		&& !delegation_authorizes(req, subject_token, &token, &delegation.claim)
+	{
+		debug!(
+			claim = delegation.claim,
+			"oauth token exchange delegation claim does not authorize the actor"
+		);
 		return Err(ProxyError::AuthorizationFailed);
 	}
 	Ok((SecretString::from(token), spec.token_type.clone()))
 }
 
-fn may_act_authorizes(req: &Request, subject_token: &str, actor_token: &str) -> bool {
-	let Some(may_act) = subject_may_act_claim(req, subject_token) else {
+fn delegation_authorizes(
+	req: &Request,
+	subject_token: &str,
+	actor_token: &str,
+	claim: &str,
+) -> bool {
+	let Some(delegation) = subject_delegation_claim(req, subject_token, claim) else {
 		return false;
 	};
-	if may_act.is_empty() {
-		// vacuously true otherwise: `all()` over an empty map would authorize any actor.
-		return false;
-	}
 	let Some(actor_claims) = decode_unverified_jwt_claims::<Map<String, Value>>(actor_token) else {
+		debug!(claim, "oauth token exchange actor token is not JWT-shaped");
 		return false;
 	};
-	may_act
+	delegation
 		.iter()
 		.all(|(k, expected)| claim_satisfies(actor_claims.get(k), expected))
 }
 
-fn subject_may_act_claim<'a>(
+fn subject_delegation_claim<'a>(
 	req: &'a Request,
 	subject_token: &str,
+	claim: &str,
 ) -> Option<Cow<'a, Map<String, Value>>> {
 	let validated_claims = req
 		.extensions()
 		.get::<Claims>()
 		.filter(|claims| claims.jwt.expose_secret() == subject_token);
 	if let Some(claims) = validated_claims {
-		return may_act_claim_from_value(claims.inner.get("may_act")).map(Cow::Borrowed);
+		return delegation_claim_from_value(claims.inner.get(claim), claim).map(Cow::Borrowed);
 	}
 
-	#[derive(serde::Deserialize)]
-	struct SubjectMayActClaim {
-		may_act: Option<Value>,
-	}
-	let claims = decode_unverified_jwt_claims::<SubjectMayActClaim>(subject_token)?;
-	may_act_claim_from_value(claims.may_act.as_ref()).map(|may_act| Cow::Owned(may_act.clone()))
+	let claims = decode_unverified_jwt_claims::<Map<String, Value>>(subject_token)?;
+	delegation_claim_from_value(claims.get(claim), claim)
+		.map(|delegation| Cow::Owned(delegation.clone()))
 }
 
-fn may_act_claim_from_value(value: Option<&Value>) -> Option<&Map<String, Value>> {
-	match value? {
-		Value::Object(may_act) => Some(may_act),
-		_ => {
-			debug!("oauth token exchange subject may_act claim must be an object");
+fn delegation_claim_from_value<'a>(
+	value: Option<&'a Value>,
+	claim: &str,
+) -> Option<&'a Map<String, Value>> {
+	match value {
+		None => {
+			debug!(claim, "oauth token exchange delegation claim is absent");
+			None
+		},
+		Some(Value::Object(delegation)) if !delegation.is_empty() => Some(delegation),
+		Some(_) => {
+			debug!(
+				claim,
+				"oauth token exchange delegation claim must be a non-empty object"
+			);
 			None
 		},
 	}

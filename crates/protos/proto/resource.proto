@@ -2002,8 +2002,18 @@ message OAuthTokenExchange {
     // Empty defaults to access_token, and actor_token_type is still sent.
     string token_type = 2;
 
-    // Enforce that the subject's `may_act` claim authorizes the actor before exchanging.
-    bool enforce_may_act = 3;
+    reserved 3;
+    reserved "enforce_may_act";
+
+    // Local actor-delegation authorization performed before exchanging.
+    Delegation delegation = 4;
+  }
+
+  message Delegation {
+    oneof rule {
+      // Exact top-level subject-token claim containing the delegation object.
+      string claim = 1;
+    }
   }
 
   enum GrantType {

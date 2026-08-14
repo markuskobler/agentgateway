@@ -3821,15 +3821,44 @@
           "type": "string",
           "default": "urn:ietf:params:oauth:token-type:access_token"
         },
+        "delegation": {
+          "description": "Local actor-delegation authorization performed before exchanging.",
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DelegationSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "enforceMayAct": {
-          "description": "Enforce that the subject's `may_act` claim authorizes the actor before exchanging.",
-          "type": "boolean",
-          "default": false
+          "description": "Deprecated: use `delegation.claim` with claim `may_act`.",
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null
         }
       },
       "additionalProperties": false,
       "required": [
         "source"
+      ]
+    },
+    "DelegationSpec": {
+      "type": "object",
+      "properties": {
+        "claim": {
+          "description": "Exact top-level subject-token claim containing the delegation object.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false,
+      "required": [
+        "claim"
       ]
     },
     "OAuthClientAuth": {

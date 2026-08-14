@@ -183,9 +183,16 @@ fn claims_with_may_act(
 	subject_token: &str,
 	may_act: serde_json::Value,
 ) -> crate::http::jwt::Claims {
-	let serde_json::Value::Object(inner) = json!({"may_act": may_act}) else {
-		unreachable!()
-	};
+	claims_with_delegation(subject_token, "may_act", may_act)
+}
+
+fn claims_with_delegation(
+	subject_token: &str,
+	claim: &str,
+	delegation: serde_json::Value,
+) -> crate::http::jwt::Claims {
+	let mut inner = serde_json::Map::new();
+	inner.insert(claim.to_string(), delegation);
 	crate::http::jwt::Claims {
 		inner,
 		jwt: subject_token.to_string().into(),
@@ -293,6 +300,86 @@ fn deserializes_custom_subject_token_type_uri() {
 		auth.subject_token.token_type.as_str(),
 		"urn:company:domain:human"
 	);
+}
+
+#[test]
+fn deserializes_preferred_actor_delegation() {
+	let actor: ActorTokenSpec = serde_json::from_value(json!({
+		"source": {"header": {"name": "x-actor-token"}},
+		"tokenType": TOKEN_TYPE_JWT,
+		"delegation": {"claim": "allowable_actors"}
+	}))
+	.unwrap();
+
+	assert_eq!(actor.delegation.unwrap().claim, "allowable_actors");
+}
+
+#[test]
+fn deprecated_local_actor_delegation_normalizes_to_may_act() {
+	let actor: ActorTokenSpec = serde_json::from_value(json!({
+		"source": {"header": {"name": "x-actor-token"}},
+		"tokenType": TOKEN_TYPE_JWT,
+		"enforceMayAct": true
+	}))
+	.unwrap();
+
+	assert_eq!(actor.delegation.unwrap().claim, "may_act");
+}
+
+#[test]
+fn deprecated_local_enforce_may_act_false_disables_delegation() {
+	let actor: ActorTokenSpec = serde_json::from_value(json!({
+		"source": {"header": {"name": "x-actor-token"}},
+		"tokenType": TOKEN_TYPE_JWT,
+		"enforceMayAct": false
+	}))
+	.unwrap();
+
+	assert!(actor.delegation.is_none());
+}
+
+#[test]
+fn local_actor_delegation_rejects_preferred_and_deprecated_fields() {
+	let err = serde_json::from_value::<ActorTokenSpec>(json!({
+		"source": {"header": {"name": "x-actor-token"}},
+		"tokenType": TOKEN_TYPE_JWT,
+		"delegation": {"claim": "may_act"},
+		"enforceMayAct": true
+	}))
+	.unwrap_err();
+
+	assert!(err.to_string().contains("cannot both be set"));
+}
+
+#[test]
+fn local_actor_delegation_rejects_empty_claim() {
+	let actor: ActorTokenSpec = serde_json::from_value(json!({
+		"source": {"header": {"name": "x-actor-token"}},
+		"tokenType": TOKEN_TYPE_JWT,
+		"delegation": {"claim": ""}
+	}))
+	.unwrap();
+
+	assert!(
+		actor
+			.validate_load()
+			.unwrap_err()
+			.contains("must not be empty")
+	);
+}
+
+#[test]
+fn local_actor_delegation_accepts_long_claim_name() {
+	let claim = "a".repeat(1024);
+	let actor: ActorTokenSpec = serde_json::from_value(json!({
+		"source": {"header": {"name": "x-actor-token"}},
+		"tokenType": TOKEN_TYPE_JWT,
+		"delegation": {"claim": claim}
+	}))
+	.unwrap();
+
+	actor.validate_load().unwrap();
+	assert_eq!(actor.delegation.unwrap().claim.len(), 1024);
 }
 
 #[tokio::test]
@@ -1625,13 +1712,13 @@ fn assert_load_err(auth: OAuthTokenExchangeAuth, expected: &str) {
 		actor_token: Some(ActorTokenSpec {
 			source: AuthorizationLocation::default(),
 			token_type: OAuthTokenType::default(),
-			enforce_may_act: false,
+			delegation: None,
 		}),
 		..base_auth(Arc::new(SimpleBackendReference::Invalid))
 	},
 	"actor_token"
 )]
-#[case::enforce_may_act_non_jwt_actor_token(
+#[case::delegation_non_jwt_actor_token(
 	OAuthTokenExchangeAuth {
 		actor_token: Some(ActorTokenSpec {
 			source: AuthorizationLocation::Header {
@@ -1639,7 +1726,7 @@ fn assert_load_err(auth: OAuthTokenExchangeAuth, expected: &str) {
 				prefix: None,
 			},
 			token_type: OAuthTokenType::AccessToken,
-			enforce_may_act: true,
+			delegation: Some(DelegationSpec { claim: "may_act".into() }),
 		}),
 		..base_auth(Arc::new(SimpleBackendReference::Invalid))
 	},
@@ -1917,7 +2004,45 @@ fn private_key_jwt_serialization_omits_unset_optional_headers() {
 	},
 	"actor_token.source"
 )]
-#[case::enforce_may_act_non_jwt_actor_token(
+#[case::delegation_without_rule(
+	proto::OAuthTokenExchange {
+		actor_token: Some(proto::o_auth_token_exchange::ActorToken {
+			source: Some(proto::AuthorizationLocation {
+				kind: Some(proto::authorization_location::Kind::Header(
+					proto::authorization_location::Header {
+						name: "x-actor-token".to_string(),
+						prefix: None,
+					},
+				)),
+			}),
+			token_type: TOKEN_TYPE_JWT.to_string(),
+			delegation: Some(proto::o_auth_token_exchange::Delegation::default()),
+		}),
+		..Default::default()
+	},
+	"delegation.claim"
+)]
+#[case::delegation_with_empty_claim(
+	proto::OAuthTokenExchange {
+		actor_token: Some(proto::o_auth_token_exchange::ActorToken {
+			source: Some(proto::AuthorizationLocation {
+				kind: Some(proto::authorization_location::Kind::Header(
+					proto::authorization_location::Header {
+						name: "x-actor-token".to_string(),
+						prefix: None,
+					},
+				)),
+			}),
+			token_type: TOKEN_TYPE_JWT.to_string(),
+			delegation: Some(proto::o_auth_token_exchange::Delegation {
+				rule: Some(proto::o_auth_token_exchange::delegation::Rule::Claim(String::new())),
+			}),
+		}),
+		..Default::default()
+	},
+	"delegation.claim"
+)]
+#[case::delegation_non_jwt_actor_token(
 	proto::OAuthTokenExchange {
 		actor_token: Some(proto::o_auth_token_exchange::ActorToken {
 			source: Some(proto::AuthorizationLocation {
@@ -1929,7 +2054,11 @@ fn private_key_jwt_serialization_omits_unset_optional_headers() {
 				)),
 			}),
 			token_type: TOKEN_TYPE_ACCESS.to_string(),
-			enforce_may_act: true,
+			delegation: Some(proto::o_auth_token_exchange::Delegation {
+				rule: Some(proto::o_auth_token_exchange::delegation::Rule::Claim(
+					"may_act".to_string(),
+				)),
+			}),
 		}),
 		..Default::default()
 	},
@@ -2071,14 +2200,16 @@ async fn sends_actor_token() {
 	assert_eq!(pairs["actor_token_type"], TOKEN_TYPE_JWT);
 }
 
-fn actor_token_with_header(enforce_may_act: bool) -> ActorTokenSpec {
+fn actor_token_with_header(delegation_claim: Option<&str>) -> ActorTokenSpec {
 	ActorTokenSpec {
 		source: AuthorizationLocation::Header {
 			name: ::http::HeaderName::from_static("x-actor-token"),
 			prefix: None,
 		},
 		token_type: OAuthTokenType::Jwt,
-		enforce_may_act,
+		delegation: delegation_claim.map(|claim| DelegationSpec {
+			claim: claim.to_string(),
+		}),
 	}
 }
 
@@ -2090,7 +2221,7 @@ fn actor_token_does_not_fallback_to_subject_claims() {
 		.extensions_mut()
 		.insert(claims_with_may_act(subject, json!({"sub": "actor-a"})));
 
-	let err = actor_token_from_request(&actor_token_with_header(false), &req, subject).unwrap_err();
+	let err = actor_token_from_request(&actor_token_with_header(None), &req, subject).unwrap_err();
 	assert!(matches!(err, ProxyError::InvalidRequest));
 }
 
@@ -2104,9 +2235,12 @@ fn request_with_actor_header(subject: &str, actor: &str) -> crate::http::Request
 		.unwrap()
 }
 
-fn backend_auth_requiring_may_act(mock: &MockServer) -> crate::http::auth::BackendAuth {
+fn backend_auth_requiring_delegation(
+	mock: &MockServer,
+	claim: &str,
+) -> crate::http::auth::BackendAuth {
 	let a = OAuthTokenExchangeAuth {
-		actor_token: Some(actor_token_with_header(true)),
+		actor_token: Some(actor_token_with_header(Some(claim))),
 		..auth(endpoint(mock))
 	};
 	crate::http::auth::BackendAuth::new(crate::http::auth::BackendAuthKind::OAuthTokenExchange(
@@ -2126,35 +2260,69 @@ fn actor_token_authorization_from_proto() {
 					},
 				)),
 			}),
-			enforce_may_act: true,
+			delegation: Some(proto::o_auth_token_exchange::Delegation {
+				rule: Some(proto::o_auth_token_exchange::delegation::Rule::Claim(
+					"allowable_actors".to_string(),
+				)),
+			}),
 			token_type: TOKEN_TYPE_JWT.to_string(),
 		}),
 		..Default::default()
 	};
 	let auth = OAuthTokenExchangeAuth::from_proto(proto, &mut Diagnostics::default()).unwrap();
-	assert!(auth.actor_token.unwrap().enforce_may_act);
+	assert_eq!(
+		auth.actor_token.unwrap().delegation.unwrap().claim,
+		"allowable_actors"
+	);
+}
+
+#[test]
+fn actor_token_without_proto_delegation_disables_local_gate() {
+	let proto = proto::OAuthTokenExchange {
+		actor_token: Some(proto::o_auth_token_exchange::ActorToken {
+			source: Some(proto::AuthorizationLocation {
+				kind: Some(proto::authorization_location::Kind::Header(
+					proto::authorization_location::Header {
+						name: "x-actor-token".to_string(),
+						prefix: None,
+					},
+				)),
+			}),
+			token_type: TOKEN_TYPE_JWT.to_string(),
+			delegation: None,
+		}),
+		..Default::default()
+	};
+	let auth = OAuthTokenExchangeAuth::from_proto(proto, &mut Diagnostics::default()).unwrap();
+
+	assert!(auth.actor_token.unwrap().delegation.is_none());
 }
 
 #[rstest]
 #[case::exact_match(json!({"sub": "actor-a"}), "actor-a", true)]
 #[case::actor_in_allowed_list(json!({"sub": ["actor-a", "actor-b"]}), "actor-b", true)]
 #[case::actor_not_allowed(json!({"sub": "actor-a"}), "actor-b", false)]
-#[case::non_object_may_act_claim(json!("actor-a"), "actor-a", false)]
+#[case::scalar_claim(json!("actor-a"), "actor-a", false)]
+#[case::array_claim(json!(["actor-a"]), "actor-a", false)]
+#[case::null_claim(json!(null), "actor-a", false)]
+#[case::empty_object(json!({}), "actor-a", false)]
 #[tokio::test]
-async fn enforce_may_act_checks_validated_subject_claims(
-	#[case] may_act: serde_json::Value,
+async fn custom_delegation_checks_validated_subject_claims(
+	#[case] delegation: serde_json::Value,
 	#[case] actor_sub: &str,
 	#[case] expect_authorized: bool,
 ) {
 	let mock = mock_token_endpoint(ResponseTemplate::new(200).set_body_json(token_body())).await;
-	let backend_auth = backend_auth_requiring_may_act(&mock);
+	let backend_auth = backend_auth_requiring_delegation(&mock, "allowable_actors");
 
 	let subject = jwt_with_claims(&json!({"sub": "subject-a"}));
 	let actor = jwt_with_claims(&json!({"sub": actor_sub}));
 	let mut req = request_with_actor_header(&subject, &actor);
-	req
-		.extensions_mut()
-		.insert(claims_with_may_act(&subject, may_act));
+	req.extensions_mut().insert(claims_with_delegation(
+		&subject,
+		"allowable_actors",
+		delegation,
+	));
 
 	let result =
 		crate::http::auth::apply_backend_auth(&backend_info(), &backend_auth, &mut req).await;
@@ -2170,15 +2338,57 @@ async fn enforce_may_act_checks_validated_subject_claims(
 }
 
 #[tokio::test]
-async fn enforce_may_act_ignores_validated_claims_for_a_different_subject_token() {
+async fn custom_delegation_requires_all_fields_to_match() {
 	let mock = mock_token_endpoint(ResponseTemplate::new(200).set_body_json(token_body())).await;
-	let backend_auth = backend_auth_requiring_may_act(&mock);
+	let backend_auth = backend_auth_requiring_delegation(&mock, "allowable_actors");
+	let subject = jwt_with_claims(&json!({"sub": "subject-a"}));
+	let actor = jwt_with_claims(&json!({"sub": "actor-a", "tenant_id": "tenant-2"}));
+	let mut req = request_with_actor_header(&subject, &actor);
+	req.extensions_mut().insert(claims_with_delegation(
+		&subject,
+		"allowable_actors",
+		json!({"sub": "actor-a", "tenant_id": "tenant-1"}),
+	));
 
-	let subject = jwt_with_claims(&json!({"may_act": {"sub": "actor-a"}}));
+	let err = crate::http::auth::apply_backend_auth(&backend_info(), &backend_auth, &mut req)
+		.await
+		.unwrap_err();
+	assert!(matches!(err, ProxyError::AuthorizationFailed));
+	assert!(mock.received_requests().await.unwrap().is_empty());
+}
+
+#[rstest]
+#[case::missing(json!({"other_claim": {"sub": "actor-a"}}), jwt_with_claims(&json!({"sub": "actor-a"})))]
+#[case::may_act_only(json!({"may_act": {"sub": "actor-a"}}), jwt_with_claims(&json!({"sub": "actor-a"})))]
+#[case::actor_not_jwt(json!({"allowable_actors": {"sub": "actor-a"}}), "not-a-jwt".to_string())]
+#[tokio::test]
+async fn custom_delegation_denies_missing_claim_and_invalid_actor(
+	#[case] subject_claims: Value,
+	#[case] actor: String,
+) {
+	let mock = mock_token_endpoint(ResponseTemplate::new(200).set_body_json(token_body())).await;
+	let backend_auth = backend_auth_requiring_delegation(&mock, "allowable_actors");
+	let subject = jwt_with_claims(&subject_claims);
+	let mut req = request_with_actor_header(&subject, &actor);
+
+	let err = crate::http::auth::apply_backend_auth(&backend_info(), &backend_auth, &mut req)
+		.await
+		.unwrap_err();
+	assert!(matches!(err, ProxyError::AuthorizationFailed));
+	assert!(mock.received_requests().await.unwrap().is_empty());
+}
+
+#[tokio::test]
+async fn custom_delegation_ignores_validated_claims_for_a_different_subject_token() {
+	let mock = mock_token_endpoint(ResponseTemplate::new(200).set_body_json(token_body())).await;
+	let backend_auth = backend_auth_requiring_delegation(&mock, "allowable_actors");
+
+	let subject = jwt_with_claims(&json!({"allowable_actors": {"sub": "actor-a"}}));
 	let actor = jwt_with_claims(&json!({"sub": "actor-b"}));
 	let mut req = request_with_actor_header(&subject, &actor);
-	req.extensions_mut().insert(claims_with_may_act(
+	req.extensions_mut().insert(claims_with_delegation(
 		"some-other-subject",
+		"allowable_actors",
 		json!({"sub": "actor-b"}),
 	));
 
@@ -2190,11 +2400,11 @@ async fn enforce_may_act_ignores_validated_claims_for_a_different_subject_token(
 }
 
 #[tokio::test]
-async fn enforce_may_act_falls_back_to_unvalidated_subject_token_without_jwt_policy() {
+async fn custom_delegation_falls_back_to_unvalidated_subject_token_without_jwt_policy() {
 	let mock = mock_token_endpoint(ResponseTemplate::new(200).set_body_json(token_body())).await;
-	let backend_auth = backend_auth_requiring_may_act(&mock);
+	let backend_auth = backend_auth_requiring_delegation(&mock, "allowable_actors");
 
-	let subject = jwt_with_claims(&json!({"may_act": {"sub": "actor-a"}}));
+	let subject = jwt_with_claims(&json!({"allowable_actors": {"sub": "actor-a"}}));
 	let mut req = request_with_actor_header(&subject, &jwt_with_claims(&json!({"sub": "actor-a"})));
 
 	crate::http::auth::apply_backend_auth(&backend_info(), &backend_auth, &mut req)
@@ -2384,7 +2594,7 @@ async fn dispatch_removes_input_token_locations_before_inserting_output() {
 				prefix: None,
 			},
 			token_type: OAuthTokenType::Jwt,
-			enforce_may_act: false,
+			delegation: None,
 		}),
 		authorization_location: AuthorizationLocation::Header {
 			name: ::http::HeaderName::from_static("x-upstream-auth"),

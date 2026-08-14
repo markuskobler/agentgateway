@@ -759,14 +759,45 @@ func TestOAuthTokenExchangeTokenTypeTranslation(t *testing.T) {
 	if oauth.GetActorToken().GetTokenType() != "urn:ietf:params:oauth:token-type:jwt" {
 		t.Fatalf("actor token type = %q, want jwt URN", oauth.GetActorToken().GetTokenType())
 	}
-	if !oauth.GetActorToken().GetEnforceMayAct() {
-		t.Fatal("actor enforceMayAct = false, want true")
+	if oauth.GetActorToken().GetDelegation().GetClaim() != "may_act" {
+		t.Fatalf("actor delegation claim = %q, want may_act", oauth.GetActorToken().GetDelegation().GetClaim())
 	}
 	if oauth.GetRequestedTokenType() != "urn:ietf:params:oauth:token-type:id_token" {
 		t.Fatalf("requested token type = %q, want id_token URN", oauth.GetRequestedTokenType())
 	}
 	if oauth.GetAuthorizationLocation().GetHeader().GetName() != "X-Exchanged-Token" {
 		t.Fatalf("authorization location header = %q, want X-Exchanged-Token", oauth.GetAuthorizationLocation().GetHeader().GetName())
+	}
+}
+
+func TestOAuthTokenExchangeCustomDelegationTranslation(t *testing.T) {
+	ctx := oauthTestPolicyCtx(t)
+	policy, err := buildOAuthTokenExchangePolicy(ctx, &agentgateway.OAuthTokenExchange{
+		PolicyBackendEndpoint: oauthTokenEndpoint(),
+		ActorToken: &agentgateway.OAuthActorToken{
+			Source:     agentgateway.AuthorizationExtractionLocation{},
+			TokenType:  ptr.Of(agentgateway.OAuthTokenTypeJWT),
+			Delegation: &agentgateway.OAuthActorTokenDelegation{Claim: "allowable_actors"},
+		},
+	}, "default")
+	if err != nil {
+		t.Fatalf("buildOAuthTokenExchangePolicy() error = %v, want nil", err)
+	}
+
+	claim := policy.GetOauthTokenExchange().GetActorToken().GetDelegation().GetClaim()
+	if claim != "allowable_actors" {
+		t.Fatalf("actor delegation claim = %q, want allowable_actors", claim)
+	}
+}
+
+func TestOAuthTokenExchangeWithoutDelegationEmitsNoDelegation(t *testing.T) {
+	actor := translateOAuthActorToken(&agentgateway.OAuthActorToken{
+		Source:    agentgateway.AuthorizationExtractionLocation{},
+		TokenType: ptr.Of(agentgateway.OAuthTokenTypeJWT),
+	})
+
+	if actor.GetDelegation() != nil {
+		t.Fatalf("actor delegation = %v, want nil", actor.GetDelegation())
 	}
 }
 

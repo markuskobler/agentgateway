@@ -343,7 +343,9 @@
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -676,7 +678,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -947,7 +951,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -1218,7 +1224,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -1487,7 +1495,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -1792,7 +1802,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -2063,7 +2075,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -2332,7 +2346,9 @@
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -2649,7 +2665,9 @@
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -2927,7 +2945,9 @@
 |`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -3292,7 +3312,9 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -3573,7 +3595,9 @@
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -3926,7 +3950,9 @@
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -4220,7 +4246,9 @@
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -4517,7 +4545,9 @@
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -4801,7 +4831,9 @@
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -5172,7 +5204,9 @@
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -5533,7 +5567,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -5895,7 +5931,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -6182,7 +6220,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -6488,7 +6528,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -6798,7 +6840,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -7069,7 +7113,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -7340,7 +7386,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -7609,7 +7657,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -7914,7 +7964,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -8185,7 +8237,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -8454,7 +8508,9 @@
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -8846,7 +8902,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -9208,7 +9266,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -9495,7 +9555,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -9801,7 +9863,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -10111,7 +10175,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -10382,7 +10448,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -10653,7 +10721,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -10922,7 +10992,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -11227,7 +11299,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -11498,7 +11572,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -11767,7 +11843,9 @@
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -12122,7 +12200,9 @@
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -12484,7 +12564,9 @@
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -12771,7 +12853,9 @@
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -13077,7 +13161,9 @@
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -13387,7 +13473,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -13658,7 +13746,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -13929,7 +14019,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -14198,7 +14290,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -14503,7 +14597,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -14774,7 +14870,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -15043,7 +15141,9 @@
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -15384,7 +15484,9 @@
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -15699,7 +15801,9 @@
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -15993,7 +16097,9 @@
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -16290,7 +16396,9 @@
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -16574,7 +16682,9 @@
 |`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`binds[].listeners[].policies.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -16959,7 +17069,9 @@
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`frontendPolicies.networkExtAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -17266,7 +17378,9 @@
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`frontendPolicies.accessLog.otlp.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -17552,7 +17666,9 @@
 |`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`frontendPolicies.logging.otlp.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -17834,7 +17950,9 @@
 |`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`frontendPolicies.tracing.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -18203,7 +18321,9 @@
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -18536,7 +18656,9 @@
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -18807,7 +18929,9 @@
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -19078,7 +19202,9 @@
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -19347,7 +19473,9 @@
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -19652,7 +19780,9 @@
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -19923,7 +20053,9 @@
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -20192,7 +20324,9 @@
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -20509,7 +20643,9 @@
 |`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -20787,7 +20923,9 @@
 |`policies[].policy.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -21152,7 +21290,9 @@
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -21433,7 +21573,9 @@
 |`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.remoteRateLimit.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -21786,7 +21928,9 @@
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -22080,7 +22224,9 @@
 |`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -22377,7 +22523,9 @@
 |`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -22661,7 +22809,9 @@
 |`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`policies[].policy.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -23028,7 +23178,9 @@
 |`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -23389,7 +23541,9 @@
 |`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -23751,7 +23905,9 @@
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -24038,7 +24194,9 @@
 |`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -24344,7 +24502,9 @@
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -24654,7 +24814,9 @@
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -24925,7 +25087,9 @@
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -25196,7 +25360,9 @@
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -25465,7 +25631,9 @@
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -25770,7 +25938,9 @@
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -26041,7 +26211,9 @@
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -26310,7 +26482,9 @@
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -26702,7 +26876,9 @@
 |`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -27064,7 +27240,9 @@
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -27351,7 +27529,9 @@
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -27657,7 +27837,9 @@
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -27967,7 +28149,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -28238,7 +28422,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -28509,7 +28695,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -28778,7 +28966,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -29083,7 +29273,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -29354,7 +29546,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -29623,7 +29817,9 @@
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -29976,7 +30172,9 @@
 |`backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -30338,7 +30536,9 @@
 |`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -30625,7 +30825,9 @@
 |`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -30931,7 +31133,9 @@
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -31241,7 +31445,9 @@
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -31512,7 +31718,9 @@
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -31783,7 +31991,9 @@
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -32052,7 +32262,9 @@
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -32357,7 +32569,9 @@
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -32628,7 +32842,9 @@
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -32897,7 +33113,9 @@
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -33285,7 +33503,9 @@
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -33618,7 +33838,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -33889,7 +34111,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -34160,7 +34384,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -34429,7 +34655,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -34734,7 +34962,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -35005,7 +35235,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -35274,7 +35506,9 @@
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -35591,7 +35825,9 @@
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -35869,7 +36105,9 @@
 |`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -36234,7 +36472,9 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -36515,7 +36755,9 @@
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -36868,7 +37110,9 @@
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -37162,7 +37406,9 @@
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -37459,7 +37705,9 @@
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -37743,7 +37991,9 @@
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -38114,7 +38364,9 @@
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -38475,7 +38727,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -38837,7 +39091,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -39124,7 +39380,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -39430,7 +39688,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -39740,7 +40000,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -40011,7 +40273,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -40282,7 +40546,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -40551,7 +40817,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -40856,7 +41124,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -41127,7 +41397,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -41396,7 +41668,9 @@
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -41788,7 +42062,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -42150,7 +42426,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -42437,7 +42715,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -42743,7 +43023,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -43053,7 +43335,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -43324,7 +43608,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -43595,7 +43881,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -43864,7 +44152,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -44169,7 +44459,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -44440,7 +44732,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -44709,7 +45003,9 @@
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -45064,7 +45360,9 @@
 |`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -45426,7 +45724,9 @@
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -45713,7 +46013,9 @@
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -46019,7 +46321,9 @@
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -46329,7 +46633,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -46600,7 +46906,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -46871,7 +47179,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -47140,7 +47450,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -47445,7 +47757,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -47716,7 +48030,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -47985,7 +48301,9 @@
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -48357,7 +48675,9 @@
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.listeners[].extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -48651,7 +48971,9 @@
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.listeners[].extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -48948,7 +49270,9 @@
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.listeners[].extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -49232,7 +49556,9 @@
 |`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.listeners[].extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -49643,7 +49969,9 @@
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -49937,7 +50265,9 @@
 |`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -50234,7 +50564,9 @@
 |`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -50518,7 +50850,9 @@
 |`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`gateways.*.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -50951,7 +51285,9 @@
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -51284,7 +51620,9 @@
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -51555,7 +51893,9 @@
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -51826,7 +52166,9 @@
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -52095,7 +52437,9 @@
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -52400,7 +52744,9 @@
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -52671,7 +53017,9 @@
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -52940,7 +53288,9 @@
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -53257,7 +53607,9 @@
 |`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -53535,7 +53887,9 @@
 |`routes[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -53900,7 +54254,9 @@
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -54181,7 +54537,9 @@
 |`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -54534,7 +54892,9 @@
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -54828,7 +55188,9 @@
 |`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -55125,7 +55487,9 @@
 |`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -55409,7 +55773,9 @@
 |`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].policies.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -55780,7 +56146,9 @@
 |`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].mcp.targets[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -56141,7 +56509,9 @@
 |`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -56503,7 +56873,9 @@
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -56790,7 +57162,9 @@
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -57096,7 +57470,9 @@
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -57406,7 +57782,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -57677,7 +58055,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -57948,7 +58328,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -58217,7 +58599,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -58522,7 +58906,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -58793,7 +59179,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -59062,7 +59450,9 @@
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -59454,7 +59844,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -59816,7 +60208,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -60103,7 +60497,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -60409,7 +60805,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -60719,7 +61117,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -60990,7 +61390,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -61261,7 +61663,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -61530,7 +61934,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -61835,7 +62241,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -62106,7 +62514,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -62375,7 +62785,9 @@
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].ai.groups[].providers[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -62730,7 +63142,9 @@
 |`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -63092,7 +63506,9 @@
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -63379,7 +63795,9 @@
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -63685,7 +64103,9 @@
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -63995,7 +64415,9 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -64266,7 +64688,9 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -64537,7 +64961,9 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -64806,7 +65232,9 @@
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -65111,7 +65539,9 @@
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -65382,7 +65812,9 @@
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -65651,7 +66083,9 @@
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`routes[].backends[].policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -65993,7 +66427,9 @@
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`tcpRoutes[].backends[].policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -66343,7 +66779,9 @@
 |`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.providers[].defaults.auth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.providers[].defaults.auth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.providers[].defaults.auth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.providers[].defaults.auth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -66702,7 +67140,9 @@
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.providers[].defaults.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -67052,7 +67492,9 @@
 |`llm.models[].auth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].auth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].auth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].auth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].auth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].auth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].auth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].auth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].auth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].auth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -67411,7 +67853,9 @@
 |`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -67695,7 +68139,9 @@
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -67966,7 +68412,9 @@
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -68237,7 +68685,9 @@
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -68506,7 +68956,9 @@
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -68811,7 +69263,9 @@
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -69082,7 +69536,9 @@
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -69351,7 +69807,9 @@
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.models[].guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -69714,7 +70172,9 @@
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -70008,7 +70468,9 @@
 |`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -70305,7 +70767,9 @@
 |`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -70589,7 +71053,9 @@
 |`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -70959,7 +71425,9 @@
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -71230,7 +71698,9 @@
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -71501,7 +71971,9 @@
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -71770,7 +72242,9 @@
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -72075,7 +72549,9 @@
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -72346,7 +72822,9 @@
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -72615,7 +73093,9 @@
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.guardrails.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -72908,7 +73388,9 @@
 |`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`llm.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -73217,7 +73699,9 @@
 |`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.targets[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.targets[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.targets[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.targets[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -73552,7 +74036,9 @@
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.mcpGuardrails.processors[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -73885,7 +74371,9 @@
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.request[].openAIModeration.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -74156,7 +74644,9 @@
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.request[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -74427,7 +74917,9 @@
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.request[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -74696,7 +75188,9 @@
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.request[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -75001,7 +75495,9 @@
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.response[].bedrockGuardrails.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -75272,7 +75768,9 @@
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.response[].googleModelArmor.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -75541,7 +76039,9 @@
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.ai.promptGuard.response[].azureContentSafety.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -75858,7 +76358,9 @@
 |`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.backendTunnel.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -76136,7 +76638,9 @@
 |`mcp.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -76501,7 +77005,9 @@
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.remoteRateLimit.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -76782,7 +77288,9 @@
 |`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.remoteRateLimit.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -77135,7 +77643,9 @@
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -77429,7 +77939,9 @@
 |`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -77726,7 +78238,9 @@
 |`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.extProc.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -78010,7 +78524,9 @@
 |`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`mcp.policies.extProc.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -78404,7 +78920,9 @@
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`ui.policies.extAuthz.conditional[].policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
@@ -78698,7 +79216,9 @@
 |`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.cookie.name`|string|Cookie name containing the credential.|
 |`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.source.expression`|string|Read the credential from a CEL expression evaluated against the incoming request.<br>CEL expression that returns the credential string. This location can extract credentials but cannot insert them.|
 |`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.tokenType`|string|RFC 8693 actor token type URN; when omitted defaults to access_token and is still sent|
-|`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Enforce that the subject's `may_act` claim authorizes the actor before exchanging.|
+|`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation`|object|Local actor-delegation authorization performed before exchanging.|
+|`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.delegation.claim`|string|Exact top-level subject-token claim containing the delegation object.|
+|`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.actorToken.enforceMayAct`|boolean|Deprecated: use `delegation.claim` with claim `may_act`.|
 |`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.audiences`|[]string|`audience` parameters naming the target services at the authorization server.|
 |`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.scopes`|[]string|`scope` values for the requested token, sent space-delimited.|
 |`ui.policies.extAuthz.policies.backendAuth.oauthTokenExchange.resources`|[]string|`resource` parameters with the target service URIs.|
