@@ -347,7 +347,7 @@ pub(super) async fn insert_token(
 				(Some(aud), _) => Cow::Borrowed(aud.as_str()),
 				(None, Target::Hostname(host, _)) => Cow::Owned(format!("https://{host}")),
 				_ => {
-					return Err(BackendAuthError::Local(anyhow!(
+					return Err(BackendAuthError::Gateway(anyhow!(
 						"idToken auth requires a hostname target or explicit audience"
 					)));
 				},
@@ -359,12 +359,12 @@ pub(super) async fn insert_token(
 				)
 				.await
 				.ctx("GCP ID token fetch timed out after 5s")
-				.map_err(BackendAuthError::CredentialProvider)?
+				.map_err(BackendAuthError::provider)?
 				.map_err(classify_gcp_credential_error)?,
 				None => tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, fetch_id_token(aud.as_ref()))
 					.await
 					.ctx("GCP ID token fetch timed out after 5s")
-					.map_err(BackendAuthError::CredentialProvider)?
+					.map_err(BackendAuthError::provider)?
 					.map_err(classify_gcp_credential_error)?,
 			}
 		},
@@ -373,15 +373,15 @@ pub(super) async fn insert_token(
 				tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, explicit_access_token(credential))
 					.await
 					.ctx("GCP access token fetch timed out after 5s")
-					.map_err(BackendAuthError::CredentialProvider)?
+					.map_err(BackendAuthError::provider)?
 					.map_err(classify_gcp_credential_error)?
 			},
 			None => {
-				let credentials = creds().map_err(BackendAuthError::Local)?;
+				let credentials = creds().map_err(BackendAuthError::gateway)?;
 				let token = tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, credentials.access_token())
 					.await
 					.ctx("GCP access token fetch timed out after 5s")
-					.map_err(BackendAuthError::CredentialProvider)?
+					.map_err(BackendAuthError::provider)?
 					.map_err(|error| classify_gcp_credential_error(error.into()))?;
 				token.token
 			},
@@ -393,8 +393,7 @@ pub(super) async fn insert_token(
 }
 
 fn insert_provider_token(token: &str, headers: &mut HeaderMap) -> Result<(), BackendAuthError> {
-	let header = headers::Authorization::bearer(token)
-		.map_err(|error| BackendAuthError::CredentialProvider(error.into()))?;
+	let header = headers::Authorization::bearer(token).map_err(BackendAuthError::provider)?;
 	headers.typed_insert(header);
 	Ok(())
 }
@@ -404,9 +403,9 @@ fn classify_gcp_credential_error(error: anyhow::Error) -> BackendAuthError {
 		.downcast_ref::<CredentialsError>()
 		.is_some_and(CredentialsError::is_transient)
 	{
-		BackendAuthError::CredentialProvider(error)
+		BackendAuthError::Provider(error)
 	} else {
-		BackendAuthError::Local(error)
+		BackendAuthError::Gateway(error)
 	}
 }
 
@@ -420,7 +419,7 @@ mod tests {
 			let error = anyhow::Error::new(CredentialsError::from_msg(transient, "test error"));
 			let classified = classify_gcp_credential_error(error);
 			assert_eq!(
-				matches!(classified, BackendAuthError::CredentialProvider(_)),
+				matches!(classified, BackendAuthError::Provider(_)),
 				expect_provider
 			);
 		}
@@ -430,7 +429,7 @@ mod tests {
 	fn classifies_malformed_gcp_token_as_provider_failure() {
 		assert!(matches!(
 			insert_provider_token("invalid\ntoken", &mut HeaderMap::new()),
-			Err(BackendAuthError::CredentialProvider(_))
+			Err(BackendAuthError::Provider(_))
 		));
 	}
 }

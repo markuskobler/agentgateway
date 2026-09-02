@@ -252,15 +252,15 @@ fn is_azure_credential_provider_error(error: &azure_core::Error) -> bool {
 
 fn classify_azure_token_error(error: azure_core::Error) -> BackendAuthError {
 	if is_azure_credential_provider_error(&error) {
-		BackendAuthError::CredentialProvider(error.into())
+		BackendAuthError::Provider(error.into())
 	} else {
-		BackendAuthError::Local(error.into())
+		BackendAuthError::Gateway(error.into())
 	}
 }
 
 fn azure_bearer_header(token: &str) -> Result<http::HeaderValue, BackendAuthError> {
-	let mut header = http::HeaderValue::from_str(&format!("Bearer {token}"))
-		.map_err(|error| BackendAuthError::CredentialProvider(error.into()))?;
+	let mut header =
+		http::HeaderValue::from_str(&format!("Bearer {token}")).map_err(BackendAuthError::provider)?;
 	header.set_sensitive(true);
 	Ok(header)
 }
@@ -531,13 +531,13 @@ pub(super) async fn get_token(
 	let cred = cache
 		.get_or_try_init(|| build_credential(client, auth))
 		.await
-		.map_err(BackendAuthError::Local)?
+		.map_err(BackendAuthError::gateway)?
 		.clone();
 	let scopes = scopes_for_target(auth, target);
 	let token = tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, cred.get_token(&scopes, None))
 		.await
 		.ctx("Azure token fetch timed out after 5s")
-		.map_err(BackendAuthError::CredentialProvider)?
+		.map_err(BackendAuthError::provider)?
 		.map_err(classify_azure_token_error)?;
 	let hv = azure_bearer_header(token.token.secret())?;
 	trace!("attached Azure token (scope: {})", scopes[0]);
@@ -596,7 +596,7 @@ mod tests {
 		for (error, expect_provider) in cases {
 			let classified = classify_azure_token_error(error);
 			assert_eq!(
-				matches!(classified, BackendAuthError::CredentialProvider(_)),
+				matches!(classified, BackendAuthError::Provider(_)),
 				expect_provider
 			);
 		}
@@ -606,7 +606,7 @@ mod tests {
 	fn classifies_malformed_azure_token_as_provider_failure() {
 		assert!(matches!(
 			azure_bearer_header("invalid\ntoken"),
-			Err(BackendAuthError::CredentialProvider(_))
+			Err(BackendAuthError::Provider(_))
 		));
 	}
 

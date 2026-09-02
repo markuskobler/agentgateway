@@ -1054,7 +1054,7 @@ async fn test_backend_auth_credentials_invalid_value_is_local() {
 		.expect_err("invalid header value must error");
 	assert!(matches!(
 		&err,
-		ProxyError::BackendAuthenticationFailed(BackendAuthError::Local(_))
+		ProxyError::BackendAuthenticationFailed(BackendAuthError::Gateway(_))
 	));
 	assert_eq!(
 		err.into_response_with_grpc(false).status(),

@@ -698,10 +698,7 @@ async fn id_jag_chained_exchange_client_error_is_upstream_failure() {
 	let err = fetch_token(&policy_client(), a, exchange_req("subj", TOKEN_TYPE_ID))
 		.await
 		.unwrap_err();
-	assert!(
-		matches!(&err, FetchError::CredentialProvider(_)),
-		"got: {err:?}"
-	);
+	assert!(matches!(&err, FetchError::Provider(_)), "got: {err:?}");
 	let msg = err.to_string();
 	assert!(msg.contains("chained token exchange returned status 400"));
 	assert!(!msg.contains("invalid_grant"), "got: {msg}");
@@ -1696,7 +1693,7 @@ async fn maps_token_endpoint_status_to_proxy_status(
 }
 
 #[tokio::test]
-async fn invalid_token_endpoint_backend_is_local_failure() {
+async fn invalid_token_endpoint_backend_is_gateway_failure() {
 	let a = auth(Arc::new(SimpleBackendReference::Invalid));
 	let err = fetch_token(
 		&policy_client(),
@@ -1705,8 +1702,8 @@ async fn invalid_token_endpoint_backend_is_local_failure() {
 	)
 	.await
 	.unwrap_err();
-	let FetchError::Local(source) = &err else {
-		panic!("expected local failure, got: {err:?}");
+	let FetchError::Gateway(source) = &err else {
+		panic!("expected gateway failure, got: {err:?}");
 	};
 	assert!(source.downcast_ref::<ProxyError>().is_some());
 
@@ -2569,10 +2566,10 @@ fn classifies_exchanged_token_insertion_failures() {
 			.expect_err("invalid exchanged-token insertion must fail");
 		let is_provider = match &err {
 			crate::proxy::ProxyError::BackendAuthenticationFailed(
-				crate::http::auth::BackendAuthError::CredentialProvider(_),
+				crate::http::auth::BackendAuthError::Provider(_),
 			) => true,
 			crate::proxy::ProxyError::BackendAuthenticationFailed(
-				crate::http::auth::BackendAuthError::Local(_),
+				crate::http::auth::BackendAuthError::Gateway(_),
 			) => false,
 			other => panic!("unexpected error: {other:?}"),
 		};
