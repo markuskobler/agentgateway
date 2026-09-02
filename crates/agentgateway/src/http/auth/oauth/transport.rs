@@ -43,12 +43,18 @@ pub(in crate::http::auth) enum FetchError {
 		source: anyhow::Error,
 	},
 	#[error(transparent)]
-	Gateway(anyhow::Error),
-	#[error(transparent)]
-	Provider(anyhow::Error),
+	Backend(BackendAuthError),
 }
 
 impl FetchError {
+	fn gateway(error: impl Into<anyhow::Error>) -> Self {
+		Self::Backend(BackendAuthError::gateway(error))
+	}
+
+	fn provider(error: impl Into<anyhow::Error>) -> Self {
+		Self::Backend(BackendAuthError::provider(error))
+	}
+
 	pub(in crate::http::auth) fn into_proxy_error(self) -> ProxyError {
 		match self {
 			FetchError::Client { status, source } => {
@@ -57,12 +63,7 @@ impl FetchError {
 				debug!(%status, error = %source, "oauth token exchange rejected by authorization server");
 				ProxyError::InvalidRequest
 			},
-			FetchError::Gateway(e) => {
-				ProxyError::BackendAuthenticationFailed(BackendAuthError::Gateway(e))
-			},
-			FetchError::Provider(e) => {
-				ProxyError::BackendAuthenticationFailed(BackendAuthError::Provider(e))
-			},
+			FetchError::Backend(error) => ProxyError::BackendAuthenticationFailed(error),
 		}
 	}
 
@@ -70,7 +71,7 @@ impl FetchError {
 		match self {
 			FetchError::Client { status, source } => {
 				debug!(%status, error = %source, "chained oauth token exchange rejected by authorization server");
-				FetchError::Provider(anyhow!("chained token exchange returned status {status}"))
+				FetchError::provider(anyhow!("chained token exchange returned status {status}"))
 			},
 			err => err,
 		}
@@ -96,15 +97,15 @@ impl TokenResponse {
 	) -> Result<TokenEndpointResponse, FetchError> {
 		if expected_issued_token_type == Some(OAuthTokenType::IdJag) {
 			let issued = self.issued_token_type.as_deref().ok_or_else(|| {
-				FetchError::Provider(anyhow!("token exchange response missing issued_token_type"))
+				FetchError::provider(anyhow!("token exchange response missing issued_token_type"))
 			})?;
 			let issued = OAuthTokenType::from_urn(issued).ok_or_else(|| {
-				FetchError::Provider(anyhow!(
+				FetchError::provider(anyhow!(
 					"token exchange returned unusable issued_token_type: {issued}"
 				))
 			})?;
 			if issued != OAuthTokenType::IdJag {
-				return Err(FetchError::Provider(anyhow!(
+				return Err(FetchError::provider(anyhow!(
 					"token exchange returned issued_token_type {}, expected {}",
 					issued.as_str(),
 					OAuthTokenType::IdJag.as_str()
@@ -113,19 +114,19 @@ impl TokenResponse {
 			if let Some(token_type) = self.token_type.as_deref()
 				&& !token_type.eq_ignore_ascii_case("N_A")
 			{
-				return Err(FetchError::Provider(anyhow!(
+				return Err(FetchError::provider(anyhow!(
 					"token exchange returned unsupported token_type for id-jag: {token_type}",
 				)));
 			}
 		} else {
 			// Only bearer-style tokens are forwarded
 			let Some(token_type) = self.token_type.as_deref() else {
-				return Err(FetchError::Provider(anyhow!(
+				return Err(FetchError::provider(anyhow!(
 					"token exchange response missing token_type"
 				)));
 			};
 			if !token_type.eq_ignore_ascii_case("Bearer") {
-				return Err(FetchError::Provider(anyhow!(
+				return Err(FetchError::provider(anyhow!(
 					"token exchange returned unsupported token_type: {token_type}",
 				)));
 			}
@@ -133,13 +134,13 @@ impl TokenResponse {
 			if let (Some(expected), Some(issued)) = (expected_issued_token_type, &self.issued_token_type)
 			{
 				let issued = OAuthTokenType::from_urn(issued).ok_or_else(|| {
-					FetchError::Provider(anyhow!(
+					FetchError::provider(anyhow!(
 						"token exchange returned unusable issued_token_type: {issued}"
 					))
 				})?;
 				// Requested token types must match the response
 				if issued != expected {
-					return Err(FetchError::Provider(anyhow!(
+					return Err(FetchError::provider(anyhow!(
 						"token exchange returned issued_token_type {}, expected {}",
 						issued.as_str(),
 						expected.as_str()
@@ -149,7 +150,7 @@ impl TokenResponse {
 		}
 
 		if self.access_token.expose_secret().is_empty() {
-			return Err(FetchError::Provider(anyhow!(
+			return Err(FetchError::provider(anyhow!(
 				"token exchange response contained an empty access_token"
 			)));
 		}
@@ -237,7 +238,7 @@ pub(super) async fn request_token(
 
 	json::from_body_with_limit::<TokenResponse>(resp.into_body(), limit)
 		.await
-		.map_err(|e| FetchError::Provider(anyhow!("token exchange response decode failed: {e}")))?
+		.map_err(|e| FetchError::provider(anyhow!("token exchange response decode failed: {e}")))?
 		.into_token(spec.expected_issued_token_type.clone())
 }
 
@@ -256,9 +257,9 @@ fn classify_token_endpoint_call_error(error: ProxyError) -> FetchError {
 	let detail = format!("token exchange request failed: {error}");
 	let source = anyhow::Error::new(error).context(detail);
 	if is_gateway_configuration_error {
-		FetchError::Gateway(source)
+		FetchError::gateway(source)
 	} else {
-		FetchError::Provider(source)
+		FetchError::provider(source)
 	}
 }
 
@@ -273,7 +274,7 @@ fn classify_token_endpoint_error(status: StatusCode, body: String) -> FetchError
 		}
 	} else if matches!(status, StatusCode::UNAUTHORIZED | StatusCode::FORBIDDEN) {
 		debug!(%status, error = %detailed, "oauth token exchange rejected gateway credentials");
-		FetchError::Gateway(anyhow!("token exchange returned status {status}"))
+		FetchError::gateway(anyhow!("token exchange returned status {status}"))
 	} else {
 		// Only authorization server failures warrant a warning.
 		if status.is_server_error() {
@@ -281,7 +282,7 @@ fn classify_token_endpoint_error(status: StatusCode, body: String) -> FetchError
 		} else {
 			debug!(%status, error = %detailed, "oauth token exchange returned non-success status");
 		}
-		FetchError::Provider(anyhow!("token exchange returned status {status}"))
+		FetchError::provider(anyhow!("token exchange returned status {status}"))
 	}
 }
 
@@ -304,7 +305,7 @@ fn build_token_request(
 			builder.header(AUTHORIZATION, format!("Basic {basic}"))
 		})
 		.body(Body::from(form.body.into_bytes()))
-		.map_err(|e| FetchError::Gateway(e.into()))
+		.map_err(FetchError::gateway)
 }
 
 struct TokenRequestForm {
@@ -371,7 +372,7 @@ fn build_token_request_form(
 			},
 			OAuthClientAuthMethod::PrivateKeyJwt(private_key) => {
 				let assertion = sign_client_assertion(&client_auth.client_id, private_key)
-					.map_err(FetchError::Gateway)?;
+					.map_err(FetchError::gateway)?;
 				// client_id is OPTIONAL per RFC 7521, but many providers require it
 				// alongside the assertion; include it for interop.
 				ser.append_pair("client_id", &client_auth.client_id);

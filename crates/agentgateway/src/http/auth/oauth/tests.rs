@@ -698,7 +698,10 @@ async fn id_jag_chained_exchange_client_error_is_upstream_failure() {
 	let err = fetch_token(&policy_client(), a, exchange_req("subj", TOKEN_TYPE_ID))
 		.await
 		.unwrap_err();
-	assert!(matches!(&err, FetchError::Provider(_)), "got: {err:?}");
+	assert!(
+		matches!(&err, FetchError::Backend(BackendAuthError::Provider(_))),
+		"got: {err:?}"
+	);
 	let msg = err.to_string();
 	assert!(msg.contains("chained token exchange returned status 400"));
 	assert!(!msg.contains("invalid_grant"), "got: {msg}");
@@ -1702,7 +1705,7 @@ async fn invalid_token_endpoint_backend_is_gateway_failure() {
 	)
 	.await
 	.unwrap_err();
-	let FetchError::Gateway(source) = &err else {
+	let FetchError::Backend(BackendAuthError::Gateway(source)) = &err else {
 		panic!("expected gateway failure, got: {err:?}");
 	};
 	assert!(source.downcast_ref::<ProxyError>().is_some());
