@@ -8,7 +8,6 @@ use tracing::trace;
 
 use super::BackendAuthError;
 use crate::serdes::schema;
-use crate::util::ErrorContext;
 use crate::{apply, client, ser_redact};
 
 // The Rust sdk for Azure is the only one that requires users to manually specify their auth method
@@ -534,11 +533,16 @@ pub(super) async fn get_token(
 		.map_err(BackendAuthError::gateway)?
 		.clone();
 	let scopes = scopes_for_target(auth, target);
-	let token = tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, cred.get_token(&scopes, None))
-		.await
-		.ctx("Azure token fetch timed out after 5s")
-		.map_err(BackendAuthError::provider)?
-		.map_err(classify_azure_token_error)?;
+	let token = super::with_cloud_auth_timeout(
+		async {
+			cred
+				.get_token(&scopes, None)
+				.await
+				.map_err(classify_azure_token_error)
+		},
+		"Azure token fetch",
+	)
+	.await?;
 	let hv = azure_bearer_header(token.token.secret())?;
 	trace!("attached Azure token (scope: {})", scopes[0]);
 	Ok(hv)

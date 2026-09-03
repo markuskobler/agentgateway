@@ -16,7 +16,6 @@ use tracing::trace;
 use super::BackendAuthError;
 use crate::serdes::{FileOrInline, schema};
 use crate::types::agent::Target;
-use crate::util::ErrorContext;
 use crate::{apply, const_string, ser_redact};
 
 const_string!(IdToken = "idToken");
@@ -180,11 +179,16 @@ fn build_access_token_credentials(json: Value) -> anyhow::Result<AccessTokenCred
 	}
 }
 
-async fn explicit_access_token(credential: &GcpCredential) -> anyhow::Result<String> {
+async fn explicit_access_token(credential: &GcpCredential) -> Result<String, BackendAuthError> {
 	let access_token = credential.access_token.as_ref().ok_or_else(|| {
-		anyhow!("GCP gdch_service_account credentials require idToken auth with an audience")
+		BackendAuthError::gateway(anyhow!(
+			"GCP gdch_service_account credentials require idToken auth with an audience"
+		))
 	})?;
-	let token = access_token.access_token().await?;
+	let token = access_token
+		.access_token()
+		.await
+		.map_err(classify_gcp_credential_error)?;
 	Ok(token.token)
 }
 
@@ -235,7 +239,10 @@ fn build_id_token_credentials(
 	}
 }
 
-async fn explicit_id_token(aud: &str, credential: &GcpCredential) -> anyhow::Result<String> {
+async fn explicit_id_token(
+	aud: &str,
+	credential: &GcpCredential,
+) -> Result<String, BackendAuthError> {
 	if credential.credential_type == GcpCredentialType::GdchServiceAccount {
 		return explicit_gdch_token(aud, credential).await;
 	}
@@ -245,27 +252,41 @@ async fn explicit_id_token(aud: &str, credential: &GcpCredential) -> anyhow::Res
 		if let Some(creds) = cache_guard.get(aud) {
 			creds.clone()
 		} else {
-			let creds = Arc::new(build_id_token_credentials(aud, &credential.raw)?);
+			let creds = Arc::new(
+				build_id_token_credentials(aud, &credential.raw).map_err(BackendAuthError::gateway)?,
+			);
 			cache_guard.insert(aud.to_string(), creds.clone());
 			creds
 		}
 	};
-	Ok(id_token_creds.id_token().await?)
+	id_token_creds
+		.id_token()
+		.await
+		.map_err(classify_gcp_credential_error)
 }
 
-async fn explicit_gdch_token(aud: &str, credential: &GcpCredential) -> anyhow::Result<String> {
+async fn explicit_gdch_token(
+	aud: &str,
+	credential: &GcpCredential,
+) -> Result<String, BackendAuthError> {
 	let access_token_creds = {
 		let mut cache_guard = credential.gdch_tokens.lock().unwrap();
 		if let Some(creds) = cache_guard.get(aud) {
 			creds.clone()
 		} else {
-			let creds = Arc::new(build_gdch_access_token_credentials(aud, &credential.raw)?);
+			let creds = Arc::new(
+				build_gdch_access_token_credentials(aud, &credential.raw)
+					.map_err(BackendAuthError::gateway)?,
+			);
 			cache_guard.insert(aud.to_string(), creds.clone());
 			creds
 		}
 	};
 
-	let token = access_token_creds.access_token().await?;
+	let token = access_token_creds
+		.access_token()
+		.await
+		.map_err(classify_gcp_credential_error)?;
 	Ok(token.token)
 }
 
@@ -279,17 +300,18 @@ fn build_gdch_access_token_credentials(
 		.map_err(anyhow::Error::from)
 }
 
-async fn fetch_id_token(aud: &str) -> anyhow::Result<String> {
+async fn fetch_id_token(aud: &str) -> Result<String, BackendAuthError> {
 	match ID_TOKEN_BUILDER.as_ref() {
 		Ok(creds) => match creds {
-			IdTokenBuilder::UserAccount(c) => Ok(c.id_token().await?),
+			IdTokenBuilder::UserAccount(c) => c.id_token().await.map_err(classify_gcp_credential_error),
 			IdTokenBuilder::GdchServiceAccount(adc) => {
 				let cache = GDCH_TOKEN_CACHE.clone();
 				let access_token_creds = {
 					let mut cache_guard = cache.lock().unwrap();
 					if !cache_guard.contains_key(aud) {
-						let access_token_creds =
-							credentials::gdch::Builder::new(aud, adc.clone()).build_access_token_credentials()?;
+						let access_token_creds = credentials::gdch::Builder::new(aud, adc.clone())
+							.build_access_token_credentials()
+							.map_err(BackendAuthError::gateway)?;
 						let v = Arc::new(access_token_creds);
 						cache_guard.insert(aud.to_string(), v.clone());
 						v
@@ -298,7 +320,10 @@ async fn fetch_id_token(aud: &str) -> anyhow::Result<String> {
 					}
 				};
 
-				let token = access_token_creds.access_token().await?;
+				let token = access_token_creds
+					.access_token()
+					.await
+					.map_err(classify_gcp_credential_error)?;
 				Ok(token.token)
 			},
 			IdTokenBuilder::Other => {
@@ -310,7 +335,8 @@ async fn fetch_id_token(aud: &str) -> anyhow::Result<String> {
 					if !cache_guard.contains_key(aud) {
 						let id_token_creds = credentials::idtoken::Builder::new(aud)
 							.with_include_email()
-							.build()?;
+							.build()
+							.map_err(BackendAuthError::gateway)?;
 						let v = Arc::new(id_token_creds);
 						cache_guard.insert(aud.to_string(), v.clone());
 						v
@@ -322,12 +348,15 @@ async fn fetch_id_token(aud: &str) -> anyhow::Result<String> {
 
 				// IDTokenCredentials handles caching internally, so just call id_token()
 				// Lock is dropped, so we can safely await
-				Ok(id_token_creds.id_token().await?)
+				id_token_creds
+					.id_token()
+					.await
+					.map_err(classify_gcp_credential_error)
 			},
 		},
 		Err(e) => {
 			let msg = format!("Failed to initialize credentials: {}", e);
-			Err(anyhow::anyhow!(msg))
+			Err(BackendAuthError::gateway(anyhow::anyhow!(msg)))
 		},
 	}
 }
@@ -347,42 +376,41 @@ pub(super) async fn insert_token(
 				(Some(aud), _) => Cow::Borrowed(aud.as_str()),
 				(None, Target::Hostname(host, _)) => Cow::Owned(format!("https://{host}")),
 				_ => {
-					return Err(BackendAuthError::Gateway(anyhow!(
+					return Err(BackendAuthError::gateway(anyhow!(
 						"idToken auth requires a hostname target or explicit audience"
 					)));
 				},
 			};
 			match credential {
-				Some(credential) => tokio::time::timeout(
-					super::CLOUD_AUTH_TIMEOUT,
-					explicit_id_token(aud.as_ref(), credential),
-				)
-				.await
-				.ctx("GCP ID token fetch timed out after 5s")
-				.map_err(BackendAuthError::provider)?
-				.map_err(classify_gcp_credential_error)?,
-				None => tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, fetch_id_token(aud.as_ref()))
-					.await
-					.ctx("GCP ID token fetch timed out after 5s")
-					.map_err(BackendAuthError::provider)?
-					.map_err(classify_gcp_credential_error)?,
+				Some(credential) => {
+					super::with_cloud_auth_timeout(
+						explicit_id_token(aud.as_ref(), credential),
+						"GCP ID token fetch",
+					)
+					.await?
+				},
+				None => {
+					super::with_cloud_auth_timeout(fetch_id_token(aud.as_ref()), "GCP ID token fetch").await?
+				},
 			}
 		},
 		GcpAuth::AccessToken { credential, .. } => match credential {
 			Some(credential) => {
-				tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, explicit_access_token(credential))
-					.await
-					.ctx("GCP access token fetch timed out after 5s")
-					.map_err(BackendAuthError::provider)?
-					.map_err(classify_gcp_credential_error)?
+				super::with_cloud_auth_timeout(explicit_access_token(credential), "GCP access token fetch")
+					.await?
 			},
 			None => {
 				let credentials = creds().map_err(BackendAuthError::gateway)?;
-				let token = tokio::time::timeout(super::CLOUD_AUTH_TIMEOUT, credentials.access_token())
-					.await
-					.ctx("GCP access token fetch timed out after 5s")
-					.map_err(BackendAuthError::provider)?
-					.map_err(|error| classify_gcp_credential_error(error.into()))?;
+				let token = super::with_cloud_auth_timeout(
+					async {
+						credentials
+							.access_token()
+							.await
+							.map_err(classify_gcp_credential_error)
+					},
+					"GCP access token fetch",
+				)
+				.await?;
 				token.token
 			},
 		},
@@ -398,14 +426,11 @@ fn insert_provider_token(token: &str, headers: &mut HeaderMap) -> Result<(), Bac
 	Ok(())
 }
 
-fn classify_gcp_credential_error(error: anyhow::Error) -> BackendAuthError {
-	if error
-		.downcast_ref::<CredentialsError>()
-		.is_some_and(CredentialsError::is_transient)
-	{
-		BackendAuthError::Provider(error)
+fn classify_gcp_credential_error(error: CredentialsError) -> BackendAuthError {
+	if error.is_transient() {
+		BackendAuthError::provider(error)
 	} else {
-		BackendAuthError::Gateway(error)
+		BackendAuthError::gateway(error)
 	}
 }
 
@@ -416,7 +441,7 @@ mod tests {
 	#[test]
 	fn classifies_gcp_credential_errors() {
 		for (transient, expect_provider) in [(true, true), (false, false)] {
-			let error = anyhow::Error::new(CredentialsError::from_msg(transient, "test error"));
+			let error = CredentialsError::from_msg(transient, "test error");
 			let classified = classify_gcp_credential_error(error);
 			assert_eq!(
 				matches!(classified, BackendAuthError::Provider(_)),

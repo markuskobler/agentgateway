@@ -7,6 +7,7 @@ pub mod jwt_sign;
 pub mod oauth;
 
 use std::borrow::Cow;
+use std::future::Future;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use ::http::HeaderValue;
@@ -135,6 +136,19 @@ impl BackendAuthError {
 	fn provider(error: impl Into<anyhow::Error>) -> Self {
 		Self::Provider(error.into())
 	}
+}
+
+async fn with_cloud_auth_timeout<T>(
+	future: impl Future<Output = Result<T, BackendAuthError>>,
+	operation: &'static str,
+) -> Result<T, BackendAuthError> {
+	tokio::time::timeout(CLOUD_AUTH_TIMEOUT, future)
+		.await
+		.map_err(|error| {
+			BackendAuthError::provider(anyhow::anyhow!(
+				"{operation} timed out after {CLOUD_AUTH_TIMEOUT:?}: {error}"
+			))
+		})?
 }
 
 impl BackendAuth {

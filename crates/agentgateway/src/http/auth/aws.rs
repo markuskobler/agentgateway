@@ -18,7 +18,6 @@ use tokio::sync::{Mutex, OnceCell};
 
 use super::BackendAuthError;
 use crate::llm::bedrock::AwsRegion;
-use crate::util::ErrorContext;
 use crate::*;
 
 #[derive(Clone, Debug)]
@@ -94,14 +93,14 @@ impl Default for AwsAssumeRoleCache {
 }
 
 impl AwsAssumeRoleCache {
-	async fn get_or_fetch<F, Fut>(
+	async fn get_or_fetch<F, Fut, E>(
 		&self,
 		key: AssumeRoleCacheKey,
 		fetch: F,
-	) -> anyhow::Result<Credentials>
+	) -> Result<Credentials, E>
 	where
 		F: FnOnce() -> Fut,
-		Fut: Future<Output = anyhow::Result<Credentials>>,
+		Fut: Future<Output = Result<Credentials, E>>,
 	{
 		let guard = match self
 			.0
@@ -607,19 +606,16 @@ pub(super) async fn sign_request(
 			}
 		},
 	};
-	let creds = tokio::time::timeout(
-		super::CLOUD_AUTH_TIMEOUT,
+	let creds = super::with_cloud_auth_timeout(
 		Box::pin(load_credentials(
 			aws_auth,
 			region,
 			resolved_tags,
 			resolved_session_name,
 		)),
+		"AWS credential fetch",
 	)
-	.await
-	.ctx("AWS credential fetch timed out after 5s")
-	.map_err(BackendAuthError::provider)?
-	.map_err(classify_aws_credentials_error)?
+	.await?
 	.into();
 
 	let service = signing_service_name(req, aws_auth);
@@ -672,21 +668,17 @@ pub(super) async fn sign_request(
 	Ok(())
 }
 
-fn classify_aws_credentials_error(error: anyhow::Error) -> BackendAuthError {
-	let is_provider_failure = error
-		.downcast_ref::<CredentialsError>()
-		.is_some_and(|error| {
-			matches!(
-				error,
-				CredentialsError::ProviderTimedOut(_)
-					| CredentialsError::ProviderError(_)
-					| CredentialsError::Unhandled(_)
-			)
-		});
+fn classify_aws_credentials_error(error: CredentialsError) -> BackendAuthError {
+	let is_provider_failure = matches!(
+		error,
+		CredentialsError::ProviderTimedOut(_)
+			| CredentialsError::ProviderError(_)
+			| CredentialsError::Unhandled(_)
+	);
 	if is_provider_failure {
-		BackendAuthError::Provider(error)
+		BackendAuthError::provider(error)
 	} else {
-		BackendAuthError::Gateway(error)
+		BackendAuthError::gateway(error)
 	}
 }
 
@@ -710,7 +702,7 @@ async fn load_credentials(
 	signing_region: &str,
 	resolved_tags: Option<Arc<[(String, String)]>>,
 	resolved_session_name: Option<String>,
-) -> anyhow::Result<Credentials> {
+) -> Result<Credentials, BackendAuthError> {
 	if let (Some(assume_role), Some(cache)) = (aws_auth.assume_role(), aws_auth.assume_role_cache()) {
 		load_assumed_credentials(
 			assume_role,
@@ -725,7 +717,7 @@ async fn load_credentials(
 	}
 }
 
-async fn load_source_credentials(aws_auth: &AwsAuth) -> anyhow::Result<Credentials> {
+async fn load_source_credentials(aws_auth: &AwsAuth) -> Result<Credentials, BackendAuthError> {
 	match aws_auth {
 		AwsAuth::ExplicitConfig {
 			access_key_id,
@@ -766,11 +758,14 @@ async fn load_source_credentials(aws_auth: &AwsAuth) -> anyhow::Result<Credentia
 			// Get credentials from the config
 			let creds = config
 				.credentials_provider()
-				.ok_or(anyhow::anyhow!(
-					"No credentials provider found in AWS config"
-				))?
+				.ok_or_else(|| {
+					BackendAuthError::gateway(anyhow::anyhow!(
+						"No credentials provider found in AWS config"
+					))
+				})?
 				.provide_credentials()
-				.await?;
+				.await
+				.map_err(classify_aws_credentials_error)?;
 			*cache.0.lock().await = Some(creds.clone());
 			Ok(creds)
 		},
@@ -808,8 +803,10 @@ async fn load_assumed_credentials(
 	signing_region: &str,
 	resolved_tags: Option<Arc<[(String, String)]>>,
 	resolved_session_name: Option<String>,
-) -> anyhow::Result<Credentials> {
-	let sts_region = resolve_sts_region(assume_role, signing_region).await?;
+) -> Result<Credentials, BackendAuthError> {
+	let sts_region = resolve_sts_region(assume_role, signing_region)
+		.await
+		.map_err(BackendAuthError::gateway)?;
 	// resolved_tags and resolved_session_name are Some iff the corresponding
 	// dynamic config is set (see sign_request); static-only configs use the
 	// configured values directly.
@@ -837,13 +834,18 @@ async fn load_assumed_credentials(
 				builder = builder.tags(key.tags.iter().cloned());
 			}
 
-			let source_credentials_provider = config.credentials_provider().ok_or(anyhow::anyhow!(
-				"No credentials provider found in AWS config"
-			))?;
+			let source_credentials_provider = config.credentials_provider().ok_or_else(|| {
+				BackendAuthError::gateway(anyhow::anyhow!(
+					"No credentials provider found in AWS config"
+				))
+			})?;
 			let provider = builder
 				.build_from_provider(source_credentials_provider.clone())
 				.await;
-			Ok(provider.provide_credentials().await?)
+			provider
+				.provide_credentials()
+				.await
+				.map_err(classify_aws_credentials_error)
 		})
 		.await
 }
@@ -891,13 +893,13 @@ mod credential_error_tests {
 
 		for error in local {
 			assert!(matches!(
-				classify_aws_credentials_error(error.into()),
+				classify_aws_credentials_error(error),
 				BackendAuthError::Gateway(_)
 			));
 		}
 		for error in provider {
 			assert!(matches!(
-				classify_aws_credentials_error(error.into()),
+				classify_aws_credentials_error(error),
 				BackendAuthError::Provider(_)
 			));
 		}
@@ -1402,7 +1404,7 @@ mod assume_role_cache_tests {
 			let n = calls.fetch_add(1, Ordering::Relaxed);
 			tokio::time::sleep(Duration::from_millis(50)).await;
 			assert_eq!(n, 0, "only one concurrent fetch should run");
-			Ok(creds(None))
+			Ok::<_, anyhow::Error>(creds(None))
 		};
 		let (a, b) = tokio::join!(
 			cache.get_or_fetch(k.clone(), slow_fetch),
