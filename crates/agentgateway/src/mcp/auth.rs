@@ -8,16 +8,15 @@ use secrecy::ExposeSecret;
 use tracing::{debug, warn};
 
 use crate::http::jwt::{Claims, Jwt};
-use crate::http::oauth::{
-	authorization_server_metadata_url, entra_endpoints, openid_configuration_metadata_url,
-};
 use crate::http::*;
-use crate::json;
 use crate::json::from_body_with_limit;
+use crate::mcp::provider::McpProviderProfile;
 use crate::proxy::ProxyError;
 use crate::proxy::httpproxy::PolicyClient;
 use crate::telemetry::metrics::{OutboundCallKind, OutboundCallSubtype};
-use crate::types::agent::{McpAuthentication, McpIDP};
+use crate::types::agent::McpAuthentication;
+#[cfg(test)]
+use crate::types::agent::McpIDP;
 
 pub(crate) fn is_well_known_endpoint(path: &str) -> bool {
 	path == "/.well-known/oauth-protected-resource"
@@ -106,7 +105,7 @@ pub(crate) async fn handle_mcp_request(
 		// advertises proxied authorization/token endpoints (under the served AS metadata path)
 		// that strip it before forwarding to Entra.
 		path
-			if matches!(auth.provider, Some(McpIDP::Entra {}))
+			if McpProviderProfile::new(auth.provider.as_ref()).proxies_oauth_endpoints()
 				&& path.starts_with("/.well-known/oauth-authorization-server/")
 				&& path.ends_with("/authorize") =>
 		{
@@ -120,7 +119,7 @@ pub(crate) async fn handle_mcp_request(
 			))
 		},
 		path
-			if matches!(auth.provider, Some(McpIDP::Entra {}))
+			if McpProviderProfile::new(auth.provider.as_ref()).proxies_oauth_endpoints()
 				&& path.starts_with("/.well-known/oauth-authorization-server/")
 				&& path.ends_with("/token") =>
 		{
@@ -257,7 +256,7 @@ fn rewrite_authorization_server_issuer(
 	auth: &McpAuthentication,
 	metadata: &mut serde_json::Value,
 ) -> Result<(), ProxyError> {
-	if auth.provider.is_none() {
+	if !McpProviderProfile::new(auth.provider.as_ref()).rewrites_public_issuer() {
 		// Without a provider adapter, authorization server metadata should keep advertising the
 		// upstream IdP issuer (auth.issuer) rather than presenting the gateway as the
 		// authorization server issuer.
@@ -323,26 +322,10 @@ pub(super) async fn authorization_server_metadata(
 	auth: &McpAuthentication,
 	client: PolicyClient,
 ) -> Result<Response, ProxyError> {
-	// RFC 8414 URL for standard AS metadata. Keycloak does not implement RFC 8414; it only
-	// exposes OpenID Provider Metadata at {issuer}/.well-known/openid-configuration (OIDC Discovery).
-	let metadata_uri = match &auth.provider {
-		// Keycloak, Okta, Descope, and authentik do not support the RFC 8414 path-based issuer
-		// format; they serve metadata at {issuer}/.well-known/openid-configuration (OIDC Discovery).
-		Some(McpIDP::Keycloak { .. })
-		| Some(McpIDP::Okta {})
-		| Some(McpIDP::Descope {})
-		| Some(McpIDP::Authentik {}) => openid_configuration_metadata_url(&auth.issuer),
-		// Entra does not implement RFC 8414 either; it only serves OIDC Discovery documents.
-		// Always fetch the v2.0 document (derived from the tenant in the issuer) so the
-		// advertised endpoints support the scope/PKCE flows MCP clients use, even when the
-		// configured issuer is the v1 form (sts.windows.net) used for token validation.
-		Some(McpIDP::Entra {}) => {
-			entra_endpoints(&auth.issuer)
-				.map_err(ProxyError::ProcessingString)?
-				.openid_configuration
-		},
-		_ => authorization_server_metadata_url(&auth.issuer),
-	};
+	let provider = McpProviderProfile::new(auth.provider.as_ref());
+	let metadata_uri = provider
+		.metadata_url(&auth.issuer)
+		.map_err(ProxyError::ProcessingString)?;
 	let ureq = ::http::Request::builder()
 		.uri(metadata_uri)
 		.body(Body::empty())?;
@@ -354,129 +337,13 @@ pub(super) async fn authorization_server_metadata(
 	let mut resp: serde_json::Value = from_body_with_limit(upstream.into_body(), limit)
 		.await
 		.map_err(ProxyError::Body)?;
-	match &auth.provider {
-		Some(McpIDP::Auth0 {}) => {
-			// Auth0 does not support RFC 8707. We can workaround this by prepending an audience
-			let Some(serde_json::Value::String(ae)) =
-				json::traverse_mut(&mut resp, &["authorization_endpoint"])
-			else {
-				return Err(ProxyError::ProcessingString(
-					"authorization_endpoint missing".to_string(),
-				));
-			};
-			// If the user provided multiple audiences with auth0, just prepend the first one
-			if let Some(aud) = auth.audiences.first() {
-				ae.push_str(&format!("?audience={}", aud));
-			}
-		},
-		Some(McpIDP::Okta {}) => {
-			// Okta does not support RFC 8707. Workaround by appending audience as a query param.
-			let Some(serde_json::Value::String(ae)) =
-				json::traverse_mut(&mut resp, &["authorization_endpoint"])
-			else {
-				return Err(ProxyError::ProcessingString(
-					"authorization_endpoint missing".to_string(),
-				));
-			};
-			if let Some(aud) = auth.audiences.first() {
-				ae.push_str(&format!("?audience={}", aud));
-			}
-
-			// Okta doesn't do CORS for client registrations — proxy it (same pattern as Keycloak)
-			let current_uri = request_uri_for_oauth_metadata(req);
-			if let Some(serde_json::Value::String(re)) =
-				json::traverse_mut(&mut resp, &["registration_endpoint"])
-			{
-				*re = format!("{current_uri}/client-registration");
-			}
-		},
-		Some(McpIDP::Descope {}) => {
-			// Descope supports RFC 8707, so no audience workaround needed.
-			// Management DCR endpoint likely lacks CORS — proxy it.
-			// Note: DCR requires a management key; recommend using clientId short-circuit instead.
-			let current_uri = request_uri_for_oauth_metadata(req);
-			if let Some(serde_json::Value::String(re)) =
-				json::traverse_mut(&mut resp, &["registration_endpoint"])
-			{
-				*re = format!("{current_uri}/client-registration");
-			}
-		},
-		Some(McpIDP::Keycloak { .. }) => {
-			// Keycloak does not support RFC 8707.
-			// We do not currently have a workload :-(
-			// users will have to hardcode the audience.
-			// https://github.com/keycloak/keycloak/issues/10169 and https://github.com/keycloak/keycloak/issues/14355
-
-			// Keycloak doesn't do CORS for client registrations
-			// https://github.com/keycloak/keycloak/issues/39629
-			// We can workaround this by proxying it
-
-			let current_uri = request_uri_for_oauth_metadata(req);
-			let Some(serde_json::Value::String(re)) =
-				json::traverse_mut(&mut resp, &["registration_endpoint"])
-			else {
-				return Err(ProxyError::ProcessingString(
-					"registration_endpoint missing".to_string(),
-				));
-			};
-			*re = format!("{current_uri}/client-registration");
-		},
-		Some(McpIDP::Authentik {}) => {
-			// authentik does not support RFC 8707, and has no audience query parameter workaround.
-			// Tokens carry the OAuth client ID in `aud`, so users must configure `audiences`
-			// with the pre-registered client ID.
-
-			// authentik does not implement Dynamic Client Registration (RFC 7591), so its
-			// discovery metadata has no registration_endpoint at all:
-			// https://github.com/goauthentik/authentik/issues/8751
-			// Inject one pointing at the gateway so MCP clients can complete DCR against
-			// the pre-registered client configured via `clientId`.
-			let current_uri = request_uri_for_oauth_metadata(req);
-			if let Some(obj) = resp.as_object_mut() {
-				obj.insert(
-					"registration_endpoint".to_string(),
-					serde_json::Value::String(format!("{current_uri}/client-registration")),
-				);
-			}
-		},
-		Some(McpIDP::Entra {}) => {
-			let current_uri = request_uri_for_oauth_metadata(req);
-
-			// Entra rejects the RFC 8707 `resource` parameter (AADSTS9010010). Advertise
-			// gateway-proxied authorization/token endpoints that strip it before forwarding.
-			let Some(serde_json::Value::String(ae)) =
-				json::traverse_mut(&mut resp, &["authorization_endpoint"])
-			else {
-				return Err(ProxyError::ProcessingString(
-					"authorization_endpoint missing".to_string(),
-				));
-			};
-			*ae = format!("{current_uri}/authorize");
-			let Some(serde_json::Value::String(te)) = json::traverse_mut(&mut resp, &["token_endpoint"])
-			else {
-				return Err(ProxyError::ProcessingString(
-					"token_endpoint missing".to_string(),
-				));
-			};
-			*te = format!("{current_uri}/token");
-
-			if let Some(obj) = resp.as_object_mut() {
-				// Entra does not implement RFC 7591 (no registration_endpoint in its metadata);
-				// advertise the gateway's registration endpoint, which short-circuits with the
-				// configured clientId.
-				obj.insert(
-					"registration_endpoint".to_string(),
-					serde_json::Value::String(format!("{current_uri}/client-registration")),
-				);
-				// Entra supports PKCE (S256) but omits it from its discovery document; MCP
-				// clients require it to be advertised.
-				obj
-					.entry("code_challenge_methods_supported")
-					.or_insert_with(|| serde_json::json!(["S256"]));
-			}
-		},
-		_ => {},
-	}
+	provider
+		.rewrite_metadata(
+			&mut resp,
+			&request_uri_for_oauth_metadata(req).to_string(),
+			&auth.audiences,
+		)
+		.map_err(ProxyError::ProcessingString)?;
 
 	rewrite_authorization_server_issuer(req, auth, &mut resp)?;
 
@@ -502,59 +369,10 @@ pub(super) async fn client_registration(
 		return build_mock_dcr_response(req, client_id).await;
 	}
 
-	// Normalize issuer URL by removing trailing slashes to avoid double-slash in path
-	let issuer = auth.issuer.trim_end_matches('/');
 	let body = std::mem::take(req.body_mut());
-	let registration_uri = match &auth.provider {
-		Some(McpIDP::Entra {}) => {
-			// Entra has no Dynamic Client Registration endpoint to proxy to; registration only
-			// works via the clientId short-circuit above.
-			return Err(ProxyError::ProcessingString(
-				"Entra ID does not support Dynamic Client Registration (RFC 7591); set `clientId` on mcpAuthentication to a pre-registered app registration".to_string(),
-			));
-		},
-		Some(McpIDP::Okta {}) => {
-			// Okta's DCR endpoint is relative to the org URL, not the issuer.
-			// Issuer: https://trial-xxx.okta.com/oauth2/default
-			// DCR:    https://trial-xxx.okta.com/oauth2/v1/clients
-			let parsed: url::Url = issuer
-				.parse()
-				.map_err(|e| ProxyError::ProcessingString(format!("invalid issuer URL: {e}")))?;
-			let origin = parsed.origin().ascii_serialization();
-			format!("{origin}/oauth2/v1/clients")
-		},
-		Some(McpIDP::Descope {}) => {
-			// DCR endpoint: https://api.descope.com/v1/mgmt/mcp/client/{project-id}/{server-id}/register
-			// Derived from agentic issuer: https://api.descope.com/v1/apps/agentic/{project-id}/{server-id}
-			let parsed: url::Url = issuer
-				.parse()
-				.map_err(|e| ProxyError::ProcessingString(format!("invalid issuer URL: {e}")))?;
-			let segments: Vec<&str> = parsed.path().trim_start_matches('/').split('/').collect();
-			if segments.len() >= 5
-				&& segments[0] == "v1"
-				&& segments[1] == "apps"
-				&& segments[2] == "agentic"
-			{
-				let (project_id, server_id) = (segments[3], segments[4]);
-				let origin = parsed.origin().ascii_serialization();
-				format!("{origin}/v1/mgmt/mcp/client/{project_id}/{server_id}/register")
-			} else {
-				return Err(ProxyError::ProcessingString(
-					"Descope DCR requires an agentic issuer URL".to_string(),
-				));
-			}
-		},
-		Some(McpIDP::Authentik {}) => {
-			// authentik has no DCR endpoint to proxy to (RFC 7591 is unimplemented:
-			// https://github.com/goauthentik/authentik/issues/8751). The only supported flow
-			// is a pre-registered client via `clientId`, which is handled above.
-			return Err(ProxyError::ProcessingString(
-				"authentik does not support Dynamic Client Registration; set clientId to a pre-registered public client".to_string(),
-			));
-		},
-		// Keycloak and default
-		_ => format!("{issuer}/clients-registrations/openid-connect"),
-	};
+	let registration_uri = McpProviderProfile::new(auth.provider.as_ref())
+		.registration_url(&auth.issuer)
+		.map_err(ProxyError::ProcessingString)?;
 	let ureq = ::http::Request::builder()
 		.uri(registration_uri)
 		.method(Method::POST)
@@ -590,17 +408,23 @@ pub(super) fn entra_authorize(
 	req: &Request,
 	auth: &McpAuthentication,
 ) -> Result<Response, ProxyError> {
-	let endpoints = entra_endpoints(&auth.issuer).map_err(ProxyError::ProcessingString)?;
+	let provider = McpProviderProfile::new(auth.provider.as_ref());
+	let authorization_endpoint = provider
+		.authorization_endpoint(&auth.issuer)
+		.map_err(ProxyError::ProcessingString)?
+		.ok_or_else(|| {
+			ProxyError::ProcessingString("provider has no proxied authorize endpoint".into())
+		})?;
 	let mut location: Uri = match req.uri().query() {
-		Some(query) => format!("{}?{}", endpoints.authorization_endpoint, query),
-		None => endpoints.authorization_endpoint,
+		Some(query) => format!("{authorization_endpoint}?{query}"),
+		None => authorization_endpoint,
 	}
 	.parse()
 	.map_err(|e| ProxyError::ProcessingString(format!("invalid authorize URL: {e}")))?;
 	crate::http::modify_query_parameters(
 		&mut location,
 		std::iter::empty::<(&str, &str)>(),
-		["resource"],
+		provider.strips_resource_parameter().then_some("resource"),
 	)
 	.map_err(|e| ProxyError::ProcessingString(e.to_string()))?;
 	Ok(
@@ -636,7 +460,11 @@ pub(super) async fn entra_token(
 		);
 	}
 
-	let endpoints = entra_endpoints(&auth.issuer).map_err(ProxyError::ProcessingString)?;
+	let provider = McpProviderProfile::new(auth.provider.as_ref());
+	let token_endpoint = provider
+		.token_endpoint(&auth.issuer)
+		.map_err(ProxyError::ProcessingString)?
+		.ok_or_else(|| ProxyError::ProcessingString("provider has no proxied token endpoint".into()))?;
 	// Clients using client_secret_basic carry their credentials in the Authorization header;
 	// forward it and don't inject a second credential.
 	let authorization = req.headers().get(::http::header::AUTHORIZATION).cloned();
@@ -655,7 +483,7 @@ pub(super) async fn entra_token(
 	if authorization.is_none()
 		&& !parsed.has_client_secret
 		&& client_id_matches
-		&& entra_grant_may_use_client_secret(parsed.grant_type.as_deref())
+		&& provider.may_inject_client_secret(parsed.grant_type.as_deref())
 		&& let Some(secret) = &auth.client_secret
 	{
 		form = url::form_urlencoded::Serializer::new(form)
@@ -664,7 +492,7 @@ pub(super) async fn entra_token(
 	}
 
 	let mut builder = ::http::Request::builder()
-		.uri(endpoints.token_endpoint)
+		.uri(token_endpoint)
 		.method(Method::POST)
 		.header(
 			::http::header::CONTENT_TYPE,
@@ -689,12 +517,6 @@ struct EntraTokenForm {
 	has_client_secret: bool,
 	grant_type: Option<String>,
 	client_id: Option<String>,
-}
-
-/// Only user-delegated grants may have the gateway's client secret attached; see
-/// [`entra_token`].
-fn entra_grant_may_use_client_secret(grant_type: Option<&str>) -> bool {
-	matches!(grant_type, Some("authorization_code" | "refresh_token"))
 }
 
 fn parse_entra_token_form(input: &[u8]) -> EntraTokenForm {
@@ -1270,6 +1092,34 @@ mod tests {
 		assert_eq!(json["redirect_uris"], serde_json::json!([]));
 	}
 
+	#[tokio::test]
+	async fn configured_client_registration_short_circuits_every_provider() {
+		for provider in [
+			None,
+			Some(McpIDP::Auth0 {}),
+			Some(McpIDP::Keycloak {}),
+			Some(McpIDP::Okta {}),
+			Some(McpIDP::Descope {}),
+			Some(McpIDP::Authentik {}),
+			Some(McpIDP::Entra {}),
+		] {
+			let mut auth = default_auth();
+			auth.provider = provider;
+			auth.client_id = Some("configured-client".to_string());
+			let mut req = dcr_request(r#"{"redirect_uris":["http://localhost/callback"]}"#);
+
+			let response = client_registration(&mut req, &auth, crate::test_helpers::policy_client())
+				.await
+				.expect("configured registration should not call the provider");
+
+			assert_eq!(response.status(), StatusCode::CREATED);
+			assert_eq!(
+				response_body_to_json(response).await["client_id"],
+				"configured-client"
+			);
+		}
+	}
+
 	fn entra_auth() -> McpAuthentication {
 		McpAuthentication {
 			issuer: "https://login.microsoftonline.com/11111111-2222-3333-4444-555555555555/v2.0"
@@ -1392,17 +1242,14 @@ mod tests {
 
 	#[test]
 	fn entra_client_secret_only_attaches_to_user_delegated_grants() {
-		assert!(entra_grant_may_use_client_secret(Some(
-			"authorization_code"
-		)));
-		assert!(entra_grant_may_use_client_secret(Some("refresh_token")));
+		let provider = McpProviderProfile::new(Some(&McpIDP::Entra {}));
+		assert!(provider.may_inject_client_secret(Some("authorization_code")));
+		assert!(provider.may_inject_client_secret(Some("refresh_token")));
 		// A hostile page could POST these pre-auth; the gateway must never attach its secret.
-		assert!(!entra_grant_may_use_client_secret(Some(
-			"client_credentials"
-		)));
-		assert!(!entra_grant_may_use_client_secret(Some(
-			"urn:ietf:params:oauth:grant-type:jwt-bearer"
-		)));
-		assert!(!entra_grant_may_use_client_secret(None));
+		assert!(!provider.may_inject_client_secret(Some("client_credentials")));
+		assert!(
+			!provider.may_inject_client_secret(Some("urn:ietf:params:oauth:grant-type:jwt-bearer"))
+		);
+		assert!(!provider.may_inject_client_secret(None));
 	}
 }

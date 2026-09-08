@@ -3022,45 +3022,9 @@ pub struct LocalMcpAuthentication {
 impl LocalMcpAuthentication {
 	/// Derive the JWKS URL from the issuer and provider, for configs that do not set `jwks`.
 	fn derived_jwks_url(&self) -> anyhow::Result<::http::Uri> {
-		Ok(match &self.provider {
-			None | Some(McpIDP::Auth0 { .. }) | Some(McpIDP::Okta { .. }) => {
-				format!("{}/.well-known/jwks.json", self.issuer).parse()?
-			},
-			Some(McpIDP::Descope {}) => {
-				// For agentic issuers (https://api.descope.com/v1/apps/agentic/{project-id}/{server-id}),
-				// JWKS lives at the project level: https://api.descope.com/{project-id}/.well-known/jwks.json
-				let parsed: url::Url = self.issuer.parse()?;
-				let segments: Vec<&str> = parsed.path().trim_start_matches('/').split('/').collect();
-				if segments.len() >= 5
-					&& segments[0] == "v1"
-					&& segments[1] == "apps"
-					&& segments[2] == "agentic"
-				{
-					let project_id = segments[3];
-					let base = format!(
-						"{}://{}/{}",
-						parsed.scheme(),
-						parsed.host_str().unwrap_or_default(),
-						project_id
-					);
-					format!("{base}/.well-known/jwks.json").parse()?
-				} else {
-					format!("{}/.well-known/jwks.json", self.issuer).parse()?
-				}
-			},
-			Some(McpIDP::Keycloak { .. }) => {
-				format!("{}/protocol/openid-connect/certs", self.issuer).parse()?
-			},
-			Some(McpIDP::Authentik {}) => {
-				// authentik issuers look like https://<host>/application/o/<app-slug>/
-				// (note the trailing slash) and serve JWKS at {issuer}/jwks/.
-				format!("{}/jwks/", self.issuer.trim_end_matches('/')).parse()?
-			},
-			Some(McpIDP::Entra { .. }) => http::oauth::entra_endpoints(&self.issuer)
-				.map_err(|e| anyhow!(e))?
-				.jwks_uri
-				.parse()?,
-		})
+		crate::mcp::provider::McpProviderProfile::new(self.provider.as_ref())
+			.jwks_url(&self.issuer)
+			.map_err(|error| anyhow!(error))
 	}
 
 	pub fn as_jwt(&self) -> anyhow::Result<http::jwt::LocalJwtConfig> {
