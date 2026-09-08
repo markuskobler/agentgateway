@@ -567,12 +567,35 @@ impl Jwt {
 		self.location.expression().into_iter()
 	}
 
+	pub(crate) fn apply_retained_credential(
+		&self,
+		log: Option<&mut RequestLog>,
+		req: &mut Request,
+	) -> Result<bool, TokenError> {
+		let Some(token) = self.location.extract(req).map(|token| token.into_owned()) else {
+			return Ok(false);
+		};
+		req.extensions_mut().remove::<Claims>();
+		self.apply_extracted(log, req, Some(&token))?;
+		Ok(true)
+	}
+
 	pub async fn apply(
 		&self,
 		log: Option<&mut RequestLog>,
 		req: &mut Request,
 	) -> Result<(), TokenError> {
-		let Some(token) = self.location.extract(req) else {
+		let token = self.location.extract(req).map(|token| token.into_owned());
+		self.apply_extracted(log, req, token.as_deref())
+	}
+
+	fn apply_extracted(
+		&self,
+		log: Option<&mut RequestLog>,
+		req: &mut Request,
+		token: Option<&str>,
+	) -> Result<(), TokenError> {
+		let Some(token) = token else {
 			// In strict mode, we require a token
 			if self.mode == Mode::Strict {
 				dtrace::pol_result!(
@@ -590,7 +613,7 @@ impl Jwt {
 			);
 			return Ok(());
 		};
-		let claims = match self.validate_claims(&token) {
+		let claims = match self.validate_claims(token) {
 			Ok(claims) => claims,
 			Err(e) if self.mode == Mode::Permissive => {
 				dtrace::pol_result!(

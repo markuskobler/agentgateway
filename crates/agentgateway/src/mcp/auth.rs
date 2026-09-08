@@ -7,7 +7,7 @@ use http::uri::PathAndQuery;
 use secrecy::ExposeSecret;
 use tracing::{debug, warn};
 
-use crate::http::jwt::Claims;
+use crate::http::jwt::{Claims, Jwt};
 use crate::http::oauth::{
 	authorization_server_metadata_url, entra_endpoints, openid_configuration_metadata_url,
 };
@@ -29,6 +29,8 @@ pub(crate) fn is_well_known_endpoint(path: &str) -> bool {
 pub(super) async fn apply_token_validation(
 	req: &mut Request,
 	auth: &McpAuthentication,
+	validator: &Jwt,
+	log: Option<&mut crate::telemetry::log::RequestLog>,
 ) -> Result<(), ProxyError> {
 	// skip well-known OAuth endpoints for authn
 	if is_well_known_endpoint(req.uri().path()) {
@@ -36,20 +38,26 @@ pub(super) async fn apply_token_validation(
 	}
 	let has_claims = req.extensions().get::<Claims>().is_some();
 
-	if has_claims {
-		// if mcp authn is configured but JWT already validated (claims exist from previous layer),
-		// reject because we cannot validate MCP-specific auth requirements
-		let err = ProxyError::ProcessingString(
-			"MCP backend authentication configured but JWT token already validated and stripped by Gateway or Route level policy".to_string(),
-		);
-		return Err(create_auth_required_response(err, req, auth));
-	}
-
 	debug!(
 		"MCP auth configured; validating Authorization header (mode={:?})",
 		auth.mode
 	);
-	auth.jwt_validator.apply(None, req).await.map_err(|e| {
+	let validation = if has_claims {
+		// Extract before clearing claims because expression-based credential locations may read them
+		match validator.apply_retained_credential(log, req) {
+			Ok(true) => Ok(()),
+			Ok(false) => {
+				let err = ProxyError::ProcessingString(
+					"MCP authentication configured but JWT token already validated and stripped by an earlier policy".to_string(),
+				);
+				return Err(create_auth_required_response(err, req, auth));
+			},
+			Err(err) => Err(err),
+		}
+	} else {
+		validator.apply(log, req).await
+	};
+	validation.map_err(|e| {
 		create_auth_required_response(ProxyError::JwtAuthenticationFailure(e), req, auth)
 	})?;
 	Ok(())
@@ -58,11 +66,13 @@ pub(super) async fn apply_token_validation(
 pub(crate) async fn enforce_authentication(
 	req: &mut Request,
 	auth: &McpAuthentication,
+	validator: &Jwt,
+	log: Option<&mut crate::telemetry::log::RequestLog>,
 	client: &PolicyClient,
 ) -> Result<Option<Response>, ProxyError> {
 	// skip well-known OAuth endpoints for authn
 	if !is_well_known_endpoint(req.uri().path()) {
-		apply_token_validation(req, auth).await?;
+		apply_token_validation(req, auth, validator, log).await?;
 	}
 
 	handle_mcp_request(req, auth, client).await
@@ -1014,6 +1024,127 @@ mod tests {
 			client_id: None,
 			client_secret: None,
 		}
+	}
+
+	fn validator(mode: crate::http::jwt::Mode) -> Jwt {
+		Jwt::from_providers(
+			vec![],
+			mode,
+			crate::http::auth::AuthorizationLocation::bearer_header(),
+			false,
+		)
+	}
+
+	fn prior_claims(subject: &str) -> Claims {
+		Claims {
+			inner: serde_json::Map::from_iter([(
+				"sub".to_string(),
+				serde_json::Value::String(subject.to_string()),
+			)]),
+			jwt: secrecy::SecretString::new("earlier-token".into()),
+		}
+	}
+
+	#[tokio::test]
+	async fn stripped_earlier_credentials_are_rejected_in_every_mode() {
+		for mode in [
+			crate::http::jwt::Mode::Strict,
+			crate::http::jwt::Mode::Optional,
+			crate::http::jwt::Mode::Permissive,
+		] {
+			let mut req = ::http::Request::builder()
+				.uri("https://gateway.example/mcp")
+				.body(Body::empty())
+				.expect("request should build");
+			req.extensions_mut().insert(prior_claims("earlier"));
+
+			let result = apply_token_validation(&mut req, &default_auth(), &validator(mode), None).await;
+
+			assert!(matches!(
+				result,
+				Err(ProxyError::McpJwtAuthenticationFailure(_, _))
+			));
+			assert_eq!(
+				req
+					.extensions()
+					.get::<Claims>()
+					.and_then(|claims| claims.inner.get("sub")),
+				Some(&serde_json::Value::String("earlier".to_string()))
+			);
+		}
+	}
+
+	#[tokio::test]
+	async fn permissive_revalidation_does_not_reuse_earlier_claims() {
+		let mut req = ::http::Request::builder()
+			.uri("https://gateway.example/mcp")
+			.header(::http::header::AUTHORIZATION, "Bearer invalid-token")
+			.body(Body::empty())
+			.expect("request should build");
+		req.extensions_mut().insert(prior_claims("earlier"));
+
+		apply_token_validation(
+			&mut req,
+			&default_auth(),
+			&validator(crate::http::jwt::Mode::Permissive),
+			None,
+		)
+		.await
+		.expect("permissive validation should allow an invalid retained token");
+
+		assert!(req.extensions().get::<Claims>().is_none());
+		assert!(req.headers().contains_key(::http::header::AUTHORIZATION));
+	}
+
+	#[tokio::test]
+	async fn optional_revalidation_rejects_an_invalid_retained_token() {
+		let mut req = ::http::Request::builder()
+			.uri("https://gateway.example/mcp")
+			.header(::http::header::AUTHORIZATION, "Bearer invalid-token")
+			.body(Body::empty())
+			.expect("request should build");
+		req.extensions_mut().insert(prior_claims("earlier"));
+
+		let result = apply_token_validation(
+			&mut req,
+			&default_auth(),
+			&validator(crate::http::jwt::Mode::Optional),
+			None,
+		)
+		.await;
+
+		assert!(matches!(
+			result,
+			Err(ProxyError::McpJwtAuthenticationFailure(_, _))
+		));
+		assert!(req.extensions().get::<Claims>().is_none());
+	}
+
+	#[tokio::test]
+	async fn revalidation_extracts_expression_credential_before_clearing_claims() {
+		let validator = Jwt::from_providers(
+			vec![],
+			crate::http::jwt::Mode::Strict,
+			crate::http::auth::AuthorizationLocation::Expression(Arc::new(
+				crate::cel::Expression::new_strict("jwt.rawToken.unredacted()")
+					.expect("expression should compile"),
+			)),
+			false,
+		);
+		let mut req = ::http::Request::builder()
+			.uri("https://gateway.example/mcp")
+			.body(Body::empty())
+			.expect("request should build");
+		req.extensions_mut().insert(prior_claims("earlier"));
+
+		let result = apply_token_validation(&mut req, &default_auth(), &validator, None).await;
+
+		assert!(matches!(
+			result,
+			Err(ProxyError::McpJwtAuthenticationFailure(inner, _))
+				if matches!(*inner, ProxyError::JwtAuthenticationFailure(crate::http::jwt::TokenError::InvalidHeader(_)))
+		));
+		assert!(req.extensions().get::<Claims>().is_none());
 	}
 
 	fn www_authenticate_resource_metadata(req: &Request) -> String {

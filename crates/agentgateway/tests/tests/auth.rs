@@ -138,6 +138,280 @@ struct TestIdTokenClaims<'a> {
 	sub: &'a str,
 }
 
+fn signed_access_token(issuer: &str, audience: &str) -> String {
+	jsonwebtoken::encode(
+		&Header {
+			alg: Algorithm::ES256,
+			kid: Some(TEST_KEY_ID.into()),
+			..Header::default()
+		},
+		&TestIdTokenClaims {
+			iss: issuer,
+			aud: audience,
+			exp: agentgateway::http::oidc::now_unix() + 300,
+			nonce: "mcp-access-token",
+			sub: "mcp-user",
+		},
+		&EncodingKey::from_ec_pem(TEST_PRIVATE_KEY_PEM.as_bytes()).expect("encoding key"),
+	)
+	.expect("signed access token")
+}
+
+fn mcp_authentication(
+	mode: agentgateway::types::agent::McpAuthenticationMode,
+) -> agentgateway::types::agent::McpAuthentication {
+	let provider = agentgateway::http::jwt::Provider::from_jwks(
+		test_jwks(),
+		TEST_ISSUER.to_string(),
+		Some(vec![TEST_CLIENT_ID.to_string()]),
+		agentgateway::http::jwt::JWTValidationOptions::default(),
+	)
+	.expect("test JWT provider");
+	let jwt_mode = match mode {
+		agentgateway::types::agent::McpAuthenticationMode::Strict => {
+			agentgateway::http::jwt::Mode::Strict
+		},
+		agentgateway::types::agent::McpAuthenticationMode::Optional => {
+			agentgateway::http::jwt::Mode::Optional
+		},
+		agentgateway::types::agent::McpAuthenticationMode::Permissive => {
+			agentgateway::http::jwt::Mode::Permissive
+		},
+	};
+	let validator = agentgateway::http::jwt::Jwt::from_providers(
+		vec![provider],
+		jwt_mode,
+		agentgateway::http::auth::AuthorizationLocation::bearer_header(),
+		false,
+	);
+
+	agentgateway::types::agent::McpAuthentication {
+		issuer: TEST_ISSUER.to_string(),
+		audiences: vec![TEST_CLIENT_ID.to_string()],
+		provider: None,
+		resource_metadata: agentgateway::types::agent::ResourceMetadata {
+			extra: Default::default(),
+		},
+		jwt_validator: Arc::new(validator),
+		mode,
+		client_id: None,
+		client_secret: None,
+	}
+}
+
+async fn route_mcp_auth_response(mock: &MockServer, mode: &str, token: Option<&str>) -> Response {
+	let mut bind = base_gateway(mock);
+	bind
+		.attach_route_policy(json!({
+			"mcpAuthentication": {
+				"issuer": TEST_ISSUER,
+				"audiences": [TEST_CLIENT_ID],
+				"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+				"mode": mode,
+				"resourceMetadata": {}
+			}
+		}))
+		.await;
+	let io = bind.serve_http(BIND_KEY);
+	let request = RequestBuilder::new(Method::GET, "http://lo/mcp");
+	let request = match token {
+		Some(token) => request.header(header::AUTHORIZATION, format!("Bearer {token}")),
+		None => request,
+	};
+	request.send(io).await.expect("route request")
+}
+
+async fn backend_mcp_auth_response(
+	mock: &MockServer,
+	mode: agentgateway::types::agent::McpAuthenticationMode,
+	token: Option<&str>,
+) -> Response {
+	let bind = setup_proxy_test("{}")
+		.expect("proxy test harness")
+		.with_mcp_backend_policies(
+			*mock.address(),
+			false,
+			false,
+			vec![BackendTrafficPolicy::McpAuthentication(mcp_authentication(
+				mode,
+			))],
+		)
+		.with_bind(simple_bind())
+		.with_route(basic_route(*mock.address()));
+	let io = bind.serve_http(BIND_KEY);
+	let request = RequestBuilder::new(Method::GET, "http://lo/mcp");
+	let request = match token {
+		Some(token) => request.header(header::AUTHORIZATION, format!("Bearer {token}")),
+		None => request,
+	};
+	request.send(io).await.expect("backend request")
+}
+
+async fn attach_gateway_jwt(bind: &mut TestBind, preserve_token: bool) {
+	bind
+		.attach_gateway_policy(json!({
+			"jwtAuth": {
+				"issuer": TEST_ISSUER,
+				"audiences": [TEST_CLIENT_ID],
+				"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+				"mode": "strict",
+				"preserveToken": preserve_token
+			}
+		}))
+		.await;
+}
+
+async fn route_layered_auth_response(mock: &MockServer, preserve_token: bool) -> Response {
+	let mut bind = base_gateway(mock);
+	attach_gateway_jwt(&mut bind, preserve_token).await;
+	bind
+		.attach_route_policy(json!({
+			"mcpAuthentication": {
+				"issuer": TEST_ISSUER,
+				"audiences": [TEST_CLIENT_ID],
+				"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+				"mode": "optional",
+				"resourceMetadata": {}
+			}
+		}))
+		.await;
+	let io = bind.serve_http(BIND_KEY);
+	RequestBuilder::new(Method::GET, "http://lo/mcp")
+		.header(
+			header::AUTHORIZATION,
+			format!(
+				"Bearer {}",
+				signed_access_token(TEST_ISSUER, TEST_CLIENT_ID)
+			),
+		)
+		.send(io)
+		.await
+		.expect("route request")
+}
+
+async fn backend_layered_auth_response(mock: &MockServer, preserve_token: bool) -> Response {
+	let mut bind = setup_proxy_test("{}")
+		.expect("proxy test harness")
+		.with_mcp_backend_policies(
+			*mock.address(),
+			false,
+			false,
+			vec![BackendTrafficPolicy::McpAuthentication(mcp_authentication(
+				agentgateway::types::agent::McpAuthenticationMode::Optional,
+			))],
+		)
+		.with_bind(simple_bind())
+		.with_route(basic_route(*mock.address()));
+	attach_gateway_jwt(&mut bind, preserve_token).await;
+	let io = bind.serve_http(BIND_KEY);
+	RequestBuilder::new(Method::GET, "http://lo/mcp")
+		.header(
+			header::AUTHORIZATION,
+			format!(
+				"Bearer {}",
+				signed_access_token(TEST_ISSUER, TEST_CLIENT_ID)
+			),
+		)
+		.send(io)
+		.await
+		.expect("backend request")
+}
+
+fn assert_mcp_auth_result(response: &Response, rejected: bool, allowed_status: StatusCode) {
+	if rejected {
+		assert_eq!(response.status(), StatusCode::UNAUTHORIZED);
+		assert!(response.headers().contains_key(header::WWW_AUTHENTICATE));
+	} else {
+		assert_eq!(response.status(), allowed_status);
+	}
+}
+
+#[tokio::test]
+async fn mcp_authentication_modes_match_across_attachment_paths() {
+	use agentgateway::types::agent::McpAuthenticationMode;
+
+	let mock = simple_mock().await;
+	let valid_token = signed_access_token(TEST_ISSUER, TEST_CLIENT_ID);
+	let wrong_issuer_token = signed_access_token("https://other-issuer.example.com", TEST_CLIENT_ID);
+	let wrong_audience_token = signed_access_token(TEST_ISSUER, "other-client");
+	let cases = [
+		("strict", McpAuthenticationMode::Strict, None, true),
+		("optional", McpAuthenticationMode::Optional, None, false),
+		("permissive", McpAuthenticationMode::Permissive, None, false),
+		(
+			"strict",
+			McpAuthenticationMode::Strict,
+			Some("invalid-token"),
+			true,
+		),
+		(
+			"optional",
+			McpAuthenticationMode::Optional,
+			Some("invalid-token"),
+			true,
+		),
+		(
+			"permissive",
+			McpAuthenticationMode::Permissive,
+			Some("invalid-token"),
+			false,
+		),
+		(
+			"strict",
+			McpAuthenticationMode::Strict,
+			Some(valid_token.as_str()),
+			false,
+		),
+		(
+			"optional",
+			McpAuthenticationMode::Optional,
+			Some(valid_token.as_str()),
+			false,
+		),
+		(
+			"permissive",
+			McpAuthenticationMode::Permissive,
+			Some(valid_token.as_str()),
+			false,
+		),
+		(
+			"strict",
+			McpAuthenticationMode::Strict,
+			Some(wrong_issuer_token.as_str()),
+			true,
+		),
+		(
+			"strict",
+			McpAuthenticationMode::Strict,
+			Some(wrong_audience_token.as_str()),
+			true,
+		),
+	];
+
+	for (mode_name, mode, token, rejected) in cases {
+		let route = route_mcp_auth_response(&mock, mode_name, token).await;
+		let backend = backend_mcp_auth_response(&mock, mode, token).await;
+
+		assert_mcp_auth_result(&route, rejected, StatusCode::OK);
+		assert_mcp_auth_result(&backend, rejected, StatusCode::METHOD_NOT_ALLOWED);
+	}
+}
+
+#[tokio::test]
+async fn mcp_authentication_revalidates_retained_tokens_and_rejects_stripped_tokens() {
+	let mock = simple_mock().await;
+
+	let stripped_route = route_layered_auth_response(&mock, false).await;
+	let stripped_backend = backend_layered_auth_response(&mock, false).await;
+	assert_mcp_auth_result(&stripped_route, true, StatusCode::OK);
+	assert_mcp_auth_result(&stripped_backend, true, StatusCode::METHOD_NOT_ALLOWED);
+
+	let retained_route = route_layered_auth_response(&mock, true).await;
+	let retained_backend = backend_layered_auth_response(&mock, true).await;
+	assert_mcp_auth_result(&retained_route, false, StatusCode::OK);
+	assert_mcp_auth_result(&retained_backend, false, StatusCode::METHOD_NOT_ALLOWED);
+}
+
 #[tokio::test]
 async fn reserved_oidc_cookies_are_stripped_before_proxying() {
 	let mock = simple_mock().await;

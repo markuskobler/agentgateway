@@ -2919,17 +2919,9 @@ impl store::RequestPolicyTrait for JwtAuthentication {
 		req: &mut crate::http::Request,
 	) -> Result<crate::http::PolicyResponse, crate::proxy::ProxyResponse> {
 		if let Some(auth) = &self.mcp {
-			if !crate::mcp::auth::is_well_known_endpoint(req.uri().path()) {
-				self.jwt.apply(Some(log), req).await.map_err(|e| {
-					crate::proxy::ProxyResponse::from(crate::mcp::auth::create_auth_required_response(
-						crate::proxy::ProxyError::JwtAuthenticationFailure(e),
-						req,
-						auth,
-					))
-				})?;
-			}
-
-			if let Some(resp) = crate::mcp::auth::handle_mcp_request(req, auth, client).await? {
+			if let Some(resp) =
+				crate::mcp::auth::enforce_authentication(req, auth, &self.jwt, Some(log), client).await?
+			{
 				return Err(crate::proxy::ProxyResponse::DirectResponse(Box::new(resp)));
 			}
 			return Ok(crate::http::PolicyResponse::default());

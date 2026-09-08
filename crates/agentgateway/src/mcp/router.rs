@@ -147,7 +147,14 @@ impl App {
 		// replaces this with the post-authentication request state.
 		Self::snapshot_request_without_clearing_extensions(&mut req, log);
 		if let Some(auth) = authn.as_ref()
-			&& let Some(resp) = auth::enforce_authentication(&mut req, auth, &request_client).await?
+			&& let Some(resp) = auth::enforce_authentication(
+				&mut req,
+				auth,
+				auth.jwt_validator.as_ref(),
+				None,
+				&request_client,
+			)
+			.await?
 		{
 			return Ok(resp);
 		}
