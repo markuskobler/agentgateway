@@ -226,7 +226,6 @@ pub(super) async fn authorization_server_metadata(
 				.public_authorization_server
 				.as_str()
 				.trim_end_matches('/'),
-			&auth.audiences,
 			auth.client_id.is_some(),
 		)
 		.map_err(ProxyError::ProcessingString)?;
@@ -390,12 +389,10 @@ pub(super) async fn oauth_token(
 		if let Some(authorization) = authorization {
 			builder = builder.header(::http::header::AUTHORIZATION, authorization);
 		}
-		return Ok(
-			client
-				.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
-				.simple_call(builder.body(body)?)
-				.await?,
-		);
+		return client
+			.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
+			.simple_call(builder.body(body)?)
+			.await;
 	}
 	let limit = crate::http::buffer_limit(req);
 	let bytes = crate::http::read_body_with_limit(body, limit)
@@ -980,6 +977,48 @@ mod tests {
 				"configured-client"
 			);
 		}
+	}
+
+	#[tokio::test]
+	async fn auth0_registration_proxies_the_documented_dcr_endpoint_and_refusal() {
+		let server = wiremock::MockServer::start().await;
+		wiremock::Mock::given(wiremock::matchers::method("POST"))
+			.and(wiremock::matchers::path("/oidc/register"))
+			.respond_with(
+				wiremock::ResponseTemplate::new(400).set_body_json(serde_json::json!({
+					"error": "dynamic client registration is disabled"
+				})),
+			)
+			.mount(&server)
+			.await;
+		let mut auth = default_auth();
+		auth.provider = Some(McpIDP::Auth0 {});
+		auth.upstream_issuer = Some(server.uri());
+		auth.client_id = None;
+		let body = r#"{"redirect_uris":["http://localhost/callback"]}"#;
+		let mut req = dcr_request(body);
+		req.headers_mut().insert(
+			::http::header::AUTHORIZATION,
+			"Bearer registration-token".parse().expect("header"),
+		);
+
+		let response = client_registration(&mut req, &auth, crate::test_helpers::policy_client())
+			.await
+			.expect("upstream refusal should be returned");
+
+		assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+		let requests = server.received_requests().await.expect("requests");
+		let request = requests.first().expect("registration request");
+		assert_eq!(request.url.path(), "/oidc/register");
+		assert_eq!(request.body, body.as_bytes());
+		assert_eq!(
+			request.headers.get(::http::header::CONTENT_TYPE),
+			Some(&"application/json".parse().expect("header"))
+		);
+		assert_eq!(
+			request.headers.get(::http::header::AUTHORIZATION),
+			Some(&"Bearer registration-token".parse().expect("header"))
+		);
 	}
 
 	fn entra_auth() -> McpAuthentication {

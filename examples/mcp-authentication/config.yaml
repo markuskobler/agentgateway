@@ -153,6 +153,10 @@ binds:
             #   - path:
             #       exact: /.well-known/oauth-authorization-server/auth0/mcp
             #   - path:
+            #       exact: /auth0/mcp/authorize
+            #   - path:
+            #       exact: /auth0/mcp/token
+            #   - path:
             #       exact: /auth0/mcp/client-registration
             #   policies:
             #     cors:
@@ -166,10 +170,13 @@ binds:
             #       issuer: https://dev-y6sikgx3n3shy7ci.eu.auth0.com
             #       audiences:
             #       - urn:agent-gateway
+            #       resourceParameterMode: resource
             #       jwks:
             #         url: https://dev-y6sikgx3n3shy7ci.eu.auth0.com/.well-known/jwks.json
             #       provider:
             #         auth0: {}
+            #       # Enable Auth0's Resource Parameter Compatibility Profile so the MCP
+            #       # client's required resource parameter selects this API.
             #       resourceMetadata:
             #         resource: http://localhost:3000/auth0/mcp
             #         scopesSupported:
@@ -216,7 +223,7 @@ binds:
             #       issuer: https://dev-123456.okta.com/oauth2/default
             #       audiences:
             #       - api://default
-			#       resourceParameterMode: audience
+            #       resourceParameterMode: audience
             #       jwks:
             #         url: https://dev-123456.okta.com/oauth2/default/.well-known/jwks.json
             #       provider:

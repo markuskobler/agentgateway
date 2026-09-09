@@ -174,7 +174,10 @@ impl ResolvedMcpIdentity {
 		}
 
 		let mut operations = vec![("client-registration", McpEndpoint::Registration)];
-		if matches!(provider, Some(McpIDP::Entra {} | McpIDP::Okta {})) {
+		if matches!(
+			provider,
+			Some(McpIDP::Auth0 {} | McpIDP::Okta {} | McpIDP::Entra {})
+		) {
 			operations.extend([
 				("authorize", McpEndpoint::Authorization),
 				("token", McpEndpoint::Token),
