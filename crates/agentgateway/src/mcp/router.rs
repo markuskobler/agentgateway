@@ -151,7 +151,7 @@ impl App {
 				&mut req,
 				auth,
 				auth.jwt_validator.as_ref(),
-				None,
+				Some(&mut *log),
 				&request_client,
 			)
 			.await?

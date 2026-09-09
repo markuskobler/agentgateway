@@ -412,6 +412,117 @@ async fn mcp_authentication_revalidates_retained_tokens_and_rejects_stripped_tok
 	assert_mcp_auth_result(&retained_backend, false, StatusCode::METHOD_NOT_ALLOWED);
 }
 
+/// OIDC leaves session claims on the request without ever populating the bearer header, so MCP
+/// authentication must not mistake them for a token an earlier JWT policy stripped.
+#[tokio::test]
+async fn oidc_session_claims_do_not_block_optional_mcp_authentication() {
+	for (backend_attachment, expected_status) in [
+		(false, StatusCode::OK),
+		(true, StatusCode::METHOD_NOT_ALLOWED),
+	] {
+		assert_eq!(
+			oidc_session_with_optional_mcp_authentication(backend_attachment).await,
+			expected_status,
+			"backend_attachment={backend_attachment}"
+		);
+	}
+}
+
+async fn oidc_session_with_optional_mcp_authentication(backend_attachment: bool) -> StatusCode {
+	let (mock, token_response) = oidc_backend_mock().await;
+	let mut bind = if backend_attachment {
+		setup_proxy_test_with_oidc()
+			.with_mcp_backend_policies(
+				*mock.address(),
+				false,
+				false,
+				vec![BackendTrafficPolicy::McpAuthentication(mcp_authentication(
+					agentgateway::types::agent::McpAuthenticationMode::Optional,
+				))],
+			)
+			.with_bind(simple_bind())
+			.with_route(route_with_prefix(*mock.address(), "/upstream"))
+	} else {
+		setup_proxy_test_with_oidc()
+			.with_backend(*mock.address())
+			.with_bind(simple_bind())
+			.with_route(route_with_prefix(*mock.address(), "/upstream"))
+	};
+	bind
+		.attach_gateway_policy(gateway_oidc_policy(format!("{}/token", mock.uri())))
+		.await;
+	if !backend_attachment {
+		bind
+			.attach_route_policy(json!({
+				"mcpAuthentication": {
+					"issuer": TEST_ISSUER,
+					"audiences": [TEST_CLIENT_ID],
+					"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+					"mode": "optional",
+					"resourceMetadata": {}
+				}
+			}))
+			.await;
+	}
+
+	let oidc = bind
+		.pi
+		.stores
+		.read_binds()
+		.gateway_policies(&agentgateway::types::agent::ListenerName::default())
+		.oidc
+		.iter()
+		.next()
+		.cloned()
+		.expect("compiled gateway oidc policy")
+		.pol;
+
+	let io = bind.serve_http(BIND_KEY);
+	let login = send_request(io.clone(), Method::GET, "http://lo/upstream").await;
+	assert_eq!(login.status(), 302);
+
+	let state = query_param(login.hdr(header::LOCATION), "state");
+	let transaction_cookie = login
+		.headers()
+		.get(header::SET_COOKIE)
+		.and_then(|value| value.to_str().ok())
+		.expect("transaction set-cookie");
+	let transaction_cookie =
+		cookie::Cookie::parse(transaction_cookie.to_string()).expect("transaction cookie");
+	let transaction = oidc
+		.session
+		.decode_transaction(transaction_cookie.value())
+		.expect("decode transaction cookie");
+	*token_response.lock().expect("token mutex") = Some(signed_id_token(&transaction.nonce));
+
+	let callback = send_request_headers(
+		io.clone(),
+		Method::GET,
+		&format!("http://lo/oauth/callback?code=auth-code&state={state}"),
+		&[(
+			"cookie",
+			&format!(
+				"{}={}",
+				transaction_cookie.name(),
+				transaction_cookie.value()
+			),
+		)],
+	)
+	.await;
+	assert_eq!(callback.status(), 302);
+
+	let session_cookie = find_set_cookie_pair(callback.headers(), "agw_oidc_s_");
+	let response = send_request_headers(
+		io,
+		Method::GET,
+		"http://lo/upstream",
+		&[("cookie", &session_cookie)],
+	)
+	.await;
+
+	response.status()
+}
+
 #[tokio::test]
 async fn reserved_oidc_cookies_are_stripped_before_proxying() {
 	let mock = simple_mock().await;

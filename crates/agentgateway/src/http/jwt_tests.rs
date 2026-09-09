@@ -547,6 +547,49 @@ pub async fn test_apply_permissive_invalid_token_ok_and_keeps_header() {
 	let _ = (kid, issuer, allowed_aud); // silence unused
 }
 
+#[tokio::test]
+async fn retained_credential_failure_preserves_prior_identity_and_log() {
+	let (base, _, _, _) = setup_test_jwt();
+	let jwt = Jwt {
+		mode: Mode::Permissive,
+		providers: base.providers.clone(),
+		location: bearer_location(),
+		preserve_token: false,
+	};
+	let mut req = crate::http::Request::new(crate::http::Body::empty());
+	req.headers_mut().insert(
+		crate::http::header::AUTHORIZATION,
+		crate::http::HeaderValue::from_static("Bearer invalid-token"),
+	);
+	req.extensions_mut().insert(super::Claims {
+		inner: serde_json::Map::from_iter([(
+			"sub".to_string(),
+			serde_json::Value::String("earlier-user".to_string()),
+		)]),
+		jwt: secrecy::SecretString::new("earlier-token".into()),
+	});
+	let mut log = make_min_req_log();
+	log.jwt_sub = Some("earlier-user".to_string());
+
+	assert_eq!(
+		jwt.apply_retained_credential(Some(&mut log), &mut req),
+		Ok(true)
+	);
+	assert_eq!(
+		req
+			.extensions()
+			.get::<super::Claims>()
+			.and_then(|claims| claims.inner.get("sub")),
+		Some(&serde_json::Value::String("earlier-user".to_string()))
+	);
+	assert_eq!(log.jwt_sub.as_deref(), Some("earlier-user"));
+	assert!(
+		req
+			.headers()
+			.contains_key(crate::http::header::AUTHORIZATION)
+	);
+}
+
 // Permissive mode: valid token attaches claims and removes the Authorization header
 #[tokio::test]
 pub async fn test_apply_permissive_valid_token_inserts_claims_and_removes_header() {

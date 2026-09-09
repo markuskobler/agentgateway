@@ -507,6 +507,18 @@ pub struct Claims {
 	pub jwt: SecretString,
 }
 
+/// Marks a request whose credential a JWT policy validated and then removed. Later policies
+/// need to tell this apart from a request that never carried a credential at all.
+#[derive(Clone, Debug)]
+pub(crate) struct CredentialConsumed(Vec<AuthorizationLocation>);
+
+#[cfg(test)]
+impl CredentialConsumed {
+	pub(crate) fn at(location: AuthorizationLocation) -> Self {
+		Self(vec![location])
+	}
+}
+
 #[cfg(feature = "schema")]
 impl schemars::JsonSchema for Claims {
 	fn schema_name() -> std::borrow::Cow<'static, str> {
@@ -563,20 +575,43 @@ impl<'de> Deserialize<'de> for Claims {
 }
 
 impl Jwt {
+	pub(crate) fn credential_was_consumed(&self, req: &Request) -> bool {
+		req
+			.extensions()
+			.get::<CredentialConsumed>()
+			.is_some_and(|consumed| {
+				consumed
+					.0
+					.iter()
+					.any(|location| same_credential_location(location, &self.location))
+			})
+	}
+
 	pub fn expressions(&self) -> impl Iterator<Item = &crate::cel::Expression> {
 		self.location.expression().into_iter()
 	}
 
+	/// Re-validate a credential that survived an earlier policy, replacing its claims only when
+	/// validation succeeds. Returns `false` when the request carries no credential to validate.
 	pub(crate) fn apply_retained_credential(
 		&self,
 		log: Option<&mut RequestLog>,
 		req: &mut Request,
 	) -> Result<bool, TokenError> {
-		let Some(token) = self.location.extract(req).map(|token| token.into_owned()) else {
+		// Extract and validate before dropping the earlier claims: expression-based credential
+		// locations may read them.
+		let Some(token) = self.location.extract(req) else {
 			return Ok(false);
 		};
-		req.extensions_mut().remove::<Claims>();
-		self.apply_extracted(log, req, Some(&token))?;
+		let validated = self.validate_claims(&token);
+		let previous_claims = req.extensions_mut().remove::<Claims>();
+		let result = self.finish_validation(log, req, validated);
+		if req.extensions().get::<Claims>().is_none()
+			&& let Some(previous_claims) = previous_claims
+		{
+			req.extensions_mut().insert(previous_claims);
+		}
+		result?;
 		Ok(true)
 	}
 
@@ -585,17 +620,7 @@ impl Jwt {
 		log: Option<&mut RequestLog>,
 		req: &mut Request,
 	) -> Result<(), TokenError> {
-		let token = self.location.extract(req).map(|token| token.into_owned());
-		self.apply_extracted(log, req, token.as_deref())
-	}
-
-	fn apply_extracted(
-		&self,
-		log: Option<&mut RequestLog>,
-		req: &mut Request,
-		token: Option<&str>,
-	) -> Result<(), TokenError> {
-		let Some(token) = token else {
+		let Some(token) = self.location.extract(req) else {
 			// In strict mode, we require a token
 			if self.mode == Mode::Strict {
 				dtrace::pol_result!(
@@ -613,7 +638,17 @@ impl Jwt {
 			);
 			return Ok(());
 		};
-		let claims = match self.validate_claims(token) {
+		let validated = self.validate_claims(&token);
+		self.finish_validation(log, req, validated)
+	}
+
+	fn finish_validation(
+		&self,
+		log: Option<&mut RequestLog>,
+		req: &mut Request,
+		validated: Result<Claims, TokenError>,
+	) -> Result<(), TokenError> {
+		let claims = match validated {
 			Ok(claims) => claims,
 			Err(e) if self.mode == Mode::Permissive => {
 				dtrace::pol_result!(
@@ -643,6 +678,15 @@ impl Jwt {
 				.location
 				.remove(req)
 				.map_err(|e| TokenError::CredentialRemoval(e.to_string()))?;
+			if !matches!(self.location, AuthorizationLocation::Expression(_)) {
+				if let Some(consumed) = req.extensions_mut().get_mut::<CredentialConsumed>() {
+					consumed.0.push(self.location.clone());
+				} else {
+					req
+						.extensions_mut()
+						.insert(CredentialConsumed(vec![self.location.clone()]));
+				}
+			}
 		}
 		// Insert the claims into extensions so we can reference it later
 		dtrace::pol_result!(
@@ -690,5 +734,32 @@ impl Jwt {
 			jwt: SecretString::new(token.into()),
 		};
 		Ok(claims)
+	}
+}
+
+fn same_credential_location(left: &AuthorizationLocation, right: &AuthorizationLocation) -> bool {
+	match (left, right) {
+		(
+			AuthorizationLocation::Header {
+				name: left_name,
+				prefix: left_prefix,
+			},
+			AuthorizationLocation::Header {
+				name: right_name,
+				prefix: right_prefix,
+			},
+		) => left_name == right_name && left_prefix == right_prefix,
+		(
+			AuthorizationLocation::QueryParameter { name: left },
+			AuthorizationLocation::QueryParameter { name: right },
+		)
+		| (
+			AuthorizationLocation::Cookie { name: left },
+			AuthorizationLocation::Cookie { name: right },
+		) => left == right,
+		(AuthorizationLocation::Expression(left), AuthorizationLocation::Expression(right)) => {
+			std::sync::Arc::ptr_eq(left, right)
+		},
+		_ => false,
 	}
 }

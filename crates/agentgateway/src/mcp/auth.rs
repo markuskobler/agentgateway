@@ -7,7 +7,7 @@ use http::uri::PathAndQuery;
 use secrecy::ExposeSecret;
 use tracing::{debug, warn};
 
-use crate::http::jwt::{Claims, Jwt};
+use crate::http::jwt::Jwt;
 use crate::http::*;
 use crate::json::from_body_with_limit;
 use crate::mcp::provider::McpProviderProfile;
@@ -29,32 +29,30 @@ pub(super) async fn apply_token_validation(
 	req: &mut Request,
 	auth: &McpAuthentication,
 	validator: &Jwt,
-	log: Option<&mut crate::telemetry::log::RequestLog>,
+	mut log: Option<&mut crate::telemetry::log::RequestLog>,
 ) -> Result<(), ProxyError> {
 	// skip well-known OAuth endpoints for authn
 	if is_well_known_endpoint(req.uri().path()) {
 		return Ok(());
 	}
-	let has_claims = req.extensions().get::<Claims>().is_some();
-
 	debug!(
 		"MCP auth configured; validating Authorization header (mode={:?})",
 		auth.mode
 	);
-	let validation = if has_claims {
-		// Extract before clearing claims because expression-based credential locations may read them
-		match validator.apply_retained_credential(log, req) {
-			Ok(true) => Ok(()),
-			Ok(false) => {
-				let err = ProxyError::ProcessingString(
-					"MCP authentication configured but JWT token already validated and stripped by an earlier policy".to_string(),
-				);
-				return Err(create_auth_required_response(err, req, auth));
-			},
-			Err(err) => Err(err),
-		}
-	} else {
-		validator.apply(log, req).await
+	let revalidated = validator.apply_retained_credential(log.as_deref_mut(), req);
+	let validation = match revalidated {
+		Ok(true) => Ok(()),
+		// An earlier JWT policy consumed the credential, so MCP-specific requirements can no
+		// longer be checked against it. Fail closed instead of trusting claims we did not verify.
+		Ok(false) if validator.credential_was_consumed(req) => {
+			let err = ProxyError::ProcessingString(
+				"MCP authentication configured but the token was already validated and stripped by an earlier policy; set preserveToken on that policy".to_string(),
+			);
+			return Err(create_auth_required_response(err, req, auth));
+		},
+		// No credential to validate, and no earlier policy took one: the configured mode decides.
+		Ok(false) => validator.apply(log, req).await,
+		Err(err) => Err(err),
 	};
 	validation.map_err(|e| {
 		create_auth_required_response(ProxyError::JwtAuthenticationFailure(e), req, auth)
@@ -591,6 +589,7 @@ mod tests {
 	use std::sync::Arc;
 
 	use super::*;
+	use crate::http::jwt::{Claims, CredentialConsumed};
 
 	#[test]
 	fn request_uri_for_oauth_metadata_uses_x_forwarded_proto() {
@@ -879,6 +878,9 @@ mod tests {
 				.body(Body::empty())
 				.expect("request should build");
 			req.extensions_mut().insert(prior_claims("earlier"));
+			req.extensions_mut().insert(CredentialConsumed::at(
+				crate::http::auth::AuthorizationLocation::bearer_header(),
+			));
 
 			let result = apply_token_validation(&mut req, &default_auth(), &validator(mode), None).await;
 
@@ -897,7 +899,59 @@ mod tests {
 	}
 
 	#[tokio::test]
-	async fn permissive_revalidation_does_not_reuse_earlier_claims() {
+	async fn consumed_non_bearer_credentials_do_not_block_optional_mcp_authentication() {
+		for mode in [
+			crate::http::jwt::Mode::Optional,
+			crate::http::jwt::Mode::Permissive,
+		] {
+			let mut req = ::http::Request::builder()
+				.uri("https://gateway.example/mcp")
+				.body(Body::empty())
+				.expect("request should build");
+			req.extensions_mut().insert(prior_claims("earlier"));
+			req.extensions_mut().insert(CredentialConsumed::at(
+				crate::http::auth::AuthorizationLocation::Cookie {
+					name: "session".into(),
+				},
+			));
+
+			apply_token_validation(&mut req, &default_auth(), &validator(mode), None)
+				.await
+				.expect("an unrelated consumed credential must not require a bearer token");
+		}
+	}
+
+	/// An OIDC policy leaves session claims behind without ever touching the bearer header, so
+	/// those claims must not be mistaken for a token an earlier JWT policy stripped.
+	#[tokio::test]
+	async fn session_claims_without_a_consumed_credential_follow_the_configured_mode() {
+		for (mode, rejected) in [
+			(crate::http::jwt::Mode::Strict, true),
+			(crate::http::jwt::Mode::Optional, false),
+			(crate::http::jwt::Mode::Permissive, false),
+		] {
+			let mut req = ::http::Request::builder()
+				.uri("https://gateway.example/mcp")
+				.body(Body::empty())
+				.expect("request should build");
+			req.extensions_mut().insert(prior_claims("session-user"));
+
+			let result = apply_token_validation(&mut req, &default_auth(), &validator(mode), None).await;
+
+			assert_eq!(result.is_err(), rejected, "mode={mode:?}");
+			assert_eq!(
+				req
+					.extensions()
+					.get::<Claims>()
+					.and_then(|claims| claims.inner.get("sub")),
+				Some(&serde_json::Value::String("session-user".to_string())),
+				"mode={mode:?}"
+			);
+		}
+	}
+
+	#[tokio::test]
+	async fn permissive_revalidation_preserves_earlier_identity() {
 		let mut req = ::http::Request::builder()
 			.uri("https://gateway.example/mcp")
 			.header(::http::header::AUTHORIZATION, "Bearer invalid-token")
@@ -914,7 +968,13 @@ mod tests {
 		.await
 		.expect("permissive validation should allow an invalid retained token");
 
-		assert!(req.extensions().get::<Claims>().is_none());
+		assert_eq!(
+			req
+				.extensions()
+				.get::<Claims>()
+				.and_then(|claims| claims.inner.get("sub")),
+			Some(&serde_json::Value::String("earlier".to_string()))
+		);
 		assert!(req.headers().contains_key(::http::header::AUTHORIZATION));
 	}
 
@@ -939,7 +999,13 @@ mod tests {
 			result,
 			Err(ProxyError::McpJwtAuthenticationFailure(_, _))
 		));
-		assert!(req.extensions().get::<Claims>().is_none());
+		assert_eq!(
+			req
+				.extensions()
+				.get::<Claims>()
+				.and_then(|claims| claims.inner.get("sub")),
+			Some(&serde_json::Value::String("earlier".to_string()))
+		);
 	}
 
 	#[tokio::test]
@@ -966,7 +1032,13 @@ mod tests {
 			Err(ProxyError::McpJwtAuthenticationFailure(inner, _))
 				if matches!(*inner, ProxyError::JwtAuthenticationFailure(crate::http::jwt::TokenError::InvalidHeader(_)))
 		));
-		assert!(req.extensions().get::<Claims>().is_none());
+		assert_eq!(
+			req
+				.extensions()
+				.get::<Claims>()
+				.and_then(|claims| claims.inner.get("sub")),
+			Some(&serde_json::Value::String("earlier".to_string()))
+		);
 	}
 
 	fn www_authenticate_resource_metadata(req: &Request) -> String {
