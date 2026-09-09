@@ -174,7 +174,7 @@ impl ResolvedMcpIdentity {
 		}
 
 		let mut operations = vec![("client-registration", McpEndpoint::Registration)];
-		if matches!(provider, Some(McpIDP::Entra {})) {
+		if matches!(provider, Some(McpIDP::Entra {} | McpIDP::Okta {})) {
 			operations.extend([
 				("authorize", McpEndpoint::Authorization),
 				("token", McpEndpoint::Token),
@@ -261,6 +261,19 @@ pub(crate) fn validate_configured_identity(auth: &McpAuthentication) -> Result<(
 	}
 	if let Some(issuer) = auth.resource_metadata.authorization_server_uri()? {
 		validate_identity_uri(&issuer, "resourceMetadata.authorizationServers")?;
+	}
+	if matches!(
+		auth.resource_parameter_mode,
+		crate::types::agent::McpResourceParameterMode::Audience
+	) {
+		if !matches!(auth.provider, Some(McpIDP::Auth0 {} | McpIDP::Okta {})) {
+			return Err("resourceParameterMode audience is supported only by Auth0 and Okta".to_string());
+		}
+		if auth.audiences.len() != 1 {
+			return Err(
+				"resourceParameterMode audience requires exactly one configured audience".to_string(),
+			);
+		}
 	}
 	Ok(())
 }
@@ -374,13 +387,14 @@ mod tests {
 	use std::sync::Arc;
 
 	use super::*;
-	use crate::types::agent::{McpAuthenticationMode, ResourceMetadata};
+	use crate::types::agent::{McpAuthenticationMode, McpResourceParameterMode, ResourceMetadata};
 
 	fn auth(resource: Option<&str>, provider: Option<McpIDP>) -> McpAuthentication {
 		McpAuthentication {
 			issuer: "https://tokens.example/tenant".to_string(),
 			upstream_issuer: Some("https://discovery.example/tenant".to_string()),
 			audiences: vec!["mcp".to_string()],
+			resource_parameter_mode: crate::types::agent::McpResourceParameterMode::Resource,
 			provider,
 			resource_metadata: ResourceMetadata {
 				extra: resource
@@ -449,6 +463,26 @@ mod tests {
 				&inserted_well_known("/.well-known/oauth-protected-resource", with_slash.path())
 			),
 			"https://gateway.example/.well-known/oauth-protected-resource/"
+		);
+	}
+
+	#[test]
+	fn audience_mode_requires_supported_provider_and_single_audience() {
+		let mut configured = auth(Some("https://gateway.example/mcp"), Some(McpIDP::Okta {}));
+		configured.resource_parameter_mode = McpResourceParameterMode::Audience;
+		assert!(validate_configured_identity(&configured).is_ok());
+
+		configured.audiences.push("other".to_string());
+		assert_eq!(
+			validate_configured_identity(&configured).unwrap_err(),
+			"resourceParameterMode audience requires exactly one configured audience"
+		);
+
+		configured.audiences.truncate(1);
+		configured.provider = Some(McpIDP::Entra {});
+		assert_eq!(
+			validate_configured_identity(&configured).unwrap_err(),
+			"resourceParameterMode audience is supported only by Auth0 and Okta"
 		);
 	}
 

@@ -3511,6 +3511,7 @@ async fn mcp_authentication_early_response_transformation_has_request_context() 
 		issuer: "https://issuer.example.com".to_string(),
 		upstream_issuer: None,
 		audiences: vec!["mcp".to_string()],
+		resource_parameter_mode: crate::types::agent::McpResourceParameterMode::Resource,
 		provider: None,
 		resource_metadata: crate::types::agent::ResourceMetadata {
 			extra: std::collections::BTreeMap::from([(

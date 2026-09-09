@@ -4696,6 +4696,11 @@
             "type": "string"
           }
         },
+        "resourceParameterMode": {
+          "description": "How Auth0 or Okta selects the resource requested from its authorization endpoint.",
+          "$ref": "#/$defs/McpResourceParameterMode",
+          "default": "resource"
+        },
         "provider": {
           "description": "Identity provider type used to derive MCP authorization metadata and default JWKS URLs.",
           "anyOf": [
@@ -4760,6 +4765,20 @@
       "required": [
         "issuer",
         "resourceMetadata"
+      ]
+    },
+    "McpResourceParameterMode": {
+      "oneOf": [
+        {
+          "description": "Forward RFC 8707 `resource` parameters unchanged.",
+          "type": "string",
+          "const": "resource"
+        },
+        {
+          "description": "Replace `resource` with the single configured JWT audience for legacy providers.",
+          "type": "string",
+          "const": "audience"
+        }
       ]
     },
     "McpIDP": {

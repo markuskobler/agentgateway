@@ -596,6 +596,7 @@ fn mcp_authentication_from_proto(
 		m.issuer.clone(),
 		m.upstream_issuer.clone(),
 		m.audiences.clone(),
+		m.resource_parameter_mode,
 		m.provider,
 		convert_mcp_resource_metadata(m.resource_metadata.as_ref().map(|rm| rm.extra.iter())),
 		std::sync::Arc::new(jwt_validator),
@@ -647,6 +648,16 @@ fn convert_mcp_provider(provider: i32) -> Option<McpIDP> {
 	}
 }
 
+fn convert_mcp_resource_parameter_mode(mode: i32) -> Result<McpResourceParameterMode, ProtoError> {
+	use proto::agent::backend_policy_spec::mcp_authentication::ResourceParameterMode;
+	match ResourceParameterMode::try_from(mode)
+		.map_err(|_| ProtoError::EnumParse("invalid MCP resource parameter mode".to_string()))?
+	{
+		ResourceParameterMode::Resource => Ok(McpResourceParameterMode::Resource),
+		ResourceParameterMode::Audience => Ok(McpResourceParameterMode::Audience),
+	}
+}
+
 fn convert_mcp_resource_metadata<'a, I, V>(entries: Option<I>) -> ResourceMetadata
 where
 	I: IntoIterator<Item = (&'a String, &'a V)>,
@@ -671,6 +682,7 @@ fn build_mcp_authentication(
 	issuer: String,
 	upstream_issuer: Option<String>,
 	audiences: Vec<String>,
+	resource_parameter_mode: i32,
 	provider: i32,
 	resource_metadata: ResourceMetadata,
 	jwt_validator: Arc<http::jwt::Jwt>,
@@ -682,6 +694,7 @@ fn build_mcp_authentication(
 		issuer,
 		upstream_issuer,
 		audiences,
+		resource_parameter_mode: convert_mcp_resource_parameter_mode(resource_parameter_mode)?,
 		provider: convert_mcp_provider(provider),
 		resource_metadata,
 		jwt_validator,
@@ -2671,6 +2684,7 @@ fn traffic_policy_from_proto(
 						provider.issuer.clone(),
 						mcp.upstream_issuer.clone(),
 						provider.audiences.clone(),
+						mcp.resource_parameter_mode,
 						mcp.provider,
 						convert_mcp_resource_metadata(mcp.resource_metadata.as_ref().map(|rm| rm.extra.iter())),
 						Arc::new(jwt_auth.clone()),
@@ -4665,6 +4679,7 @@ mod tests {
 			"https://tokens.example/tenant".to_string(),
 			Some("https://discovery.example/tenant".to_string()),
 			vec!["mcp".to_string()],
+			proto::agent::backend_policy_spec::mcp_authentication::ResourceParameterMode::Resource as i32,
 			proto::agent::backend_policy_spec::mcp_authentication::McpIdp::Entra as i32,
 			ResourceMetadata {
 				extra: std::collections::BTreeMap::from([(
@@ -4687,6 +4702,38 @@ mod tests {
 			auth.upstream_issuer.as_deref(),
 			Some("https://discovery.example/tenant")
 		);
+		assert!(matches!(
+			auth.resource_parameter_mode,
+			crate::types::agent::McpResourceParameterMode::Resource
+		));
+	}
+
+	#[test]
+	fn mcp_authentication_builder_preserves_audience_parameter_mode() {
+		let auth = build_mcp_authentication(
+			"https://tenant.okta.com/oauth2/default".to_string(),
+			None,
+			vec!["api://mcp".to_string()],
+			proto::agent::backend_policy_spec::mcp_authentication::ResourceParameterMode::Audience as i32,
+			proto::agent::backend_policy_spec::mcp_authentication::McpIdp::Okta as i32,
+			ResourceMetadata {
+				extra: Default::default(),
+			},
+			Arc::new(http::jwt::Jwt::from_providers(
+				vec![],
+				http::jwt::Mode::Strict,
+				http::auth::AuthorizationLocation::bearer_header(),
+				false,
+			)),
+			McpAuthenticationMode::Strict,
+			None,
+			None,
+		)
+		.expect("valid identity");
+		assert!(matches!(
+			auth.resource_parameter_mode,
+			crate::types::agent::McpResourceParameterMode::Audience
+		));
 	}
 
 	#[test]

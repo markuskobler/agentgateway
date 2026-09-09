@@ -14,9 +14,9 @@ use crate::mcp::provider::McpProviderProfile;
 use crate::proxy::ProxyError;
 use crate::proxy::httpproxy::PolicyClient;
 use crate::telemetry::metrics::{OutboundCallKind, OutboundCallSubtype};
-use crate::types::agent::McpAuthentication;
 #[cfg(test)]
 use crate::types::agent::McpIDP;
+use crate::types::agent::{McpAuthentication, McpResourceParameterMode};
 
 pub(super) async fn apply_token_validation(
 	req: &mut Request,
@@ -111,22 +111,21 @@ async fn handle_owned_endpoint(
 				.await
 				.into_response(),
 		)),
-		// Entra rejects the RFC 8707 `resource` parameter (AADSTS9010010), so the gateway
-		// advertises proxied authorization/token endpoints (under the served AS metadata path)
-		// that strip it before forwarding to Entra.
+		// Provider adapters own these endpoints and apply their declared resource handling
+		// before forwarding to the upstream authorization server.
 		McpEndpoint::Authorization => Ok(Some(
-			entra_authorize(req, auth)
+			oauth_authorize(req, auth)
 				.map_err(|e| {
-					warn!("entra authorize error: {}", e);
+					warn!("OAuth authorize adapter error: {}", e);
 					StatusCode::INTERNAL_SERVER_ERROR
 				})
 				.into_response(),
 		)),
 		McpEndpoint::Token => Ok(Some(
-			entra_token(req, auth, client.clone())
+			oauth_token(req, auth, client.clone())
 				.await
 				.map_err(|e| {
-					warn!("entra token error: {}", e);
+					warn!("OAuth token adapter error: {}", e);
 					StatusCode::INTERNAL_SERVER_ERROR
 				})
 				.into_response(),
@@ -228,6 +227,7 @@ pub(super) async fn authorization_server_metadata(
 				.as_str()
 				.trim_end_matches('/'),
 			&auth.audiences,
+			auth.client_id.is_some(),
 		)
 		.map_err(ProxyError::ProcessingString)?;
 	if provider.rewrites_public_issuer() {
@@ -262,13 +262,21 @@ pub(super) async fn client_registration(
 	}
 
 	let body = std::mem::take(req.body_mut());
+	let content_type = req.headers().get(::http::header::CONTENT_TYPE).cloned();
+	let authorization = req.headers().get(::http::header::AUTHORIZATION).cloned();
 	let registration_uri = McpProviderProfile::new(auth.provider.as_ref())
 		.registration_url(auth.upstream_issuer.as_deref().unwrap_or(&auth.issuer))
 		.map_err(ProxyError::ProcessingString)?;
-	let ureq = ::http::Request::builder()
+	let mut builder = ::http::Request::builder()
 		.uri(registration_uri)
-		.method(Method::POST)
-		.body(body)?;
+		.method(Method::POST);
+	if let Some(content_type) = content_type {
+		builder = builder.header(::http::header::CONTENT_TYPE, content_type);
+	}
+	if let Some(authorization) = authorization {
+		builder = builder.header(::http::header::AUTHORIZATION, authorization);
+	}
+	let ureq = builder.body(body)?;
 
 	let upstream = client
 		.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
@@ -278,13 +286,8 @@ pub(super) async fn client_registration(
 	Ok(upstream)
 }
 
-/// Proxy an OAuth authorization request to Entra, stripping the RFC 8707 `resource` parameter.
-///
-/// Entra's v2.0 endpoint rejects requests carrying `resource` alongside v2-style `scope`
-/// values with `AADSTS9010010: invalid_target`, but MCP clients are required by the MCP
-/// authorization spec to send it. The gateway advertises this endpoint in the served AS
-/// metadata and redirects the user agent to the real Entra authorize endpoint without it.
-pub(super) fn entra_authorize(
+/// Redirect a gateway-owned authorization request to the provider's authorization endpoint.
+pub(super) fn oauth_authorize(
 	req: &Request,
 	auth: &McpAuthentication,
 ) -> Result<Response, ProxyError> {
@@ -295,28 +298,55 @@ pub(super) fn entra_authorize(
 		.ok_or_else(|| {
 			ProxyError::ProcessingString("provider has no proxied authorize endpoint".into())
 		})?;
-	let mut location: Uri = match req.uri().query() {
-		Some(query) => format!("{authorization_endpoint}?{query}"),
-		None => authorization_endpoint,
+	let mut location = url::Url::parse(&authorization_endpoint)
+		.map_err(|e| ProxyError::ProcessingString(format!("invalid authorize URL: {e}")))?;
+	let query = req.uri().query().unwrap_or_default();
+	let mut pairs = url::form_urlencoded::parse(query.as_bytes())
+		.filter(|(key, _)| !(provider.strips_resource_parameter() && key == "resource"))
+		.map(|(key, value)| (key.into_owned(), value.into_owned()))
+		.collect::<Vec<_>>();
+	let audience = match auth.resource_parameter_mode {
+		McpResourceParameterMode::Resource => None,
+		McpResourceParameterMode::Audience => {
+			let configured = auth.audiences.first().ok_or_else(|| {
+				ProxyError::ProcessingString(
+					"audience resource parameter mode requires a configured audience".to_string(),
+				)
+			})?;
+			let incoming = pairs
+				.iter()
+				.filter_map(|(key, value)| (key == "audience").then_some(value))
+				.collect::<Vec<_>>();
+			if incoming.len() > 1 || incoming.iter().any(|value| *value != configured) {
+				return Ok(
+					Response::builder()
+						.status(StatusCode::BAD_REQUEST)
+						.header(::http::header::CONTENT_TYPE, "text/plain; charset=utf-8")
+						.body(Body::from(
+							"authorization request audience conflicts with the configured MCP audience",
+						))?,
+				);
+			}
+			pairs.retain(|(key, _)| !matches!(key.as_str(), "resource" | "audience"));
+			Some(configured.as_str())
+		},
+	};
+	if !pairs.is_empty() || audience.is_some() {
+		location
+			.query_pairs_mut()
+			.extend_pairs(pairs)
+			.extend_pairs(audience.map(|value| ("audience", value)));
 	}
-	.parse()
-	.map_err(|e| ProxyError::ProcessingString(format!("invalid authorize URL: {e}")))?;
-	crate::http::modify_query_parameters(
-		&mut location,
-		std::iter::empty::<(&str, &str)>(),
-		provider.strips_resource_parameter().then_some("resource"),
-	)
-	.map_err(|e| ProxyError::ProcessingString(e.to_string()))?;
 	Ok(
 		Response::builder()
 			.status(StatusCode::FOUND)
-			.header(::http::header::LOCATION, location.to_string())
+			.header(::http::header::LOCATION, location.as_str())
 			.body(axum::body::Body::empty())?,
 	)
 }
 
-/// Proxy an OAuth token request to Entra, stripping the RFC 8707 `resource` parameter
-/// (see [`entra_authorize`]) and injecting the configured client secret when the client did
+/// Proxy an OAuth token request, applying any provider-specific resource transformation.
+/// Entra strips the RFC 8707 `resource` parameter and injects the configured client secret when the client did
 /// not supply one. Entra app registrations under the Web platform are confidential clients
 /// and require the secret at the token endpoint, while public clients (PKCE-only) do not.
 ///
@@ -325,7 +355,7 @@ pub(super) fn entra_authorize(
 /// `refresh_token`). This endpoint is reachable pre-authentication, so injecting the secret
 /// into other grant types — notably `client_credentials` — would let any caller mint
 /// app-level tokens with the gateway's credential.
-pub(super) async fn entra_token(
+pub(super) async fn oauth_token(
 	req: &mut Request,
 	auth: &McpAuthentication,
 	client: PolicyClient,
@@ -348,8 +378,26 @@ pub(super) async fn entra_token(
 	// Clients using client_secret_basic carry their credentials in the Authorization header;
 	// forward it and don't inject a second credential.
 	let authorization = req.headers().get(::http::header::AUTHORIZATION).cloned();
-	let limit = crate::http::buffer_limit(req);
+	let content_type = req.headers().get(::http::header::CONTENT_TYPE).cloned();
 	let body = std::mem::take(req.body_mut());
+	if !provider.strips_resource_parameter() {
+		let mut builder = ::http::Request::builder()
+			.uri(token_endpoint)
+			.method(Method::POST);
+		if let Some(content_type) = content_type {
+			builder = builder.header(::http::header::CONTENT_TYPE, content_type);
+		}
+		if let Some(authorization) = authorization {
+			builder = builder.header(::http::header::AUTHORIZATION, authorization);
+		}
+		return Ok(
+			client
+				.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
+				.simple_call(builder.body(body)?)
+				.await?,
+		);
+	}
+	let limit = crate::http::buffer_limit(req);
 	let bytes = crate::http::read_body_with_limit(body, limit)
 		.await
 		.map_err(ProxyError::Body)?;
@@ -532,6 +580,7 @@ mod tests {
 				issuer: "https://idp.example.com".to_string(),
 				upstream_issuer: None,
 				audiences: Vec::new(),
+				resource_parameter_mode: McpResourceParameterMode::Resource,
 				provider: None,
 				resource_metadata: crate::types::agent::ResourceMetadata {
 					extra: std::collections::BTreeMap::from([(
@@ -571,6 +620,7 @@ mod tests {
 			issuer: "https://issuer.example.com".to_string(),
 			upstream_issuer: None,
 			audiences: vec!["mcp".to_string()],
+			resource_parameter_mode: McpResourceParameterMode::Resource,
 			provider: None,
 			resource_metadata: crate::types::agent::ResourceMetadata {
 				extra: Default::default(),
@@ -938,6 +988,7 @@ mod tests {
 				.to_string(),
 			upstream_issuer: None,
 			audiences: vec!["api://client-id-guid".to_string()],
+			resource_parameter_mode: McpResourceParameterMode::Resource,
 			provider: Some(McpIDP::Entra {}),
 			resource_metadata: crate::types::agent::ResourceMetadata {
 				extra: Default::default(),
@@ -954,6 +1005,84 @@ mod tests {
 		}
 	}
 
+	fn okta_auth(
+		audiences: Vec<String>,
+		resource_parameter_mode: McpResourceParameterMode,
+	) -> McpAuthentication {
+		McpAuthentication {
+			issuer: "https://tenant.okta.com/oauth2/default".to_string(),
+			upstream_issuer: None,
+			audiences,
+			resource_parameter_mode,
+			provider: Some(McpIDP::Okta {}),
+			..entra_auth()
+		}
+	}
+
+	#[test]
+	fn okta_authorize_preserves_native_resource_and_pkce() {
+		let req = ::http::Request::builder()
+			.uri("https://gateway.example.com/mcp/authorize?client_id=abc&resource=https%3A%2F%2Fgateway.example.com%2Fmcp&resource=https%3A%2F%2Fgateway.example.com%2Fsecond&code_challenge=ccc&code_challenge_method=S256")
+			.body(Body::empty())
+			.expect("request should build");
+
+		let resp = oauth_authorize(
+			&req,
+			&okta_auth(
+				vec!["legacy-api".to_string()],
+				McpResourceParameterMode::Resource,
+			),
+		)
+		.expect("authorize should redirect");
+		let location = resp.headers()[::http::header::LOCATION]
+			.to_str()
+			.expect("location should be a string");
+
+		assert!(location.starts_with("https://tenant.okta.com/oauth2/default/v1/authorize?"));
+		assert_eq!(location.matches("resource=").count(), 2);
+		assert!(location.contains("code_challenge=ccc"));
+		assert!(!location.contains("audience="));
+	}
+
+	#[test]
+	fn okta_authorize_audience_mode_replaces_resource() {
+		let req = ::http::Request::builder()
+			.uri("https://gateway.example.com/mcp/authorize?client_id=abc&resource=https%3A%2F%2Fgateway.example.com%2Fmcp&state=state")
+			.body(Body::empty())
+			.expect("request should build");
+
+		let resp = oauth_authorize(
+			&req,
+			&okta_auth(
+				vec!["api://mcp".to_string()],
+				McpResourceParameterMode::Audience,
+			),
+		)
+		.expect("authorize should redirect");
+		let location = resp.headers()[::http::header::LOCATION]
+			.to_str()
+			.expect("location should be a string");
+		assert!(location.contains("audience=api%3A%2F%2Fmcp"));
+		assert!(!location.contains("resource="));
+	}
+
+	#[test]
+	fn okta_authorize_rejects_conflicting_audience() {
+		let req = ::http::Request::builder()
+			.uri("https://gateway.example.com/mcp/authorize?client_id=abc&audience=other")
+			.body(Body::empty())
+			.expect("request should build");
+		let resp = oauth_authorize(
+			&req,
+			&okta_auth(
+				vec!["api://mcp".to_string()],
+				McpResourceParameterMode::Audience,
+			),
+		)
+		.expect("conflict should produce a response");
+		assert_eq!(resp.status(), StatusCode::BAD_REQUEST);
+	}
+
 	#[test]
 	fn entra_authorize_strips_resource_param() {
 		// Entra rejects RFC 8707 `resource` with AADSTS9010010; everything else must be preserved.
@@ -962,7 +1091,7 @@ mod tests {
 			.body(Body::empty())
 			.expect("request should build");
 
-		let resp = entra_authorize(&req, &entra_auth()).expect("authorize should redirect");
+		let resp = oauth_authorize(&req, &entra_auth()).expect("authorize should redirect");
 
 		assert_eq!(resp.status(), StatusCode::FOUND);
 		let location = resp
@@ -1002,7 +1131,7 @@ mod tests {
 			.body(Body::empty())
 			.expect("request should build");
 
-		let resp = entra_authorize(&req, &entra_auth()).expect("authorize should redirect");
+		let resp = oauth_authorize(&req, &entra_auth()).expect("authorize should redirect");
 
 		assert_eq!(resp.status(), StatusCode::FOUND);
 		assert_eq!(
@@ -1023,7 +1152,7 @@ mod tests {
 			.body(Body::empty())
 			.expect("request should build");
 
-		let resp = entra_token(&mut req, &entra_auth(), client)
+		let resp = oauth_token(&mut req, &entra_auth(), client)
 			.await
 			.expect("non-POST should get a response");
 

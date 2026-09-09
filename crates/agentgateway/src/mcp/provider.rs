@@ -15,7 +15,6 @@ pub(crate) struct McpProviderProfile<'a> {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum ResourceParameterHandling {
 	Forward,
-	AudienceQueryFallback,
 	Strip,
 }
 
@@ -40,15 +39,11 @@ impl<'a> McpProviderProfile<'a> {
 
 	pub(crate) fn proxies_oauth_endpoints(self) -> bool {
 		match self.provider {
-			Some(McpIDP::Entra {}) => true,
+			Some(McpIDP::Okta {} | McpIDP::Entra {}) => true,
 			None
-			| Some(
-				McpIDP::Auth0 {}
-				| McpIDP::Keycloak {}
-				| McpIDP::Okta {}
-				| McpIDP::Descope {}
-				| McpIDP::Authentik {},
-			) => false,
+			| Some(McpIDP::Auth0 {} | McpIDP::Keycloak {} | McpIDP::Descope {} | McpIDP::Authentik {}) => {
+				false
+			},
 		}
 	}
 
@@ -109,20 +104,27 @@ impl<'a> McpProviderProfile<'a> {
 		self,
 		metadata: &mut serde_json::Value,
 		public_metadata_uri: &str,
-		audiences: &[String],
+		_audiences: &[String],
+		has_configured_client: bool,
 	) -> Result<(), String> {
-		if self.resource_parameter_handling() == ResourceParameterHandling::AudienceQueryFallback {
-			append_audience(metadata, audiences)?;
-		}
 		match self.provider {
 			None => Ok(()),
 			// These are compatibility defaults. Some Auth0 and Okta tenants support native
 			// resource indicators, which later provider work can expose as a capability.
 			Some(McpIDP::Auth0 {}) => Ok(()),
 			Some(McpIDP::Okta {}) => {
-				// Okta's management registration endpoint is not browser-CORS enabled, so expose
-				// the gateway registration adapter when the upstream document advertises DCR.
-				rewrite_registration_if_present(metadata, public_metadata_uri);
+				*required_string(metadata, "authorization_endpoint")? =
+					format!("{public_metadata_uri}/authorize");
+				*required_string(metadata, "token_endpoint")? = format!("{public_metadata_uri}/token");
+				// Okta's management registration endpoint is not browser-CORS enabled. A configured
+				// client is always available through the gateway; otherwise retain the existing
+				// upstream-registration mode only when discovery advertises it.
+				if has_configured_client {
+					insert_gateway_registration(metadata, public_metadata_uri)?;
+				} else {
+					rewrite_registration_if_present(metadata, public_metadata_uri);
+				}
+				remove_relocated_capabilities(metadata)?;
 				Ok(())
 			},
 			Some(McpIDP::Descope {}) => {
@@ -181,29 +183,23 @@ impl<'a> McpProviderProfile<'a> {
 
 	pub(crate) fn authorization_endpoint(self, issuer: &str) -> Result<Option<String>, String> {
 		match self.provider {
+			Some(McpIDP::Okta {}) => Ok(Some(okta_endpoint(issuer, "authorize")?)),
 			Some(McpIDP::Entra {}) => Ok(Some(entra_endpoints(issuer)?.authorization_endpoint)),
 			None
-			| Some(
-				McpIDP::Auth0 {}
-				| McpIDP::Keycloak {}
-				| McpIDP::Okta {}
-				| McpIDP::Descope {}
-				| McpIDP::Authentik {},
-			) => Ok(None),
+			| Some(McpIDP::Auth0 {} | McpIDP::Keycloak {} | McpIDP::Descope {} | McpIDP::Authentik {}) => {
+				Ok(None)
+			},
 		}
 	}
 
 	pub(crate) fn token_endpoint(self, issuer: &str) -> Result<Option<String>, String> {
 		match self.provider {
+			Some(McpIDP::Okta {}) => Ok(Some(okta_endpoint(issuer, "token")?)),
 			Some(McpIDP::Entra {}) => Ok(Some(entra_endpoints(issuer)?.token_endpoint)),
 			None
-			| Some(
-				McpIDP::Auth0 {}
-				| McpIDP::Keycloak {}
-				| McpIDP::Okta {}
-				| McpIDP::Descope {}
-				| McpIDP::Authentik {},
-			) => Ok(None),
+			| Some(McpIDP::Auth0 {} | McpIDP::Keycloak {} | McpIDP::Descope {} | McpIDP::Authentik {}) => {
+				Ok(None)
+			},
 		}
 	}
 
@@ -232,21 +228,17 @@ impl<'a> McpProviderProfile<'a> {
 
 	fn resource_parameter_handling(self) -> ResourceParameterHandling {
 		match self.provider {
-			Some(McpIDP::Auth0 {} | McpIDP::Okta {}) => ResourceParameterHandling::AudienceQueryFallback,
 			Some(McpIDP::Entra {}) => ResourceParameterHandling::Strip,
-			None | Some(McpIDP::Keycloak {} | McpIDP::Descope {} | McpIDP::Authentik {}) => {
-				ResourceParameterHandling::Forward
-			},
+			None
+			| Some(
+				McpIDP::Auth0 {}
+				| McpIDP::Keycloak {}
+				| McpIDP::Okta {}
+				| McpIDP::Descope {}
+				| McpIDP::Authentik {},
+			) => ResourceParameterHandling::Forward,
 		}
 	}
-}
-
-fn append_audience(metadata: &mut serde_json::Value, audiences: &[String]) -> Result<(), String> {
-	let authorization_endpoint = required_string(metadata, "authorization_endpoint")?;
-	if let Some(audience) = audiences.first() {
-		authorization_endpoint.push_str(&format!("?audience={audience}"));
-	}
-	Ok(())
 }
 
 fn required_string<'a>(
@@ -267,6 +259,37 @@ fn rewrite_registration_if_present(metadata: &mut serde_json::Value, public_meta
 	}
 }
 
+fn insert_gateway_registration(
+	metadata: &mut serde_json::Value,
+	public_metadata_uri: &str,
+) -> Result<(), String> {
+	metadata
+		.as_object_mut()
+		.ok_or_else(|| "authorization server metadata must be a JSON object".to_string())?
+		.insert(
+			"registration_endpoint".to_string(),
+			gateway_registration_url(public_metadata_uri).into(),
+		);
+	Ok(())
+}
+
+fn remove_relocated_capabilities(metadata: &mut serde_json::Value) -> Result<(), String> {
+	let object = metadata
+		.as_object_mut()
+		.ok_or_else(|| "authorization server metadata must be a JSON object".to_string())?;
+	for unsupported in [
+		"authorization_response_iss_parameter_supported",
+		"dpop_signing_alg_values_supported",
+		"mtls_endpoint_aliases",
+		"pushed_authorization_request_endpoint",
+		"require_pushed_authorization_requests",
+		"request_object_signing_alg_values_supported",
+	] {
+		object.remove(unsupported);
+	}
+	Ok(())
+}
+
 fn gateway_registration_url(public_metadata_uri: &str) -> String {
 	format!("{public_metadata_uri}/client-registration")
 }
@@ -275,6 +298,23 @@ fn parse_issuer(issuer: &str) -> Result<url::Url, String> {
 	issuer
 		.parse()
 		.map_err(|error| format!("invalid issuer URL: {error}"))
+}
+
+fn okta_endpoint(issuer: &str, operation: &str) -> Result<String, String> {
+	let parsed = parse_issuer(issuer)?;
+	let segments = parsed
+		.path_segments()
+		.ok_or_else(|| "Okta issuer must be an absolute hierarchical URL".to_string())?
+		.filter(|segment| !segment.is_empty())
+		.collect::<Vec<_>>();
+	match segments.as_slice() {
+		[] => Ok(format!(
+			"{}/oauth2/v1/{operation}",
+			parsed.origin().ascii_serialization()
+		)),
+		["oauth2", _] => Ok(format!("{}/v1/{operation}", issuer.trim_end_matches('/'))),
+		_ => Err("Okta issuer must be an org issuer or /oauth2/{authorizationServerId}".to_string()),
+	}
 }
 
 fn descope_jwks_url(issuer: &str) -> Result<String, String> {
@@ -439,7 +479,7 @@ mod tests {
 		let descope = McpIDP::Descope {};
 		let authentik = McpIDP::Authentik {};
 		let entra = McpIDP::Entra {};
-		let public_uri = "https://gateway.example.com/.well-known/oauth-authorization-server/mcp";
+		let public_uri = "https://gateway.example.com/mcp";
 		let audiences = vec!["api://mcp".to_string()];
 		let original = serde_json::json!({
 			"authorization_endpoint": "https://idp.example.com/authorize",
@@ -449,20 +489,42 @@ mod tests {
 
 		let mut generic = original.clone();
 		profile(None)
-			.rewrite_metadata(&mut generic, public_uri, &audiences)
+			.rewrite_metadata(&mut generic, public_uri, &audiences, false)
 			.unwrap();
 		assert_eq!(generic, original);
 
-		for provider in [profile(Some(&auth0)), profile(Some(&okta))] {
-			let mut metadata = original.clone();
-			provider
-				.rewrite_metadata(&mut metadata, public_uri, &audiences)
-				.unwrap();
-			assert_eq!(
-				metadata["authorization_endpoint"],
-				"https://idp.example.com/authorize?audience=api://mcp"
-			);
-		}
+		let mut metadata = original.clone();
+		profile(Some(&auth0))
+			.rewrite_metadata(&mut metadata, public_uri, &audiences, false)
+			.unwrap();
+		assert_eq!(
+			metadata["authorization_endpoint"],
+			"https://idp.example.com/authorize"
+		);
+
+		let mut metadata = original.clone();
+		profile(Some(&okta))
+			.rewrite_metadata(&mut metadata, public_uri, &audiences, false)
+			.unwrap();
+		assert_eq!(
+			metadata["authorization_endpoint"],
+			"https://gateway.example.com/mcp/authorize"
+		);
+		assert_eq!(
+			metadata["token_endpoint"],
+			"https://gateway.example.com/mcp/token"
+		);
+		let mut configured_metadata = serde_json::json!({
+			"authorization_endpoint": "https://idp.example.com/authorize",
+			"token_endpoint": "https://idp.example.com/token"
+		});
+		profile(Some(&okta))
+			.rewrite_metadata(&mut configured_metadata, public_uri, &audiences, true)
+			.unwrap();
+		assert_eq!(
+			configured_metadata["registration_endpoint"],
+			"https://gateway.example.com/mcp/client-registration"
+		);
 
 		for provider in [
 			profile(Some(&keycloak)),
@@ -471,7 +533,7 @@ mod tests {
 		] {
 			let mut metadata = original.clone();
 			provider
-				.rewrite_metadata(&mut metadata, public_uri, &audiences)
+				.rewrite_metadata(&mut metadata, public_uri, &audiences, false)
 				.unwrap();
 			assert_eq!(
 				metadata["registration_endpoint"],
@@ -481,7 +543,7 @@ mod tests {
 
 		let mut metadata = original.clone();
 		profile(Some(&authentik))
-			.rewrite_metadata(&mut metadata, public_uri, &audiences)
+			.rewrite_metadata(&mut metadata, public_uri, &audiences, false)
 			.unwrap();
 		assert_eq!(
 			metadata["registration_endpoint"],
@@ -490,7 +552,7 @@ mod tests {
 
 		let mut metadata = original;
 		profile(Some(&entra))
-			.rewrite_metadata(&mut metadata, public_uri, &audiences)
+			.rewrite_metadata(&mut metadata, public_uri, &audiences, false)
 			.unwrap();
 		assert_eq!(
 			metadata["authorization_endpoint"],
@@ -508,11 +570,33 @@ mod tests {
 	}
 
 	#[test]
-	fn only_entra_proxies_oauth_and_injects_delegated_credentials() {
+	fn okta_supports_org_and_custom_authorization_server_endpoints() {
+		let okta = McpIDP::Okta {};
+		let okta = profile(Some(&okta));
+		assert_eq!(
+			okta
+				.authorization_endpoint("https://tenant.okta.com")
+				.unwrap(),
+			Some("https://tenant.okta.com/oauth2/v1/authorize".to_string())
+		);
+		assert_eq!(
+			okta
+				.token_endpoint("https://tenant.okta.com/oauth2/default")
+				.unwrap(),
+			Some("https://tenant.okta.com/oauth2/default/v1/token".to_string())
+		);
+		assert!(
+			okta
+				.authorization_endpoint("https://tenant.okta.com/unexpected/path")
+				.is_err()
+		);
+	}
+
+	#[test]
+	fn oauth_proxy_and_credential_capabilities_are_provider_specific() {
 		let providers = [
 			McpIDP::Auth0 {},
 			McpIDP::Keycloak {},
-			McpIDP::Okta {},
 			McpIDP::Descope {},
 			McpIDP::Authentik {},
 		];
@@ -521,6 +605,10 @@ mod tests {
 			assert!(!profile(Some(provider)).proxies_oauth_endpoints());
 			assert!(!profile(Some(provider)).may_inject_client_secret(Some("authorization_code")));
 		}
+		let okta = McpIDP::Okta {};
+		let okta = profile(Some(&okta));
+		assert!(okta.proxies_oauth_endpoints());
+		assert!(!okta.may_inject_client_secret(Some("authorization_code")));
 
 		let entra = McpIDP::Entra {};
 		let entra = profile(Some(&entra));

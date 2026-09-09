@@ -185,7 +185,8 @@ What setting a provider does (high level):
   - Entra → `https://login.microsoftonline.com/<tenant>/discovery/v2.0/keys` (tenant derived from the issuer)
 
 Auth0-specific notes:
-- Gateway appends `?audience=...` to the authorization endpoint it exposes.
+- Auth0 tenants with RFC 8707 support use the default `resourceParameterMode: resource`.
+- For legacy APIs, set `resourceParameterMode: audience` and configure exactly one `audiences` value. The gateway then exposes an issuer-relative authorization endpoint, replaces the MCP client's `resource` parameter with that audience, and rejects conflicting `audience` input.
 
 Keycloak-specific notes:
 - No RFC 8707 support; use a fixed audience in config.
@@ -193,7 +194,7 @@ Keycloak-specific notes:
 
 Okta-specific notes:
 - Okta supports RFC 8414 (like Auth0), so the gateway uses standard AS metadata discovery.
-- No RFC 8707 support; gateway appends `?audience=...` to the authorization endpoint (same workaround as Auth0).
+- Use the default `resourceParameterMode: resource` when resource indicators are enabled for the authorization server. For legacy setups, set `resourceParameterMode: audience` with exactly one configured audience; the gateway replaces the MCP `resource` parameter at its issuer-relative authorization endpoint.
 - Client registration is proxied by the gateway at `.../client-registration` to forward to Okta’s `oauth2/v1/clients`.
 - Okta DCR requires an SSWS API token; the gateway proxies the request and the MCP client must provide the token.
 

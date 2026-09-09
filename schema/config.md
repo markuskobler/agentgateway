@@ -507,6 +507,7 @@
 |`binds[].listeners[].routes[].policies.mcpAuthentication.issuer`|string|Expected token issuer, matched against the JWT `iss` claim.|
 |`binds[].listeners[].routes[].policies.mcpAuthentication.upstreamIssuer`|string|Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.|
 |`binds[].listeners[].routes[].policies.mcpAuthentication.audiences`|[]string|Accepted token audiences, matched against the JWT `aud` claim.<br>If unset, audience validation is disabled.|
+|`binds[].listeners[].routes[].policies.mcpAuthentication.resourceParameterMode`|enum|How Auth0 or Okta selects the resource requested from its authorization endpoint.<br>Possible values: `resource`, `audience`.|
 |`binds[].listeners[].routes[].policies.mcpAuthentication.provider`|object|Identity provider type used to derive MCP authorization metadata and default JWKS URLs.|
 |`binds[].listeners[].routes[].policies.mcpAuthentication.provider.auth0`|object||
 |`binds[].listeners[].routes[].policies.mcpAuthentication.provider.keycloak`|object||
@@ -19398,6 +19399,7 @@
 |`policies[].policy.mcpAuthentication.issuer`|string|Expected token issuer, matched against the JWT `iss` claim.|
 |`policies[].policy.mcpAuthentication.upstreamIssuer`|string|Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.|
 |`policies[].policy.mcpAuthentication.audiences`|[]string|Accepted token audiences, matched against the JWT `aud` claim.<br>If unset, audience validation is disabled.|
+|`policies[].policy.mcpAuthentication.resourceParameterMode`|enum|How Auth0 or Okta selects the resource requested from its authorization endpoint.<br>Possible values: `resource`, `audience`.|
 |`policies[].policy.mcpAuthentication.provider`|object|Identity provider type used to derive MCP authorization metadata and default JWKS URLs.|
 |`policies[].policy.mcpAuthentication.provider.auth0`|object||
 |`policies[].policy.mcpAuthentication.provider.keycloak`|object||
@@ -35163,6 +35165,7 @@
 |`routeGroups[].routes[].policies.mcpAuthentication.issuer`|string|Expected token issuer, matched against the JWT `iss` claim.|
 |`routeGroups[].routes[].policies.mcpAuthentication.upstreamIssuer`|string|Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.|
 |`routeGroups[].routes[].policies.mcpAuthentication.audiences`|[]string|Accepted token audiences, matched against the JWT `aud` claim.<br>If unset, audience validation is disabled.|
+|`routeGroups[].routes[].policies.mcpAuthentication.resourceParameterMode`|enum|How Auth0 or Okta selects the resource requested from its authorization endpoint.<br>Possible values: `resource`, `audience`.|
 |`routeGroups[].routes[].policies.mcpAuthentication.provider`|object|Identity provider type used to derive MCP authorization metadata and default JWKS URLs.|
 |`routeGroups[].routes[].policies.mcpAuthentication.provider.auth0`|object||
 |`routeGroups[].routes[].policies.mcpAuthentication.provider.keycloak`|object||
@@ -53578,6 +53581,7 @@
 |`routes[].policies.mcpAuthentication.issuer`|string|Expected token issuer, matched against the JWT `iss` claim.|
 |`routes[].policies.mcpAuthentication.upstreamIssuer`|string|Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.|
 |`routes[].policies.mcpAuthentication.audiences`|[]string|Accepted token audiences, matched against the JWT `aud` claim.<br>If unset, audience validation is disabled.|
+|`routes[].policies.mcpAuthentication.resourceParameterMode`|enum|How Auth0 or Okta selects the resource requested from its authorization endpoint.<br>Possible values: `resource`, `audience`.|
 |`routes[].policies.mcpAuthentication.provider`|object|Identity provider type used to derive MCP authorization metadata and default JWKS URLs.|
 |`routes[].policies.mcpAuthentication.provider.auth0`|object||
 |`routes[].policies.mcpAuthentication.provider.keycloak`|object||
@@ -77068,6 +77072,7 @@
 |`mcp.policies.mcpAuthentication.issuer`|string|Expected token issuer, matched against the JWT `iss` claim.|
 |`mcp.policies.mcpAuthentication.upstreamIssuer`|string|Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.|
 |`mcp.policies.mcpAuthentication.audiences`|[]string|Accepted token audiences, matched against the JWT `aud` claim.<br>If unset, audience validation is disabled.|
+|`mcp.policies.mcpAuthentication.resourceParameterMode`|enum|How Auth0 or Okta selects the resource requested from its authorization endpoint.<br>Possible values: `resource`, `audience`.|
 |`mcp.policies.mcpAuthentication.provider`|object|Identity provider type used to derive MCP authorization metadata and default JWKS URLs.|
 |`mcp.policies.mcpAuthentication.provider.auth0`|object||
 |`mcp.policies.mcpAuthentication.provider.keycloak`|object||

@@ -2983,6 +2983,7 @@ pub struct McpAuthentication {
 	pub issuer: String,
 	pub upstream_issuer: Option<String>,
 	pub audiences: Vec<String>,
+	pub resource_parameter_mode: McpResourceParameterMode,
 	pub provider: Option<McpIDP>,
 	pub resource_metadata: ResourceMetadata,
 	pub jwt_validator: Arc<crate::http::jwt::Jwt>,
@@ -2993,6 +2994,16 @@ pub struct McpAuthentication {
 		serialize_with = "crate::serdes::ser_redact"
 	)]
 	pub client_secret: Option<SecretString>,
+}
+
+#[apply(schema_enum!)]
+#[derive(Default)]
+pub enum McpResourceParameterMode {
+	/// Forward RFC 8707 `resource` parameters unchanged.
+	#[default]
+	Resource,
+	/// Replace `resource` with the single configured JWT audience for legacy providers.
+	Audience,
 }
 
 #[apply(schema_enum!)]
@@ -3032,6 +3043,9 @@ pub struct LocalMcpAuthentication {
 	/// Accepted token audiences, matched against the JWT `aud` claim.
 	/// If unset, audience validation is disabled.
 	pub audiences: Option<Vec<String>>,
+	/// How Auth0 or Okta selects the resource requested from its authorization endpoint.
+	#[serde(default)]
+	pub resource_parameter_mode: McpResourceParameterMode,
 	/// Identity provider type used to derive MCP authorization metadata and default JWKS URLs.
 	pub provider: Option<McpIDP>,
 	/// Protected resource metadata returned to MCP clients.
@@ -3105,6 +3119,7 @@ impl LocalMcpAuthentication {
 			issuer: self.issuer.clone(),
 			upstream_issuer: self.upstream_issuer.clone(),
 			audiences: self.audiences.clone().unwrap_or_default(),
+			resource_parameter_mode: self.resource_parameter_mode,
 			provider: self.provider.clone(),
 			resource_metadata: self.resource_metadata.clone(),
 			jwt_validator: Arc::new(jwt),
@@ -3729,6 +3744,41 @@ resourceMetadata:
 		);
 		assert!(auth.client_secret.is_some());
 		assert!(auth.as_jwt().is_ok());
+	}
+
+	#[test]
+	fn test_local_mcp_authentication_resource_parameter_mode() {
+		let audience: LocalMcpAuthentication = serdes::yamlviajson::from_str(
+			r#"
+issuer: "https://tenant.okta.com/oauth2/default"
+audiences: ["api://mcp"]
+resourceParameterMode: audience
+jwks: '{"keys":[]}'
+provider:
+  okta: {}
+resourceMetadata: {}
+"#,
+		)
+		.unwrap();
+		assert!(matches!(
+			audience.resource_parameter_mode,
+			McpResourceParameterMode::Audience
+		));
+
+		let default_mode: LocalMcpAuthentication = serdes::yamlviajson::from_str(
+			r#"
+issuer: "https://tenant.okta.com/oauth2/default"
+jwks: '{"keys":[]}'
+provider:
+  okta: {}
+resourceMetadata: {}
+"#,
+		)
+		.unwrap();
+		assert!(matches!(
+			default_mode.resource_parameter_mode,
+			McpResourceParameterMode::Resource
+		));
 	}
 
 	#[test]

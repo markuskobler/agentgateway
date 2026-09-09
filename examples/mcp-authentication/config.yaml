@@ -199,6 +199,10 @@ binds:
             #   - path:
             #       exact: /.well-known/oauth-authorization-server/okta/mcp
             #   - path:
+            #       exact: /okta/mcp/authorize
+            #   - path:
+            #       exact: /okta/mcp/token
+            #   - path:
             #       exact: /okta/mcp/client-registration
             #   policies:
             #     cors:
@@ -212,6 +216,7 @@ binds:
             #       issuer: https://dev-123456.okta.com/oauth2/default
             #       audiences:
             #       - api://default
+			#       resourceParameterMode: audience
             #       jwks:
             #         url: https://dev-123456.okta.com/oauth2/default/.well-known/jwks.json
             #       provider:

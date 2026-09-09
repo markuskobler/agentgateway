@@ -1086,6 +1086,7 @@ message TrafficPolicySpec {
       optional string client_secret = 4;
       // Issuer used for upstream discovery and provider endpoints. Defaults to the JWT provider issuer.
       optional string upstream_issuer = 5;
+      BackendPolicySpec.McpAuthentication.ResourceParameterMode resource_parameter_mode = 6;
     }
 
     // Validation mode for JWT authentication
@@ -1694,6 +1695,13 @@ message BackendPolicySpec {
       ENTRA = 6;
     }
 
+    enum ResourceParameterMode {
+      // Forward RFC 8707 resource parameters unchanged.
+      RESOURCE = 0;
+      // Replace resource with the single configured JWT audience.
+      AUDIENCE = 1;
+    }
+
     // Validation mode for JWT authentication
     enum Mode {
       // if a token exists, validate it
@@ -1720,6 +1728,7 @@ message BackendPolicySpec {
     optional string client_secret = 10;
     // Issuer used for upstream discovery and provider endpoints. Defaults to issuer.
     optional string upstream_issuer = 11;
+    ResourceParameterMode resource_parameter_mode = 12;
   }
 
   // McpGuardrails is a backend-phase policy for MCP traffic: an ordered chain of
