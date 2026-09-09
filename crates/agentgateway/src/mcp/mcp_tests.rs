@@ -3509,10 +3509,14 @@ async fn mcp_authentication_early_response_transformation_has_request_context() 
 	let mock = mock_streamable_http_server(true).await;
 	let authn = crate::types::agent::McpAuthentication {
 		issuer: "https://issuer.example.com".to_string(),
+		upstream_issuer: None,
 		audiences: vec!["mcp".to_string()],
 		provider: None,
 		resource_metadata: crate::types::agent::ResourceMetadata {
-			extra: Default::default(),
+			extra: std::collections::BTreeMap::from([(
+				"resource".to_string(),
+				serde_json::Value::String("http://localhost/mcp".to_string()),
+			)]),
 		},
 		jwt_validator: Arc::new(crate::http::jwt::Jwt::from_providers(
 			vec![],
@@ -3553,6 +3557,7 @@ async fn mcp_authentication_early_response_transformation_has_request_context() 
 		.get(format!(
 			"http://{io}/.well-known/oauth-protected-resource/mcp"
 		))
+		.header(reqwest::header::HOST, "localhost")
 		.header("x-regression-id", "mcp-authn-snapshot")
 		.send()
 		.await

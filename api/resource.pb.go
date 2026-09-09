@@ -13146,9 +13146,11 @@ type TrafficPolicySpec_JWT_MCP struct {
 	ClientId         *string                                               `protobuf:"bytes,3,opt,name=client_id,json=clientId,proto3,oneof" json:"client_id,omitempty"`
 	// OAuth client secret injected into proxied token requests for confidential clients
 	// (used by the ENTRA provider).
-	ClientSecret  *string `protobuf:"bytes,4,opt,name=client_secret,json=clientSecret,proto3,oneof" json:"client_secret,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	ClientSecret *string `protobuf:"bytes,4,opt,name=client_secret,json=clientSecret,proto3,oneof" json:"client_secret,omitempty"`
+	// Issuer used for upstream discovery and provider endpoints. Defaults to the JWT provider issuer.
+	UpstreamIssuer *string `protobuf:"bytes,5,opt,name=upstream_issuer,json=upstreamIssuer,proto3,oneof" json:"upstream_issuer,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *TrafficPolicySpec_JWT_MCP) Reset() {
@@ -13205,6 +13207,13 @@ func (x *TrafficPolicySpec_JWT_MCP) GetClientId() string {
 func (x *TrafficPolicySpec_JWT_MCP) GetClientSecret() string {
 	if x != nil && x.ClientSecret != nil {
 		return *x.ClientSecret
+	}
+	return ""
+}
+
+func (x *TrafficPolicySpec_JWT_MCP) GetUpstreamIssuer() string {
+	if x != nil && x.UpstreamIssuer != nil {
+		return *x.UpstreamIssuer
 	}
 	return ""
 }
@@ -14300,9 +14309,11 @@ type BackendPolicySpec_McpAuthentication struct {
 	ClientId              *string                `protobuf:"bytes,9,opt,name=client_id,json=clientId,proto3,oneof" json:"client_id,omitempty"`
 	// OAuth client secret injected into proxied token requests for confidential clients
 	// (used by the ENTRA provider).
-	ClientSecret  *string `protobuf:"bytes,10,opt,name=client_secret,json=clientSecret,proto3,oneof" json:"client_secret,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	ClientSecret *string `protobuf:"bytes,10,opt,name=client_secret,json=clientSecret,proto3,oneof" json:"client_secret,omitempty"`
+	// Issuer used for upstream discovery and provider endpoints. Defaults to issuer.
+	UpstreamIssuer *string `protobuf:"bytes,11,opt,name=upstream_issuer,json=upstreamIssuer,proto3,oneof" json:"upstream_issuer,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
 }
 
 func (x *BackendPolicySpec_McpAuthentication) Reset() {
@@ -14401,6 +14412,13 @@ func (x *BackendPolicySpec_McpAuthentication) GetClientId() string {
 func (x *BackendPolicySpec_McpAuthentication) GetClientSecret() string {
 	if x != nil && x.ClientSecret != nil {
 		return *x.ClientSecret
+	}
+	return ""
+}
+
+func (x *BackendPolicySpec_McpAuthentication) GetUpstreamIssuer() string {
+	if x != nil && x.UpstreamIssuer != nil {
+		return *x.UpstreamIssuer
 	}
 	return ""
 }
@@ -18551,7 +18569,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x03add\x18\x01 \x03(\v2;.agentgateway.dev.resource.FrontendPolicySpec.Metrics.FieldR\x03addB\x06\n" +
 	"\x04kind\"?\n" +
 	"\x14JWTValidationOptions\x12'\n" +
-	"\x0frequired_claims\x18\x01 \x03(\tR\x0erequiredClaims\"\x8fV\n" +
+	"\x0frequired_claims\x18\x01 \x03(\tR\x0erequiredClaims\"\xd1V\n" +
 	"\x11TrafficPolicySpec\x12N\n" +
 	"\x05phase\x18\x01 \x01(\x0e28.agentgateway.dev.resource.TrafficPolicySpec.PolicyPhaseR\x05phase\x12>\n" +
 	"\atimeout\x18\x02 \x01(\v2\".agentgateway.dev.resource.TimeoutH\x00R\atimeout\x128\n" +
@@ -18680,21 +18698,23 @@ const file_resource_proto_rawDesc = "" +
 	"\taudiences\x18\x02 \x03(\tR\taudiences\x12\x18\n" +
 	"\x06inline\x18\x03 \x01(\tH\x00R\x06inline\x12e\n" +
 	"\x16jwt_validation_options\x18\x04 \x01(\v2/.agentgateway.dev.resource.JWTValidationOptionsR\x14jwtValidationOptionsB\r\n" +
-	"\vjwks_source\x1a\x87\x06\n" +
+	"\vjwks_source\x1a\xc9\x06\n" +
 	"\x03JWT\x12I\n" +
 	"\x04mode\x18\x01 \x01(\x0e25.agentgateway.dev.resource.TrafficPolicySpec.JWT.ModeR\x04mode\x12V\n" +
 	"\tproviders\x18\x02 \x03(\v28.agentgateway.dev.resource.TrafficPolicySpec.JWTProviderR\tproviders\x12F\n" +
 	"\x03mcp\x18\x03 \x01(\v24.agentgateway.dev.resource.TrafficPolicySpec.JWT.MCPR\x03mcp\x12g\n" +
 	"\x16authorization_location\x18\x04 \x01(\v20.agentgateway.dev.resource.AuthorizationLocationR\x15authorizationLocation\x12%\n" +
-	"\x0epreserve_token\x18\x05 \x01(\bR\rpreserveToken\x1a\xd2\x02\n" +
+	"\x0epreserve_token\x18\x05 \x01(\bR\rpreserveToken\x1a\x94\x03\n" +
 	"\x03MCP\x12a\n" +
 	"\bprovider\x18\x01 \x01(\x0e2E.agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.McpIDPR\bprovider\x12|\n" +
 	"\x11resource_metadata\x18\x02 \x01(\v2O.agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadataR\x10resourceMetadata\x12 \n" +
 	"\tclient_id\x18\x03 \x01(\tH\x00R\bclientId\x88\x01\x01\x12(\n" +
-	"\rclient_secret\x18\x04 \x01(\tH\x01R\fclientSecret\x88\x01\x01B\f\n" +
+	"\rclient_secret\x18\x04 \x01(\tH\x01R\fclientSecret\x88\x01\x01\x12,\n" +
+	"\x0fupstream_issuer\x18\x05 \x01(\tH\x02R\x0eupstreamIssuer\x88\x01\x01B\f\n" +
 	"\n" +
 	"_client_idB\x10\n" +
-	"\x0e_client_secret\"0\n" +
+	"\x0e_client_secretB\x12\n" +
+	"\x10_upstream_issuer\"0\n" +
 	"\x04Mode\x12\f\n" +
 	"\bOPTIONAL\x10\x00\x12\n" +
 	"\n" +
@@ -18813,7 +18833,7 @@ const file_resource_proto_rawDesc = "" +
 	"\vPolicyPhase\x12\t\n" +
 	"\x05ROUTE\x10\x00\x12\v\n" +
 	"\aGATEWAY\x10\x01B\x06\n" +
-	"\x04kind\"\xa4i\n" +
+	"\x04kind\"\xe6i\n" +
 	"\x11BackendPolicySpec\x12D\n" +
 	"\x03a2a\x18\x01 \x01(\v20.agentgateway.dev.resource.BackendPolicySpec.A2aH\x00R\x03a2a\x12l\n" +
 	"\x11inference_routing\x18\x02 \x01(\v2=.agentgateway.dev.resource.BackendPolicySpec.InferenceRoutingH\x00R\x10inferenceRouting\x12Z\n" +
@@ -19085,7 +19105,7 @@ const file_resource_proto_rawDesc = "" +
 	"\x10McpAuthorization\x12\x14\n" +
 	"\x05allow\x18\x01 \x03(\tR\x05allow\x12\x12\n" +
 	"\x04deny\x18\x02 \x03(\tR\x04deny\x12\x18\n" +
-	"\arequire\x18\x03 \x03(\tR\arequire\x1a\xd0\b\n" +
+	"\arequire\x18\x03 \x03(\tR\arequire\x1a\x92\t\n" +
 	"\x11McpAuthentication\x12\x16\n" +
 	"\x06issuer\x18\x01 \x01(\tR\x06issuer\x12\x1c\n" +
 	"\taudiences\x18\x02 \x03(\tR\taudiences\x12\x1f\n" +
@@ -19098,7 +19118,8 @@ const file_resource_proto_rawDesc = "" +
 	"\x16authorization_location\x18\b \x01(\v20.agentgateway.dev.resource.AuthorizationLocationR\x15authorizationLocation\x12 \n" +
 	"\tclient_id\x18\t \x01(\tH\x00R\bclientId\x88\x01\x01\x12(\n" +
 	"\rclient_secret\x18\n" +
-	" \x01(\tH\x01R\fclientSecret\x88\x01\x01\x1a\xd6\x01\n" +
+	" \x01(\tH\x01R\fclientSecret\x88\x01\x01\x12,\n" +
+	"\x0fupstream_issuer\x18\v \x01(\tH\x02R\x0eupstreamIssuer\x88\x01\x01\x1a\xd6\x01\n" +
 	"\x10ResourceMetadata\x12p\n" +
 	"\x05extra\x18\x01 \x03(\v2Z.agentgateway.dev.resource.BackendPolicySpec.McpAuthentication.ResourceMetadata.ExtraEntryR\x05extra\x1aP\n" +
 	"\n" +
@@ -19121,7 +19142,8 @@ const file_resource_proto_rawDesc = "" +
 	"PERMISSIVE\x10\x02B\f\n" +
 	"\n" +
 	"_client_idB\x10\n" +
-	"\x0e_client_secret\x1a\xfd\b\n" +
+	"\x0e_client_secretB\x12\n" +
+	"\x10_upstream_issuer\x1a\xfd\b\n" +
 	"\rMcpGuardrails\x12d\n" +
 	"\n" +
 	"processors\x18\x03 \x03(\v2D.agentgateway.dev.resource.BackendPolicySpec.McpGuardrails.ProcessorR\n" +

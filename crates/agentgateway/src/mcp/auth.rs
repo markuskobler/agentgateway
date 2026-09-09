@@ -3,13 +3,13 @@ use axum::response::Response;
 use axum_core::response::IntoResponse;
 use bytes::Bytes;
 use http::Method;
-use http::uri::PathAndQuery;
 use secrecy::ExposeSecret;
 use tracing::{debug, warn};
 
 use crate::http::jwt::Jwt;
 use crate::http::*;
 use crate::json::from_body_with_limit;
+use crate::mcp::identity::{McpEndpoint, ResolvedMcpIdentity, is_discovery_candidate};
 use crate::mcp::provider::McpProviderProfile;
 use crate::proxy::ProxyError;
 use crate::proxy::httpproxy::PolicyClient;
@@ -18,23 +18,12 @@ use crate::types::agent::McpAuthentication;
 #[cfg(test)]
 use crate::types::agent::McpIDP;
 
-pub(crate) fn is_well_known_endpoint(path: &str) -> bool {
-	path == "/.well-known/oauth-protected-resource"
-		|| path.starts_with("/.well-known/oauth-protected-resource/")
-		|| path == "/.well-known/oauth-authorization-server"
-		|| path.starts_with("/.well-known/oauth-authorization-server/")
-}
-
 pub(super) async fn apply_token_validation(
 	req: &mut Request,
 	auth: &McpAuthentication,
 	validator: &Jwt,
 	mut log: Option<&mut crate::telemetry::log::RequestLog>,
 ) -> Result<(), ProxyError> {
-	// skip well-known OAuth endpoints for authn
-	if is_well_known_endpoint(req.uri().path()) {
-		return Ok(());
-	}
 	debug!(
 		"MCP auth configured; validating Authorization header (mode={:?})",
 		auth.mode
@@ -67,22 +56,48 @@ pub(crate) async fn enforce_authentication(
 	log: Option<&mut crate::telemetry::log::RequestLog>,
 	client: &PolicyClient,
 ) -> Result<Option<Response>, ProxyError> {
-	// skip well-known OAuth endpoints for authn
-	if !is_well_known_endpoint(req.uri().path()) {
-		apply_token_validation(req, auth, validator, log).await?;
+	let identity = ResolvedMcpIdentity::resolve(req, auth).map_err(ProxyError::ProcessingString)?;
+	if let Some(endpoint) = identity.endpoint(req, auth.provider.as_ref()) {
+		return handle_owned_endpoint(req, auth, &identity, endpoint, client).await;
 	}
-
-	handle_mcp_request(req, auth, client).await
+	if is_discovery_candidate(req.uri().path()) {
+		return Ok(Some(StatusCode::NOT_FOUND.into_response()));
+	}
+	apply_token_validation(req, auth, validator, log).await?;
+	Ok(None)
 }
 
-pub(crate) async fn handle_mcp_request(
+async fn handle_owned_endpoint(
 	req: &mut Request,
 	auth: &McpAuthentication,
+	identity: &ResolvedMcpIdentity,
+	endpoint: McpEndpoint,
 	client: &PolicyClient,
 ) -> Result<Option<Response>, ProxyError> {
-	match req.uri().path() {
-		// TODO: indicate this is a DirectResponse
-		path if path.ends_with("client-registration") => Ok(Some(
+	if !endpoint.accepts(req.method()) {
+		return Ok(Some(
+			Response::builder()
+				.status(StatusCode::METHOD_NOT_ALLOWED)
+				.header(::http::header::ALLOW, endpoint.allowed_methods())
+				.body(Body::empty())?,
+		));
+	}
+	if req.method() == Method::OPTIONS {
+		return Ok(Some(
+			Response::builder()
+				.status(StatusCode::NO_CONTENT)
+				.header(::http::header::ALLOW, endpoint.allowed_methods())
+				.body(Body::empty())?,
+		));
+	}
+	if matches!(endpoint, McpEndpoint::Authorization | McpEndpoint::Token)
+		&& !McpProviderProfile::new(auth.provider.as_ref()).proxies_oauth_endpoints()
+	{
+		return Ok(Some(StatusCode::NOT_FOUND.into_response()));
+	}
+
+	match endpoint {
+		McpEndpoint::Registration => Ok(Some(
 			client_registration(req, auth, client.clone())
 				.await
 				.map_err(|e| {
@@ -91,64 +106,40 @@ pub(crate) async fn handle_mcp_request(
 				})
 				.into_response(),
 		)),
-		path
-			if path == "/.well-known/oauth-protected-resource"
-				|| path.starts_with("/.well-known/oauth-protected-resource/") =>
-		{
-			Ok(Some(
-				protected_resource_metadata(req, auth).await.into_response(),
-			))
-		},
+		McpEndpoint::ProtectedResourceMetadata => Ok(Some(
+			protected_resource_metadata(auth, identity)
+				.await
+				.into_response(),
+		)),
 		// Entra rejects the RFC 8707 `resource` parameter (AADSTS9010010), so the gateway
 		// advertises proxied authorization/token endpoints (under the served AS metadata path)
 		// that strip it before forwarding to Entra.
-		path
-			if McpProviderProfile::new(auth.provider.as_ref()).proxies_oauth_endpoints()
-				&& path.starts_with("/.well-known/oauth-authorization-server/")
-				&& path.ends_with("/authorize") =>
-		{
-			Ok(Some(
-				entra_authorize(req, auth)
-					.map_err(|e| {
-						warn!("entra authorize error: {}", e);
-						StatusCode::INTERNAL_SERVER_ERROR
-					})
-					.into_response(),
-			))
-		},
-		path
-			if McpProviderProfile::new(auth.provider.as_ref()).proxies_oauth_endpoints()
-				&& path.starts_with("/.well-known/oauth-authorization-server/")
-				&& path.ends_with("/token") =>
-		{
-			Ok(Some(
-				entra_token(req, auth, client.clone())
-					.await
-					.map_err(|e| {
-						warn!("entra token error: {}", e);
-						StatusCode::INTERNAL_SERVER_ERROR
-					})
-					.into_response(),
-			))
-		},
-		path
-			if path == "/.well-known/oauth-authorization-server"
-				|| path.starts_with("/.well-known/oauth-authorization-server/") =>
-		{
-			Ok(Some(
-				authorization_server_metadata(req, auth, client.clone())
-					.await
-					.map_err(|e| {
-						warn!("authorization_server_metadata error: {}", e);
-						StatusCode::INTERNAL_SERVER_ERROR
-					})
-					.into_response(),
-			))
-		},
-		_ => {
-			// Not handled
-			Ok(None)
-		},
+		McpEndpoint::Authorization => Ok(Some(
+			entra_authorize(req, auth)
+				.map_err(|e| {
+					warn!("entra authorize error: {}", e);
+					StatusCode::INTERNAL_SERVER_ERROR
+				})
+				.into_response(),
+		)),
+		McpEndpoint::Token => Ok(Some(
+			entra_token(req, auth, client.clone())
+				.await
+				.map_err(|e| {
+					warn!("entra token error: {}", e);
+					StatusCode::INTERNAL_SERVER_ERROR
+				})
+				.into_response(),
+		)),
+		McpEndpoint::AuthorizationServerMetadata => Ok(Some(
+			authorization_server_metadata(auth, identity, client.clone())
+				.await
+				.map_err(|e| {
+					warn!("authorization_server_metadata error: {}", e);
+					StatusCode::INTERNAL_SERVER_ERROR
+				})
+				.into_response(),
+		)),
 	}
 }
 
@@ -157,53 +148,30 @@ pub(crate) fn create_auth_required_response(
 	req: &Request,
 	auth: &McpAuthentication,
 ) -> ProxyError {
-	let request_path = req.uri().path();
-	// If the `resource` is explicitly configured, use that as the base. otherwise, derive it from the
-	// the request URL
-	let proxy_url = auth
-		.resource_metadata
-		.extra
-		.get("resource")
-		.and_then(|v| v.as_str())
-		.and_then(|u| http::uri::Uri::try_from(u).ok())
-		.and_then(|uri| {
-			let mut parts = uri.into_parts();
-			parts.path_and_query = Some(PathAndQuery::from_static("/"));
-			Uri::from_parts(parts).ok()
+	let www_authenticate_value = ResolvedMcpIdentity::resolve(req, auth)
+		.map(|identity| {
+			format!(
+				"Bearer resource_metadata=\"{}\"",
+				identity.protected_resource_metadata_url()
+			)
 		})
-		.and_then(|uri| uri.to_string().strip_suffix("/").map(ToString::to_string))
-		.unwrap_or_else(|| get_redirect_url(req, request_path));
-	let www_authenticate_value = format!(
-		"Bearer resource_metadata=\"{proxy_url}/.well-known/oauth-protected-resource{request_path}\""
-	);
+		.unwrap_or_else(|_| "Bearer".to_string());
 
 	ProxyError::McpJwtAuthenticationFailure(Box::new(inner), www_authenticate_value)
 }
 
 pub(super) async fn protected_resource_metadata(
-	req: &mut Request,
 	auth: &McpAuthentication,
+	identity: &ResolvedMcpIdentity,
 ) -> Response {
-	let new_uri = strip_oauth_protected_resource_prefix(req);
-
-	// Determine the issuer to use - either use the same request URL and path that it was initially with,
-	// or else keep the auth.issuer
-	let issuer = if auth.provider.is_some() {
-		// When a provider is configured, use the same request URL with the well-known prefix stripped
-		strip_oauth_protected_resource_prefix(req)
-	} else {
-		// No provider configured, use the original issuer
-		auth.issuer.clone()
-	};
-
-	let json_body = auth.resource_metadata.to_rfc_json(new_uri, issuer);
+	let json_body = auth.resource_metadata.to_rfc_json(
+		identity.public_resource.to_string(),
+		identity.public_authorization_server.to_string(),
+	);
 
 	::http::Response::builder()
 		.status(StatusCode::OK)
 		.header("content-type", "application/json")
-		.header("access-control-allow-origin", "*")
-		.header("access-control-allow-methods", "GET, OPTIONS")
-		.header("access-control-allow-headers", "content-type")
 		.body(axum::body::Body::from(Bytes::from(
 			serde_json::to_string(&json_body).unwrap_or_default(),
 		)))
@@ -215,114 +183,25 @@ pub(super) async fn protected_resource_metadata(
 		})
 }
 
-fn get_redirect_url(req: &Request, strip_base: &str) -> String {
-	let uri = request_uri_for_oauth_metadata(req);
-
-	uri
-		.path()
-		.strip_suffix(strip_base)
-		.map(|p| uri_with_path(uri.clone(), p))
-		.unwrap_or(uri.to_string())
-}
-
-fn strip_oauth_protected_resource_prefix(req: &Request) -> String {
-	let uri = request_uri_for_oauth_metadata(req);
-
-	let path = uri.path().to_string();
-	const OAUTH_PREFIX: &str = "/.well-known/oauth-protected-resource";
-
-	// Remove the oauth-protected-resource prefix and keep the remaining path
-	if let Some(remaining_path) = path.strip_prefix(OAUTH_PREFIX) {
-		uri_with_path(uri, remaining_path)
-	} else {
-		// If the prefix is not found, return the original URI
-		uri.to_string()
-	}
-}
-
-fn issuer_from_authorization_server_metadata_request(req: &Request) -> Option<String> {
-	const OAUTH_PREFIX: &str = "/.well-known/oauth-authorization-server";
-	let external_uri = request_uri_for_oauth_metadata(req);
-	let issuer_path = issuer_path_from_metadata_path(external_uri.path(), OAUTH_PREFIX)
-		.or_else(|| issuer_path_from_metadata_path(req.uri().path(), OAUTH_PREFIX))?
-		.to_string();
-	Some(uri_with_path(external_uri, &issuer_path))
-}
-
-fn rewrite_authorization_server_issuer(
-	req: &Request,
-	auth: &McpAuthentication,
-	metadata: &mut serde_json::Value,
-) -> Result<(), ProxyError> {
-	if !McpProviderProfile::new(auth.provider.as_ref()).rewrites_public_issuer() {
-		// Without a provider adapter, authorization server metadata should keep advertising the
-		// upstream IdP issuer (auth.issuer) rather than presenting the gateway as the
-		// authorization server issuer.
-		return Ok(());
-	}
-	let Some(issuer) = issuer_from_authorization_server_metadata_request(req) else {
-		return Ok(());
-	};
-	let Some(metadata) = metadata.as_object_mut() else {
-		return Err(ProxyError::ProcessingString(
-			"authorization server metadata must be a JSON object".to_string(),
-		));
-	};
-	metadata.insert("issuer".to_string(), serde_json::Value::String(issuer));
-	Ok(())
-}
-
-fn issuer_path_from_metadata_path<'a>(path: &'a str, prefix: &str) -> Option<&'a str> {
-	if let Some(remaining_path) = path.strip_prefix(prefix)
-		&& (remaining_path.is_empty() || remaining_path.starts_with('/'))
-	{
-		return Some(remaining_path);
-	}
-
-	// Older MCP clients append the well-known suffix to the resource path instead of using
-	// RFC 8414's insertion-before-path form.
-	path
-		.strip_suffix(prefix)
-		.or_else(|| path.strip_suffix(&format!("{prefix}/")))
-}
-
-fn uri_with_path(uri: Uri, path: &str) -> String {
-	let mut parts = uri.into_parts();
-	let path_and_query = if path.is_empty() {
-		PathAndQuery::from_static("/")
-	} else {
-		PathAndQuery::try_from(path.to_string()).unwrap_or_else(|_| PathAndQuery::from_static("/"))
-	};
-	parts.path_and_query = Some(path_and_query);
-
-	let uri = Uri::from_parts(parts)
-		.map(|uri| uri.to_string())
-		.unwrap_or_default();
-	if path.is_empty() {
-		uri.strip_suffix('/').unwrap_or(&uri).to_string()
-	} else {
-		uri
-	}
-}
-
-fn request_uri_for_oauth_metadata(req: &Request) -> Uri {
-	let uri = req
-		.extensions()
-		.get::<filters::OriginalUrl>()
-		.map(|u| u.0.clone())
-		.unwrap_or_else(|| req.uri().clone());
-
-	crate::http::x_headers::apply_forwarded_scheme(uri, req.headers())
-}
-
 pub(super) async fn authorization_server_metadata(
-	req: &mut Request,
 	auth: &McpAuthentication,
+	identity: &ResolvedMcpIdentity,
 	client: PolicyClient,
 ) -> Result<Response, ProxyError> {
+	debug!(
+		public_resource = %identity.public_resource,
+		public_authorization_server = %identity.public_authorization_server,
+		upstream_discovery_issuer = %identity.upstream_discovery_issuer,
+		expected_token_issuer = %identity.expected_token_issuer,
+		metadata_url = %identity.authorization_server_metadata_url(),
+		authorization_url = %identity.authorization_url(),
+		token_url = %identity.token_url(),
+		registration_url = %identity.registration_url(),
+		"serving MCP authorization server metadata"
+	);
 	let provider = McpProviderProfile::new(auth.provider.as_ref());
 	let metadata_uri = provider
-		.metadata_url(&auth.issuer)
+		.metadata_url(identity.upstream_discovery_issuer.as_str())
 		.map_err(ProxyError::ProcessingString)?;
 	let ureq = ::http::Request::builder()
 		.uri(metadata_uri)
@@ -331,6 +210,12 @@ pub(super) async fn authorization_server_metadata(
 		.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
 		.simple_call(ureq)
 		.await?;
+	if !upstream.status().is_success() {
+		return Err(ProxyError::ProcessingString(format!(
+			"upstream authorization server metadata returned {}",
+			upstream.status()
+		)));
+	}
 	let limit = crate::http::response_buffer_limit(&upstream);
 	let mut resp: serde_json::Value = from_body_with_limit(upstream.into_body(), limit)
 		.await
@@ -338,19 +223,28 @@ pub(super) async fn authorization_server_metadata(
 	provider
 		.rewrite_metadata(
 			&mut resp,
-			&request_uri_for_oauth_metadata(req).to_string(),
+			identity
+				.public_authorization_server
+				.as_str()
+				.trim_end_matches('/'),
 			&auth.audiences,
 		)
 		.map_err(ProxyError::ProcessingString)?;
-
-	rewrite_authorization_server_issuer(req, auth, &mut resp)?;
+	if provider.rewrites_public_issuer() {
+		let object = resp.as_object_mut().ok_or_else(|| {
+			ProxyError::ProcessingString(
+				"authorization server metadata must be a JSON object".to_string(),
+			)
+		})?;
+		object.insert(
+			"issuer".to_string(),
+			serde_json::Value::String(identity.public_authorization_server.to_string()),
+		);
+	}
 
 	let response = ::http::Response::builder()
 		.status(StatusCode::OK)
 		.header("content-type", "application/json")
-		.header("access-control-allow-origin", "*")
-		.header("access-control-allow-methods", "GET, OPTIONS")
-		.header("access-control-allow-headers", "content-type")
 		.body(axum::body::Body::from(Bytes::from(
 			serde_json::to_string(&resp).map_err(|e| ProxyError::Body(crate::http::Error::new(e)))?,
 		)))?;
@@ -369,29 +263,17 @@ pub(super) async fn client_registration(
 
 	let body = std::mem::take(req.body_mut());
 	let registration_uri = McpProviderProfile::new(auth.provider.as_ref())
-		.registration_url(&auth.issuer)
+		.registration_url(auth.upstream_issuer.as_deref().unwrap_or(&auth.issuer))
 		.map_err(ProxyError::ProcessingString)?;
 	let ureq = ::http::Request::builder()
 		.uri(registration_uri)
 		.method(Method::POST)
 		.body(body)?;
 
-	let mut upstream = client
+	let upstream = client
 		.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
 		.simple_call(ureq)
 		.await?;
-
-	// Add CORS headers to the response
-	let headers = upstream.headers_mut();
-	headers.insert("access-control-allow-origin", "*".parse().unwrap());
-	headers.insert(
-		"access-control-allow-methods",
-		"POST, OPTIONS".parse().unwrap(),
-	);
-	headers.insert(
-		"access-control-allow-headers",
-		"content-type".parse().unwrap(),
-	);
 
 	Ok(upstream)
 }
@@ -408,7 +290,7 @@ pub(super) fn entra_authorize(
 ) -> Result<Response, ProxyError> {
 	let provider = McpProviderProfile::new(auth.provider.as_ref());
 	let authorization_endpoint = provider
-		.authorization_endpoint(&auth.issuer)
+		.authorization_endpoint(auth.upstream_issuer.as_deref().unwrap_or(&auth.issuer))
 		.map_err(ProxyError::ProcessingString)?
 		.ok_or_else(|| {
 			ProxyError::ProcessingString("provider has no proxied authorize endpoint".into())
@@ -460,7 +342,7 @@ pub(super) async fn entra_token(
 
 	let provider = McpProviderProfile::new(auth.provider.as_ref());
 	let token_endpoint = provider
-		.token_endpoint(&auth.issuer)
+		.token_endpoint(auth.upstream_issuer.as_deref().unwrap_or(&auth.issuer))
 		.map_err(ProxyError::ProcessingString)?
 		.ok_or_else(|| ProxyError::ProcessingString("provider has no proxied token endpoint".into()))?;
 	// Clients using client_secret_basic carry their credentials in the Authorization header;
@@ -472,7 +354,19 @@ pub(super) async fn entra_token(
 		.await
 		.map_err(ProxyError::Body)?;
 
-	let parsed = parse_entra_token_form(&bytes);
+	let parsed = match parse_entra_token_form(&bytes) {
+		Ok(parsed) => parsed,
+		Err(error) => {
+			return Ok(
+				Response::builder()
+					.status(StatusCode::BAD_REQUEST)
+					.header(::http::header::CONTENT_TYPE, "application/json")
+					.body(Body::from(
+						serde_json::json!({"error": "invalid_request", "error_description": error}).to_string(),
+					))?,
+			);
+		},
+	};
 	// The configured secret belongs to the app registration identified by the configured
 	// clientId (the one the DCR short-circuit hands out); never attach it to a request for
 	// any other client_id.
@@ -517,15 +411,24 @@ struct EntraTokenForm {
 	client_id: Option<String>,
 }
 
-fn parse_entra_token_form(input: &[u8]) -> EntraTokenForm {
+fn parse_entra_token_form(input: &[u8]) -> Result<EntraTokenForm, String> {
 	let mut has_client_secret = false;
 	let mut grant_type = None;
 	let mut client_id = None;
 	let mut serializer = url::form_urlencoded::Serializer::new(String::new());
 	for (k, v) in url::form_urlencoded::parse(input) {
 		match k.as_ref() {
+			"client_secret" if has_client_secret => {
+				return Err("duplicate client_secret parameter".to_string());
+			},
 			"client_secret" => has_client_secret = true,
+			"grant_type" if grant_type.is_some() => {
+				return Err("duplicate grant_type parameter".to_string());
+			},
 			"grant_type" => grant_type = Some(v.to_string()),
+			"client_id" if client_id.is_some() => {
+				return Err("duplicate client_id parameter".to_string());
+			},
 			"client_id" => client_id = Some(v.to_string()),
 			_ => {},
 		}
@@ -533,12 +436,12 @@ fn parse_entra_token_form(input: &[u8]) -> EntraTokenForm {
 			serializer.append_pair(&k, &v);
 		}
 	}
-	EntraTokenForm {
+	Ok(EntraTokenForm {
 		form: serializer.finish(),
 		has_client_secret,
 		grant_type,
 		client_id,
-	}
+	})
 }
 
 const MOCK_DCR_CLIENT_ID_ISSUED_AT: u64 = 0;
@@ -592,169 +495,6 @@ mod tests {
 	use crate::http::jwt::{Claims, CredentialConsumed};
 
 	#[test]
-	fn request_uri_for_oauth_metadata_uses_x_forwarded_proto() {
-		let req = ::http::Request::builder()
-			.uri("http://example.com/.well-known/oauth-protected-resource/mcp")
-			.header("x-forwarded-proto", "https")
-			.body(Body::empty())
-			.expect("request should build");
-
-		assert_eq!(
-			request_uri_for_oauth_metadata(&req).to_string(),
-			"https://example.com/.well-known/oauth-protected-resource/mcp"
-		);
-	}
-
-	#[rstest::rstest]
-	#[case::root(
-		"https://gateway.example.com/.well-known/oauth-authorization-server",
-		"https://gateway.example.com"
-	)]
-	#[case::path(
-		"https://gateway.example.com/.well-known/oauth-authorization-server/example/mcp",
-		"https://gateway.example.com/example/mcp"
-	)]
-	#[case::explicit_port_and_encoded_path(
-		"https://gateway.example.com:8443/.well-known/oauth-authorization-server/tenant%2Fname",
-		"https://gateway.example.com:8443/tenant%2Fname"
-	)]
-	#[case::trailing_slash(
-		"https://gateway.example.com/.well-known/oauth-authorization-server/",
-		"https://gateway.example.com/"
-	)]
-	fn authorization_server_issuer_matches_metadata_request(
-		#[case] metadata_uri: &'static str,
-		#[case] expected: &str,
-	) {
-		let req = ::http::Request::builder()
-			.uri(metadata_uri)
-			.body(Body::empty())
-			.expect("request should build");
-
-		assert_eq!(
-			issuer_from_authorization_server_metadata_request(&req)
-				.expect("metadata request should have an issuer"),
-			expected
-		);
-	}
-
-	#[test]
-	fn authorization_server_issuer_uses_forwarded_scheme() {
-		let req = ::http::Request::builder()
-			.uri("http://gateway.example.com/.well-known/oauth-authorization-server/example/mcp")
-			.header("x-forwarded-proto", "https")
-			.body(Body::empty())
-			.expect("request should build");
-
-		assert_eq!(
-			issuer_from_authorization_server_metadata_request(&req)
-				.expect("metadata request should have an issuer"),
-			"https://gateway.example.com/example/mcp"
-		);
-	}
-
-	#[test]
-	fn authorization_server_issuer_ignores_unexpected_path() {
-		let req = ::http::Request::builder()
-			.uri("https://gateway.example.com/example/mcp")
-			.body(Body::empty())
-			.expect("request should build");
-
-		assert!(issuer_from_authorization_server_metadata_request(&req).is_none());
-	}
-
-	#[rstest::rstest]
-	#[case::without_trailing_slash(
-		"https://gateway.example.com/mcp/.well-known/oauth-authorization-server"
-	)]
-	#[case::with_trailing_slash(
-		"https://gateway.example.com/mcp/.well-known/oauth-authorization-server/"
-	)]
-	fn authorization_server_issuer_supports_legacy_suffix_form(#[case] original_url: &str) {
-		let mut req = ::http::Request::builder()
-			.uri("http://backend.internal/.well-known/oauth-authorization-server")
-			.body(Body::empty())
-			.expect("request should build");
-		req.extensions_mut().insert(filters::OriginalUrl(
-			original_url.parse().expect("original URL should parse"),
-		));
-
-		assert_eq!(
-			issuer_from_authorization_server_metadata_request(&req)
-				.expect("metadata request should have an issuer"),
-			"https://gateway.example.com/mcp"
-		);
-	}
-
-	#[test]
-	fn authorization_server_metadata_replaces_or_inserts_issuer() {
-		let mut auth = default_auth();
-		auth.provider = Some(McpIDP::Entra {});
-		let req = ::http::Request::builder()
-			.uri("https://gateway.example.com/.well-known/oauth-authorization-server/example/mcp")
-			.body(Body::empty())
-			.expect("request should build");
-
-		for mut metadata in [
-			serde_json::json!({"issuer": "https://idp.example.com"}),
-			serde_json::json!({"issuer": 42}),
-			serde_json::json!({}),
-		] {
-			rewrite_authorization_server_issuer(&req, &auth, &mut metadata)
-				.expect("issuer should be authoritative");
-			assert_eq!(
-				metadata["issuer"],
-				"https://gateway.example.com/example/mcp"
-			);
-		}
-	}
-
-	#[test]
-	fn authorization_server_metadata_preserves_issuer_without_provider() {
-		let req = ::http::Request::builder()
-			.uri("https://gateway.example.com/.well-known/oauth-authorization-server/example/mcp")
-			.body(Body::empty())
-			.expect("request should build");
-		let mut metadata = serde_json::json!({"issuer": "https://idp.example.com"});
-
-		rewrite_authorization_server_issuer(&req, &default_auth(), &mut metadata)
-			.expect("metadata should remain valid");
-		assert_eq!(metadata["issuer"], "https://idp.example.com");
-	}
-
-	#[test]
-	fn authorization_server_metadata_rejects_non_object() {
-		let mut auth = default_auth();
-		auth.provider = Some(McpIDP::Entra {});
-		let req = ::http::Request::builder()
-			.uri("https://gateway.example.com/.well-known/oauth-authorization-server/example/mcp")
-			.body(Body::empty())
-			.expect("request should build");
-		let mut metadata = serde_json::json!([]);
-
-		assert!(rewrite_authorization_server_issuer(&req, &auth, &mut metadata).is_err());
-	}
-
-	#[test]
-	fn well_known_endpoint_requires_root_and_slash_delimited_suffix() {
-		assert!(is_well_known_endpoint(
-			"/.well-known/oauth-protected-resource"
-		));
-		assert!(is_well_known_endpoint(
-			"/.well-known/oauth-protected-resource/mcp"
-		));
-		assert!(is_well_known_endpoint(
-			"/.well-known/oauth-authorization-server/tenant"
-		));
-		assert!(!is_well_known_endpoint(
-			"/mcp/.well-known/oauth-protected-resource"
-		));
-		assert!(!is_well_known_endpoint(
-			"/.well-known/oauth-protected-resource-evil"
-		));
-	}
-
-	#[test]
 	fn www_authenticate_resource_metadata_preserves_authority_for_root_path() {
 		let req = auth_request("https://example.com/", default_auth());
 
@@ -785,19 +525,18 @@ mod tests {
 	}
 
 	#[test]
-	fn auth_required_response_accepts_configured_resource_with_path() {
+	fn auth_required_response_uses_configured_resource_with_path() {
 		let req = auth_request(
 			"http://backend.internal/mcp",
 			McpAuthentication {
 				issuer: "https://idp.example.com".to_string(),
+				upstream_issuer: None,
 				audiences: Vec::new(),
 				provider: None,
 				resource_metadata: crate::types::agent::ResourceMetadata {
 					extra: std::collections::BTreeMap::from([(
 						"resource".to_string(),
-						serde_json::Value::String(
-							"https://gateway.example.com/base/path?debug=true".to_string(),
-						),
+						serde_json::Value::String("https://gateway.example.com/base/path".to_string()),
 					)]),
 				},
 				jwt_validator: Arc::new(crate::http::jwt::Jwt::from_providers(
@@ -814,7 +553,7 @@ mod tests {
 
 		assert_eq!(
 			www_authenticate_resource_metadata(&req),
-			"Bearer resource_metadata=\"https://gateway.example.com/.well-known/oauth-protected-resource/mcp\""
+			"Bearer resource_metadata=\"https://gateway.example.com/.well-known/oauth-protected-resource/base/path\""
 		);
 	}
 
@@ -830,6 +569,7 @@ mod tests {
 	fn default_auth() -> McpAuthentication {
 		McpAuthentication {
 			issuer: "https://issuer.example.com".to_string(),
+			upstream_issuer: None,
 			audiences: vec!["mcp".to_string()],
 			provider: None,
 			resource_metadata: crate::types::agent::ResourceMetadata {
@@ -1196,6 +936,7 @@ mod tests {
 		McpAuthentication {
 			issuer: "https://login.microsoftonline.com/11111111-2222-3333-4444-555555555555/v2.0"
 				.to_string(),
+			upstream_issuer: None,
 			audiences: vec!["api://client-id-guid".to_string()],
 			provider: Some(McpIDP::Entra {}),
 			resource_metadata: crate::types::agent::ResourceMetadata {
@@ -1297,7 +1038,8 @@ mod tests {
 	fn parse_entra_token_form_removes_resource_and_detects_client_secret() {
 		let parsed = parse_entra_token_form(
 			b"grant_type=authorization_code&client_id=abc-123&code=abc&resource=https%3A%2F%2Fgw%2Fmcp&code_verifier=v",
-		);
+		)
+		.expect("form should parse");
 		assert!(!parsed.has_client_secret);
 		assert_eq!(parsed.grant_type.as_deref(), Some("authorization_code"));
 		assert_eq!(parsed.client_id.as_deref(), Some("abc-123"));
@@ -1306,10 +1048,22 @@ mod tests {
 		assert!(parsed.form.contains("code=abc"));
 		assert!(parsed.form.contains("code_verifier=v"));
 
-		let parsed = parse_entra_token_form(b"grant_type=refresh_token&client_secret=s3cret");
+		let parsed = parse_entra_token_form(b"grant_type=refresh_token&client_secret=s3cret")
+			.expect("form should parse");
 		assert!(parsed.has_client_secret);
 		assert_eq!(parsed.grant_type.as_deref(), Some("refresh_token"));
 		assert!(parsed.form.contains("client_secret=s3cret"));
+	}
+
+	#[test]
+	fn parse_entra_token_form_rejects_ambiguous_credential_fields() {
+		for form in [
+			b"client_id=a&client_id=b".as_slice(),
+			b"grant_type=authorization_code&grant_type=refresh_token".as_slice(),
+			b"client_secret=a&client_secret=b".as_slice(),
+		] {
+			assert!(parse_entra_token_form(form).is_err());
+		}
 	}
 
 	#[test]

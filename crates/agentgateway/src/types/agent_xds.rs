@@ -592,8 +592,9 @@ fn mcp_authentication_from_proto(
 		http::auth::AuthorizationLocation::bearer_header(),
 		false,
 	);
-	Ok(build_mcp_authentication(
+	build_mcp_authentication(
 		m.issuer.clone(),
+		m.upstream_issuer.clone(),
 		m.audiences.clone(),
 		m.provider,
 		convert_mcp_resource_metadata(m.resource_metadata.as_ref().map(|rm| rm.extra.iter())),
@@ -601,7 +602,7 @@ fn mcp_authentication_from_proto(
 		mode,
 		m.client_id.clone(),
 		m.client_secret.clone().map(Into::into),
-	))
+	)
 }
 
 fn jwt_provider_from_inline_jwks_or_warn(
@@ -668,6 +669,7 @@ where
 #[allow(clippy::too_many_arguments)]
 fn build_mcp_authentication(
 	issuer: String,
+	upstream_issuer: Option<String>,
 	audiences: Vec<String>,
 	provider: i32,
 	resource_metadata: ResourceMetadata,
@@ -675,9 +677,10 @@ fn build_mcp_authentication(
 	mode: McpAuthenticationMode,
 	client_id: Option<String>,
 	client_secret: Option<secrecy::SecretString>,
-) -> McpAuthentication {
-	McpAuthentication {
+) -> Result<McpAuthentication, ProtoError> {
+	let auth = McpAuthentication {
 		issuer,
+		upstream_issuer,
 		audiences,
 		provider: convert_mcp_provider(provider),
 		resource_metadata,
@@ -685,7 +688,9 @@ fn build_mcp_authentication(
 		mode,
 		client_id,
 		client_secret,
-	}
+	};
+	crate::mcp::identity::validate_configured_identity(&auth).map_err(ProtoError::Generic)?;
+	Ok(auth)
 }
 
 fn convert_route_type(proto_rt: i32, diagnostics: &mut Diagnostics) -> llm::RouteType {
@@ -2664,6 +2669,7 @@ fn traffic_policy_from_proto(
 					let provider = &jwt.providers[0];
 					Some(build_mcp_authentication(
 						provider.issuer.clone(),
+						mcp.upstream_issuer.clone(),
 						provider.audiences.clone(),
 						mcp.provider,
 						convert_mcp_resource_metadata(mcp.resource_metadata.as_ref().map(|rm| rm.extra.iter())),
@@ -2677,7 +2683,7 @@ fn traffic_policy_from_proto(
 						},
 						mcp.client_id.clone(),
 						mcp.client_secret.clone().map(Into::into),
-					))
+					)?)
 				},
 				None => None,
 			};
@@ -4651,6 +4657,36 @@ mod tests {
 		let p = URL_SAFE_NO_PAD.encode(serde_json::to_vec(&payload).unwrap());
 		let s = URL_SAFE_NO_PAD.encode(b"sig");
 		format!("{h}.{p}.{s}")
+	}
+
+	#[test]
+	fn mcp_authentication_builder_preserves_upstream_issuer() {
+		let auth = build_mcp_authentication(
+			"https://tokens.example/tenant".to_string(),
+			Some("https://discovery.example/tenant".to_string()),
+			vec!["mcp".to_string()],
+			proto::agent::backend_policy_spec::mcp_authentication::McpIdp::Entra as i32,
+			ResourceMetadata {
+				extra: std::collections::BTreeMap::from([(
+					"resource".to_string(),
+					serde_json::Value::String("https://gateway.example/mcp".to_string()),
+				)]),
+			},
+			Arc::new(http::jwt::Jwt::from_providers(
+				vec![],
+				http::jwt::Mode::Strict,
+				http::auth::AuthorizationLocation::bearer_header(),
+				false,
+			)),
+			McpAuthenticationMode::Strict,
+			None,
+			None,
+		)
+		.expect("valid identity");
+		assert_eq!(
+			auth.upstream_issuer.as_deref(),
+			Some("https://discovery.example/tenant")
+		);
 	}
 
 	#[test]

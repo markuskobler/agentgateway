@@ -27,6 +27,7 @@ binds:
           allowHeaders:
           - mcp-protocol-version
           - content-type
+          - authorization
           allowOrigins:
           - '*'
           exposeHeaders:
@@ -66,6 +67,7 @@ binds:
           allowHeaders:
           - mcp-protocol-version
           - content-type
+          - authorization
           allowOrigins:
           - '*'
           exposeHeaders:
@@ -105,12 +107,13 @@ binds:
       - path:
           exact: /.well-known/oauth-authorization-server/keycloak/mcp
       - path:
-          exact: /.well-known/oauth-authorization-server/keycloak/mcp/client-registration
+          exact: /keycloak/mcp/client-registration
       policies:
         cors:
           allowHeaders:
           - mcp-protocol-version
           - content-type
+          - authorization
           allowOrigins:
           - '*'
         mcpAuthentication:
@@ -149,11 +152,14 @@ binds:
             #       exact: /.well-known/oauth-protected-resource/auth0/mcp
             #   - path:
             #       exact: /.well-known/oauth-authorization-server/auth0/mcp
+            #   - path:
+            #       exact: /auth0/mcp/client-registration
             #   policies:
             #     cors:
             #       allowHeaders:
             #       - mcp-protocol-version
             #       - content-type
+            #       - authorization
             #       allowOrigins:
             #       - '*'
             #     mcpAuthentication:
@@ -193,12 +199,13 @@ binds:
             #   - path:
             #       exact: /.well-known/oauth-authorization-server/okta/mcp
             #   - path:
-            #       exact: /.well-known/oauth-authorization-server/okta/mcp/client-registration
+            #       exact: /okta/mcp/client-registration
             #   policies:
             #     cors:
             #       allowHeaders:
             #       - mcp-protocol-version
             #       - content-type
+            #       - authorization
             #       allowOrigins:
             #       - '*'
             #     mcpAuthentication:
@@ -238,12 +245,13 @@ binds:
             #   - path:
             #       exact: /.well-known/oauth-authorization-server/descope/mcp
             #   - path:
-            #       exact: /.well-known/oauth-authorization-server/descope/mcp/client-registration
+            #       exact: /descope/mcp/client-registration
             #   policies:
             #     cors:
             #       allowHeaders:
             #       - mcp-protocol-version
             #       - content-type
+            #       - authorization
             #       allowOrigins:
             #       - '*'
             #     mcpAuthentication:
@@ -280,12 +288,13 @@ binds:
             #   - path:
             #       exact: /.well-known/oauth-authorization-server/authentik/mcp
             #   - path:
-            #       exact: /.well-known/oauth-authorization-server/authentik/mcp/client-registration
+            #       exact: /authentik/mcp/client-registration
             #   policies:
             #     cors:
             #       allowHeaders:
             #       - mcp-protocol-version
             #       - content-type
+            #       - authorization
             #       allowOrigins:
             #       - '*'
             #     mcpAuthentication:
@@ -309,9 +318,8 @@ binds:
             #         resourceDocumentation: http://localhost:3000/authentik/docs
             #         resourcePolicyUri: http://localhost:3000/authentik/policies
             # Example configuration for Microsoft Entra ID (Azure AD):
-            # Note the pathPrefix match on the authorization-server path: the gateway serves
-            # /authorize, /token, and /client-registration endpoints beneath it to adapt
-            # Entra (strip the RFC 8707 `resource` param, short-circuit DCR).
+            # The gateway owns the exact discovery and issuer-relative OAuth routes below.
+            # The metadata-descendant routes are temporary aliases for cached client metadata.
             # - backends:
             #   - mcp:
             #       targets:
@@ -326,7 +334,19 @@ binds:
             #   - path:
             #       exact: /.well-known/oauth-protected-resource/entra/mcp
             #   - path:
-            #       pathPrefix: /.well-known/oauth-authorization-server/entra/mcp
+            #       exact: /.well-known/oauth-authorization-server/entra/mcp
+            #   - path:
+            #       exact: /entra/mcp/authorize
+            #   - path:
+            #       exact: /entra/mcp/token
+            #   - path:
+            #       exact: /entra/mcp/client-registration
+            #   - path:
+            #       exact: /.well-known/oauth-authorization-server/entra/mcp/authorize
+            #   - path:
+            #       exact: /.well-known/oauth-authorization-server/entra/mcp/token
+            #   - path:
+            #       exact: /.well-known/oauth-authorization-server/entra/mcp/client-registration
             #   policies:
             #     cors:
             #       allowHeaders:

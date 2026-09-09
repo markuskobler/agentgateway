@@ -1084,6 +1084,8 @@ message TrafficPolicySpec {
       // OAuth client secret injected into proxied token requests for confidential clients
       // (used by the ENTRA provider).
       optional string client_secret = 4;
+      // Issuer used for upstream discovery and provider endpoints. Defaults to the JWT provider issuer.
+      optional string upstream_issuer = 5;
     }
 
     // Validation mode for JWT authentication
@@ -1716,6 +1718,8 @@ message BackendPolicySpec {
     // OAuth client secret injected into proxied token requests for confidential clients
     // (used by the ENTRA provider).
     optional string client_secret = 10;
+    // Issuer used for upstream discovery and provider endpoints. Defaults to issuer.
+    optional string upstream_issuer = 11;
   }
 
   // McpGuardrails is a backend-phase policy for MCP traffic: an ordered chain of

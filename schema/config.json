@@ -4679,6 +4679,13 @@
           "description": "Expected token issuer, matched against the JWT `iss` claim.",
           "type": "string"
         },
+        "upstreamIssuer": {
+          "description": "Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "audiences": {
           "description": "Accepted token audiences, matched against the JWT `aud` claim.\nIf unset, audience validation is disabled.",
           "type": [

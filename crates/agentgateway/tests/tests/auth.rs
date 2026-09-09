@@ -187,6 +187,7 @@ fn mcp_authentication(
 
 	agentgateway::types::agent::McpAuthentication {
 		issuer: TEST_ISSUER.to_string(),
+		upstream_issuer: None,
 		audiences: vec![TEST_CLIENT_ID.to_string()],
 		provider: None,
 		resource_metadata: agentgateway::types::agent::ResourceMetadata {
@@ -794,6 +795,7 @@ async fn mcp_authentication_runs_in_route_policy_path() {
 				"audiences": ["test-aud"],
 				"jwks": "{\"keys\":[{\"use\":\"sig\",\"kty\":\"EC\",\"kid\":\"XhO06x8JjWH1wwkWkyeEUxsooGEWoEdidEpwyd_hmuI\",\"crv\":\"P-256\",\"alg\":\"ES256\",\"x\":\"XZHF8Em5LbpqfgewAalpSEH4Ka2I2xjcxxUt2j6-lCo\",\"y\":\"g3DFz45A7EOUMgmsNXatrXw1t-PG5xsbkxUs851RxSE\"}]}",
 				"resourceMetadata": {
+					"resource": "http://localhost/mcp",
 					"mcpResourceUri": "mcp://test"
 				}
 			}
@@ -803,11 +805,396 @@ async fn mcp_authentication_runs_in_route_policy_path() {
 	let res = send_request(
 		io,
 		Method::GET,
-		"http://lo/.well-known/oauth-protected-resource/mcp",
+		"http://localhost/.well-known/oauth-protected-resource/mcp",
 	)
 	.await;
 	assert_eq!(res.status(), 200);
 	assert_eq!(res.hdr("content-type"), "application/json");
+}
+
+#[tokio::test]
+async fn generic_authorization_server_discovery_proxies_without_rewriting_identity() {
+	let mock = MockServer::start().await;
+	Mock::given(wiremock::matchers::method("GET"))
+		.and(wiremock::matchers::path(
+			"/.well-known/oauth-authorization-server",
+		))
+		.respond_with(ResponseTemplate::new(200).set_body_json(json!({
+			"issuer": format!("http://{}", mock.address()),
+			"authorization_endpoint": format!("http://{}/authorize", mock.address()),
+			"token_endpoint": format!("http://{}/token", mock.address())
+		})))
+		.mount(&mock)
+		.await;
+
+	let mut route = basic_route(*mock.address());
+	route.matches = [
+		"/mcp",
+		"/.well-known/oauth-protected-resource/mcp",
+		"/.well-known/oauth-authorization-server/mcp",
+	]
+	.into_iter()
+	.map(|path| RouteMatch {
+		headers: vec![],
+		path: PathMatch::Exact(path.into()),
+		method: None,
+		query: vec![],
+	})
+	.collect();
+	let mut bind = setup_proxy_test("{}")
+		.expect("proxy test harness")
+		.with_backend(*mock.address())
+		.with_bind(simple_bind())
+		.with_route(route);
+	bind
+		.attach_route_policy(json!({
+			"mcpAuthentication": {
+				"issuer": format!("http://{}", mock.address()),
+				"audiences": [TEST_CLIENT_ID],
+				"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+				"resourceMetadata": {"resource": "http://localhost/mcp"}
+			}
+		}))
+		.await;
+	let io = bind.serve_http(BIND_KEY);
+
+	let response = send_request(
+		io,
+		Method::GET,
+		"http://localhost/.well-known/oauth-authorization-server/mcp",
+	)
+	.await;
+	assert_eq!(response.status(), StatusCode::OK);
+	let metadata: Value = serde_json::from_slice(
+		&response
+			.into_body()
+			.collect()
+			.await
+			.expect("body")
+			.to_bytes(),
+	)
+	.expect("AS metadata");
+	assert_eq!(metadata["issuer"], format!("http://{}", mock.address()));
+	assert_eq!(
+		mock
+			.received_requests()
+			.await
+			.expect("requests")
+			.last()
+			.expect("discovery request")
+			.url
+			.path(),
+		"/.well-known/oauth-authorization-server"
+	);
+}
+
+#[tokio::test]
+async fn inferred_entra_operation_paths_are_reachable_through_exact_routes() {
+	let mock = MockServer::start().await;
+	Mock::given(wiremock::matchers::method("POST"))
+		.and(wiremock::matchers::path("/tenant/oauth2/v2.0/token"))
+		.respond_with(ResponseTemplate::new(200).set_body_json(json!({"access_token": "token"})))
+		.mount(&mock)
+		.await;
+
+	let mut route = basic_route(*mock.address());
+	route.matches = ["/mcp/authorize", "/mcp/token", "/mcp/client-registration"]
+		.into_iter()
+		.map(|path| RouteMatch {
+			headers: vec![],
+			path: PathMatch::Exact(path.into()),
+			method: None,
+			query: vec![],
+		})
+		.collect();
+	let mut bind = setup_proxy_test("{}")
+		.expect("proxy test harness")
+		.with_backend(*mock.address())
+		.with_bind(simple_bind())
+		.with_route(route);
+	bind
+		.attach_route_policy(json!({
+			"mcpAuthentication": {
+				"issuer": TEST_ISSUER,
+				"upstreamIssuer": format!("http://{}/tenant/v2.0", mock.address()),
+				"audiences": [TEST_CLIENT_ID],
+				"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+				"provider": {"entra": {}},
+				"clientId": TEST_CLIENT_ID,
+				"resourceMetadata": {}
+			}
+		}))
+		.await;
+	let io = bind.serve_http(BIND_KEY);
+
+	let authorize = send_request(
+		io.clone(),
+		Method::GET,
+		"http://localhost/mcp/authorize?client_id=client-id&resource=http%3A%2F%2Flocalhost%2Fmcp",
+	)
+	.await;
+	assert_eq!(authorize.status(), StatusCode::FOUND);
+	assert!(!authorize.hdr("location").contains("resource="));
+
+	let token = RequestBuilder::new(Method::POST, "http://localhost/mcp/token")
+		.header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+		.body(Body::from(
+			"grant_type=authorization_code&client_id=client-id",
+		))
+		.send(io.clone())
+		.await
+		.expect("token response");
+	assert_eq!(token.status(), StatusCode::OK);
+
+	let registration = RequestBuilder::new(Method::POST, "http://localhost/mcp/client-registration")
+		.body(Body::from(r#"{"redirect_uris":[]}"#))
+		.send(io)
+		.await
+		.expect("registration response");
+	assert_eq!(registration.status(), StatusCode::CREATED);
+}
+
+#[tokio::test]
+async fn entra_owned_endpoints_follow_public_identity_and_http_methods() {
+	let mock = MockServer::start().await;
+	Mock::given(wiremock::matchers::path_regex("/tenant/.*"))
+		.respond_with(ResponseTemplate::new(200).set_body_json(json!({
+			"issuer": "https://upstream.example/tenant/v2.0",
+			"authorization_endpoint": "https://upstream.example/authorize",
+			"token_endpoint": "https://upstream.example/token",
+			"registration_endpoint": "https://upstream.example/register",
+			"code_challenge_methods_supported": ["S256"],
+			"dpop_signing_alg_values_supported": ["ES256"]
+		})))
+		.mount(&mock)
+		.await;
+
+	let mut bind = base_gateway(&mock);
+	bind
+		.attach_route_policy(json!({
+			"cors": {
+				"allowCredentials": false,
+				"allowHeaders": ["content-type", "authorization"],
+				"allowMethods": ["GET", "POST"],
+				"allowOrigins": ["https://client.example"],
+				"exposeHeaders": ["www-authenticate"]
+			},
+			"mcpAuthentication": {
+				"issuer": TEST_ISSUER,
+				"upstreamIssuer": format!("http://{}/tenant/v2.0", mock.address()),
+				"audiences": [TEST_CLIENT_ID],
+				"jwks": serde_json::to_string(&test_jwks()).expect("JWKS JSON"),
+				"provider": {"entra": {}},
+				"clientId": TEST_CLIENT_ID,
+				"clientSecret": "gateway-secret",
+				"resourceMetadata": {"resource": "http://localhost/mcp"}
+			}
+		}))
+		.await;
+	let io = bind.serve_http(BIND_KEY);
+
+	let response = send_request(
+		io.clone(),
+		Method::GET,
+		"http://localhost/.well-known/oauth-protected-resource/mcp",
+	)
+	.await;
+	assert_eq!(response.status(), StatusCode::OK);
+	let body = response
+		.into_body()
+		.collect()
+		.await
+		.expect("body")
+		.to_bytes();
+	let metadata: Value = serde_json::from_slice(&body).expect("resource metadata");
+	assert_eq!(metadata["resource"], "http://localhost/mcp");
+	assert_eq!(
+		metadata["authorization_servers"],
+		json!(["http://localhost/mcp"])
+	);
+
+	let response = send_request(
+		io.clone(),
+		Method::GET,
+		"http://localhost/.well-known/oauth-authorization-server/mcp",
+	)
+	.await;
+	assert_eq!(response.status(), StatusCode::OK);
+	let body = response
+		.into_body()
+		.collect()
+		.await
+		.expect("body")
+		.to_bytes();
+	let metadata: Value = serde_json::from_slice(&body).expect("AS metadata");
+	assert_eq!(metadata["issuer"], "http://localhost/mcp");
+	assert_eq!(
+		metadata["authorization_endpoint"],
+		"http://localhost/mcp/authorize"
+	);
+	assert_eq!(metadata["token_endpoint"], "http://localhost/mcp/token");
+	assert_eq!(
+		metadata["registration_endpoint"],
+		"http://localhost/mcp/client-registration"
+	);
+	assert!(metadata.get("dpop_signing_alg_values_supported").is_none());
+
+	let response = send_request(
+		io.clone(),
+		Method::GET,
+		"http://localhost/mcp/authorize?client_id=client-id&resource=http%3A%2F%2Flocalhost%2Fmcp&code_challenge=pkce",
+	)
+	.await;
+	assert_eq!(response.status(), StatusCode::FOUND);
+	let location = response.hdr("location");
+	assert!(location.contains("/tenant/oauth2/v2.0/authorize"));
+	assert!(location.contains("client_id=client-id"));
+	assert!(location.contains("code_challenge=pkce"));
+	assert!(!location.contains("resource="));
+
+	let response = RequestBuilder::new(Method::POST, "http://localhost/mcp/token")
+		.header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+		.body(Body::from(
+			"grant_type=authorization_code&client_id=client-id&code=abc&code_verifier=pkce&resource=http%3A%2F%2Flocalhost%2Fmcp",
+		))
+		.send(io.clone())
+		.await
+		.expect("token response");
+	assert_eq!(response.status(), StatusCode::OK);
+	let requests = mock.received_requests().await.expect("requests");
+	let token_request = requests.last().expect("token request");
+	assert_eq!(token_request.url.path(), "/tenant/oauth2/v2.0/token");
+	let token_body = String::from_utf8_lossy(&token_request.body);
+	assert!(token_body.contains("code_verifier=pkce"));
+	assert!(token_body.contains("client_secret=gateway-secret"));
+	assert!(!token_body.contains("resource="));
+	drop(requests);
+
+	let calls_before = mock.received_requests().await.expect("requests").len();
+	let response = RequestBuilder::new(Method::POST, "http://localhost/mcp/token")
+		.header(header::CONTENT_TYPE, "application/x-www-form-urlencoded")
+		.body(Body::from(
+			"grant_type=authorization_code&client_id=client-id&client_id=foreign",
+		))
+		.send(io.clone())
+		.await
+		.expect("duplicate parameter response");
+	assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+	assert_eq!(
+		mock.received_requests().await.expect("requests").len(),
+		calls_before
+	);
+
+	let response = RequestBuilder::new(Method::POST, "http://localhost/mcp/client-registration")
+		.header(header::CONTENT_TYPE, "application/json")
+		.body(Body::from(
+			r#"{"redirect_uris":["http://localhost/callback"]}"#,
+		))
+		.send(io.clone())
+		.await
+		.expect("registration response");
+	assert_eq!(response.status(), StatusCode::CREATED);
+	let body = response
+		.into_body()
+		.collect()
+		.await
+		.expect("body")
+		.to_bytes();
+	let registration: Value = serde_json::from_slice(&body).expect("registration JSON");
+	assert_eq!(registration["client_id"], TEST_CLIENT_ID);
+
+	let response = send_request(io.clone(), Method::GET, "http://localhost/mcp/token").await;
+	assert_eq!(response.status(), StatusCode::METHOD_NOT_ALLOWED);
+	assert_eq!(response.hdr("allow"), "POST, OPTIONS");
+
+	let calls_before = mock.received_requests().await.expect("requests").len();
+	let response = send_request_headers(
+		io.clone(),
+		Method::OPTIONS,
+		"http://localhost/mcp/token",
+		&[
+			("origin", "https://client.example"),
+			("access-control-request-method", "POST"),
+		],
+	)
+	.await;
+	assert_eq!(response.status(), StatusCode::OK);
+	assert_eq!(
+		response.hdr("access-control-allow-origin"),
+		"https://client.example"
+	);
+	assert_eq!(
+		mock.received_requests().await.expect("requests").len(),
+		calls_before
+	);
+
+	for path in ["/mcp/token-evil", "/api/v1/token"] {
+		let response = send_request(io.clone(), Method::POST, &format!("http://localhost{path}")).await;
+		assert_eq!(response.status(), StatusCode::UNAUTHORIZED, "{path}");
+	}
+}
+
+#[tokio::test]
+async fn backend_attached_mcp_authentication_owns_protected_resource_metadata() {
+	let mock = simple_mock().await;
+	let mut auth = mcp_authentication(agentgateway::types::agent::McpAuthenticationMode::Strict);
+	auth.resource_metadata.extra.insert(
+		"resource".to_string(),
+		Value::String("http://localhost/backend/mcp".to_string()),
+	);
+	let bind = setup_proxy_test("{}")
+		.expect("proxy test harness")
+		.with_mcp_backend_policies(
+			*mock.address(),
+			false,
+			false,
+			vec![BackendTrafficPolicy::McpAuthentication(auth)],
+		)
+		.with_bind(simple_bind())
+		.with_route(basic_route(*mock.address()));
+	let io = bind.serve_http(BIND_KEY);
+
+	let response = send_request(
+		io,
+		Method::GET,
+		"http://localhost/.well-known/oauth-protected-resource/backend/mcp",
+	)
+	.await;
+	assert_eq!(response.status(), StatusCode::OK);
+	let body = response
+		.into_body()
+		.collect()
+		.await
+		.expect("body")
+		.to_bytes();
+	let metadata: Value = serde_json::from_slice(&body).expect("metadata JSON");
+	assert_eq!(metadata["resource"], "http://localhost/backend/mcp");
+	assert_eq!(metadata["authorization_servers"], json!([TEST_ISSUER]));
+}
+
+#[tokio::test]
+async fn oauth_shaped_requests_stay_http_without_mcp_authentication() {
+	let mock = simple_mock().await;
+	let bind = setup_proxy_test("{}")
+		.expect("proxy test harness")
+		.with_mcp_backend(*mock.address(), false, false)
+		.with_bind(simple_bind())
+		.with_route(basic_route(*mock.address()));
+	let io = bind.serve_http(BIND_KEY);
+
+	for path in [
+		"/.well-known/oauth-protected-resource/mcp",
+		"/.well-known/oauth-authorization-server/mcp",
+		"/mcp/client-registration",
+	] {
+		let uri = format!("http://localhost{path}");
+		let response = RequestBuilder::new(Method::POST, &uri)
+			.body(Body::from("not-json-rpc"))
+			.send(io.clone())
+			.await
+			.expect("HTTP request");
+		assert_eq!(response.status(), StatusCode::OK, "{path}");
+	}
 }
 
 #[tokio::test]

@@ -3,6 +3,7 @@ pub(crate) mod auth;
 pub(crate) mod dns_rebinding;
 pub(crate) mod guardrails;
 mod handler;
+pub(crate) mod identity;
 mod mergestream;
 pub(crate) mod provider;
 mod rbac;

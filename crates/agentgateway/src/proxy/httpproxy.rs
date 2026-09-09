@@ -78,15 +78,19 @@ pub(crate) enum RequestProtocol {
 	AI,
 }
 
-fn classify_request_protocol(req: &Request, backend: &Backend) -> RequestProtocol {
+fn classify_request_protocol(
+	req: &Request,
+	backend: &Backend,
+	mcp_authentication: Option<&McpAuthentication>,
+) -> RequestProtocol {
+	let oauth_http_candidate = is_oauth_http_candidate(req, mcp_authentication);
 	match backend {
 		// Only JSON-RPC traffic is handled as MCP; transport and discovery endpoints
 		// continue through the ordinary HTTP path.
 		Backend::MCP(_, _)
 			if req.method() == ::http::Method::POST
 				&& req.uri().path() != "/sse"
-				&& !mcp::auth::is_well_known_endpoint(req.uri().path())
-				&& !req.uri().path().ends_with("client-registration")
+				&& !oauth_http_candidate
 				&& !crate::http::is_grpc_request(req) =>
 		{
 			RequestProtocol::Mcp
@@ -94,6 +98,18 @@ fn classify_request_protocol(req: &Request, backend: &Backend) -> RequestProtoco
 		Backend::AI(_, _) | Backend::LLMRouter(_, _) => RequestProtocol::AI,
 		_ => RequestProtocol::Http,
 	}
+}
+
+fn is_oauth_http_candidate(req: &Request, mcp_authentication: Option<&McpAuthentication>) -> bool {
+	let owned_oauth_endpoint = mcp_authentication.is_some_and(|auth| {
+		mcp::identity::ResolvedMcpIdentity::resolve(req, auth).is_ok_and(|identity| {
+			identity.endpoint(req, auth.provider.as_ref()).is_some()
+				|| mcp::identity::is_discovery_candidate(req.uri().path())
+		})
+	});
+	owned_oauth_endpoint
+		|| mcp::identity::is_discovery_candidate(req.uri().path())
+		|| req.uri().path().ends_with("/client-registration")
 }
 
 async fn set_mcp_cel_context(req: &mut Request, backend: &McpBackend) {
@@ -990,11 +1006,44 @@ impl HTTPProxy {
 			.backend
 			.map(|backend| resolve_backend(backend, self.inputs.as_ref()))
 			.transpose();
+		let early_backend_policies = selected_backend
+			.as_ref()
+			.ok()
+			.and_then(|backend| backend.as_ref())
+			.map(|backend| {
+				Arc::new(get_backend_policies(
+					self.inputs.as_ref(),
+					&backend.backend,
+					&backend.inline_policies,
+					Some(route_path.clone()),
+				))
+			});
+		let route_mcp_authentication = route_policies
+			.jwt
+			.select("mcp endpoint ownership", &req)
+			.and_then(|jwt| jwt.mcp.clone());
+		if route_mcp_authentication.is_some()
+			&& early_backend_policies
+				.as_ref()
+				.is_some_and(|policies| policies.mcp_authentication.is_some())
+		{
+			return Err(ProxyResponse::Error(ProxyError::ProcessingString(
+				"route and backend mcpAuthentication policies cannot both apply to one request".to_string(),
+			)))
+			.snapshot_on_err(log, &mut req);
+		}
+		let effective_mcp_authentication = route_mcp_authentication.as_ref().or_else(|| {
+			early_backend_policies
+				.as_ref()
+				.and_then(|policies| policies.mcp_authentication.as_ref())
+		});
 		let request_protocol = selected_backend
 			.as_ref()
 			.ok()
 			.and_then(Option::as_ref)
-			.map(|backend| classify_request_protocol(&req, &backend.backend.backend))
+			.map(|backend| {
+				classify_request_protocol(&req, &backend.backend.backend, effective_mcp_authentication)
+			})
 			.unwrap_or(RequestProtocol::Http);
 		if let Ok(Some(selected_backend)) = selected_backend.as_ref() {
 			let backend = &selected_backend.backend.backend;
@@ -1038,12 +1087,7 @@ impl HTTPProxy {
 			.snapshot_on_err(log, &mut req)?
 			.ok_or(ProxyError::NoValidBackends)
 			.snapshot_on_err(log, &mut req)?;
-		let backend_policies = Arc::new(get_backend_policies(
-			self.inputs.as_ref(),
-			&selected_backend.backend,
-			&selected_backend.inline_policies,
-			Some(route_path.clone()),
-		));
+		let backend_policies = early_backend_policies.expect("selected backend has resolved policies");
 		backend_policies.register_cel_expressions(log.cel.ctx());
 		// Backend-policy expressions are registered only after route policies run, so they may
 		// introduce an MCP dependency that was not known at the earlier parsing point. Avoid
@@ -5232,6 +5276,18 @@ mod route_chain_tests {
 			PathMatch::PathPrefix(prefix) => assert_eq!(prefix.as_str(), "/"),
 			other => panic!("expected path prefix match, got {other:?}"),
 		}
+	}
+
+	#[test]
+	fn oauth_candidates_remain_http_without_mcp_authentication() {
+		for path in [
+			"/.well-known/oauth-protected-resource/mcp",
+			"/.well-known/oauth-authorization-server/mcp",
+			"/mcp/client-registration",
+		] {
+			assert!(is_oauth_http_candidate(&request(path), None), "{path}");
+		}
+		assert!(!is_oauth_http_candidate(&request("/mcp"), None));
 	}
 
 	fn listener_address() -> SocketAddr {

@@ -5285,6 +5285,11 @@ pub(crate) async fn split_policies_for_target(
 		retry,
 		delay,
 	} = pol;
+	if mcp_authentication.is_some() && jwt_auth.is_some() {
+		return Err(Error::msg(
+			"mcpAuthentication and jwtAuth cannot both be configured in one policy context",
+		));
+	}
 	if let Some(p) = request_header_modifier {
 		if backend_target {
 			backend_policies.push(BackendTrafficPolicy::RequestHeaderModifier(p));

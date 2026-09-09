@@ -78,6 +78,10 @@ Taken from `examples/mcp-authentication/config.yaml`:
 
 Unauthenticated requests receive `401 Unauthorized` with `WWW-Authenticate` and a link to the resource metadata.
 
+The route CORS policy also applies to the gateway's OAuth metadata, registration, authorization,
+and token responses. Browser clients must include every header they send, including
+`authorization`, in `cors.allowHeaders`; these handlers no longer add permissive CORS headers.
+
 ---
 
 ### Scenario B: Remote MCP + External Authorization Server
@@ -145,10 +149,10 @@ Excerpt from `examples/mcp-authentication/config.yaml`:
   - path: { exact: /keycloak/mcp }
   - path: { exact: /.well-known/oauth-protected-resource/keycloak/mcp }
   - path: { exact: /.well-known/oauth-authorization-server/keycloak/mcp }
-  - path: { exact: /.well-known/oauth-authorization-server/keycloak/mcp/client-registration }
+  - path: { exact: /keycloak/mcp/client-registration }
   policies:
     cors:
-      allowHeaders: [mcp-protocol-version, content-type]
+      allowHeaders: [mcp-protocol-version, content-type, authorization]
       allowOrigins: ['*']
     mcpAuthentication:
       issuer: http://localhost:7080/realms/mcp
@@ -171,7 +175,7 @@ What setting a provider does (high level):
   - Resource metadata at `/.well-known/oauth-protected-resource/...`
   - Authorization Server metadata at `/.well-known/oauth-authorization-server/...`
 - In the resource metadata it returns, the `authorization_servers` value is set to the gateway’s own URL (not the upstream issuer) so clients talk to the gateway, and the gateway adapts things as needed.
-- The AS metadata is fetched from your configured `issuer` and minimally rewritten per provider to smooth over incompatibilities.
+- The AS metadata is fetched from `upstreamIssuer` when configured, otherwise from `issuer`, and minimally rewritten per provider.
 - If `jwksUrl` is omitted, the gateway derives it from the provider:
   - Auth0 → `<issuer>/.well-known/jwks.json`
   - Keycloak → `<issuer>/protocol/openid-connect/certs`
@@ -201,7 +205,7 @@ authentik-specific notes:
 
 Entra (Azure AD)-specific notes:
 - Entra only serves OIDC Discovery metadata (no RFC 8414); the gateway fetches the tenant's v2.0 `openid-configuration` and serves it as AS metadata. Both the v2 issuer (`https://login.microsoftonline.com/<tenant>/v2.0`) and the v1 issuer (`https://sts.windows.net/<tenant>/`) forms are accepted in `issuer`.
-- Entra's v2.0 endpoints reject the RFC 8707 `resource` parameter that MCP clients are required to send (`AADSTS9010010: invalid_target`). The gateway advertises proxied `.../authorize` and `.../token` endpoints in the served AS metadata and strips `resource` before forwarding to Entra, so make sure the route also matches the `/.well-known/oauth-authorization-server/...` path prefix.
+- Entra's v2.0 endpoints reject the RFC 8707 `resource` parameter that MCP clients are required to send (`AADSTS9010010: invalid_target`). The gateway advertises issuer-relative `.../authorize` and `.../token` endpoints and strips `resource` before forwarding, so the route must contain exact matches for the advertised OAuth paths.
 - No Dynamic Client Registration (RFC 7591); set `clientId` to a pre-registered app registration id and the gateway short-circuits registration requests with it.
 - MCP clients always remain public clients using PKCE (the registration short-circuit advertises `token_endpoint_auth_method: none`). `clientSecret` is not a credential for MCP clients — it is the credential of the gateway operator's own Entra app registration, and it pairs with `clientId`.
 - Entra decides confidential-vs-public per app registration platform. When the app's redirect URIs are registered under the **Web** platform, Entra treats it as a confidential client and requires client authentication at the token endpoint *in addition to* PKCE (`AADSTS7000218` otherwise). Set `clientSecret` and the gateway attaches it server-side — only to `authorization_code`/`refresh_token` requests for the configured `clientId`, never to other grant types (e.g. `client_credentials`).

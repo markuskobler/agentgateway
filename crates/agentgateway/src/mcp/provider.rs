@@ -120,10 +120,14 @@ impl<'a> McpProviderProfile<'a> {
 			// resource indicators, which later provider work can expose as a capability.
 			Some(McpIDP::Auth0 {}) => Ok(()),
 			Some(McpIDP::Okta {}) => {
+				// Okta's management registration endpoint is not browser-CORS enabled, so expose
+				// the gateway registration adapter when the upstream document advertises DCR.
 				rewrite_registration_if_present(metadata, public_metadata_uri);
 				Ok(())
 			},
 			Some(McpIDP::Descope {}) => {
+				// Descope registration uses its management API and therefore needs the gateway
+				// boundary to keep management credentials away from browser clients.
 				rewrite_registration_if_present(metadata, public_metadata_uri);
 				Ok(())
 			},
@@ -160,6 +164,16 @@ impl<'a> McpProviderProfile<'a> {
 				object
 					.entry("code_challenge_methods_supported")
 					.or_insert_with(|| serde_json::json!(["S256"]));
+				for unsupported in [
+					"authorization_response_iss_parameter_supported",
+					"dpop_signing_alg_values_supported",
+					"mtls_endpoint_aliases",
+					"pushed_authorization_request_endpoint",
+					"require_pushed_authorization_requests",
+					"request_object_signing_alg_values_supported",
+				] {
+					object.remove(unsupported);
+				}
 				Ok(())
 			},
 		}

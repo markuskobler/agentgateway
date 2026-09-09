@@ -94,7 +94,19 @@ pub(crate) fn entra_endpoints(issuer: &str) -> Result<EntraEndpoints, String> {
 	} else {
 		host
 	};
-	let authority = format!("https://{login_host}/{tenant}");
+	let scheme = if host.eq_ignore_ascii_case("sts.windows.net") {
+		"https"
+	} else {
+		parsed.scheme()
+	};
+	let login_authority = if host.eq_ignore_ascii_case("sts.windows.net") {
+		login_host.to_string()
+	} else if let Some(port) = parsed.port() {
+		format!("{login_host}:{port}")
+	} else {
+		login_host.to_string()
+	};
+	let authority = format!("{scheme}://{login_authority}/{tenant}");
 	Ok(EntraEndpoints {
 		openid_configuration: format!("{authority}/v2.0/.well-known/openid-configuration"),
 		authorization_endpoint: format!("{authority}/oauth2/v2.0/authorize"),
@@ -210,6 +222,15 @@ mod tests {
 	fn entra_endpoints_rejects_issuer_without_tenant() {
 		assert!(entra_endpoints("https://login.microsoftonline.com").is_err());
 		assert!(entra_endpoints("not a url").is_err());
+	}
+
+	#[test]
+	fn entra_endpoints_preserves_loopback_scheme_and_port() {
+		let endpoints = entra_endpoints("http://127.0.0.1:18080/tenant/v2.0").expect("endpoints");
+		assert_eq!(
+			endpoints.token_endpoint,
+			"http://127.0.0.1:18080/tenant/oauth2/v2.0/token"
+		);
 	}
 
 	#[test]

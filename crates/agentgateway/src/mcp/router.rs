@@ -53,10 +53,8 @@ impl App {
 		if backend_policies.mcp_authentication.is_some() {
 			return None;
 		}
-		if !matches!(
-			req.method(),
-			&::http::Method::GET | &::http::Method::OPTIONS
-		) || !auth::is_well_known_endpoint(req.uri().path())
+		if !mcp::identity::is_discovery_candidate(req.uri().path())
+			&& !req.uri().path().ends_with("/client-registration")
 		{
 			return None;
 		}

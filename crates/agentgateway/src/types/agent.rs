@@ -2871,6 +2871,39 @@ pub struct ResourceMetadata {
 }
 
 impl ResourceMetadata {
+	pub(crate) fn resource_uri(&self) -> Result<Option<String>, String> {
+		match self.extra.get("resource") {
+			None => Ok(None),
+			Some(Value::String(value)) => Ok(Some(value.clone())),
+			Some(_) => Err("resourceMetadata.resource must be a string".to_string()),
+		}
+	}
+
+	pub(crate) fn authorization_server_uri(&self) -> Result<Option<String>, String> {
+		if self.extra.contains_key("authorizationServers")
+			&& self.extra.contains_key("authorization_servers")
+		{
+			return Err(
+				"resourceMetadata must not contain both authorizationServers and authorization_servers"
+					.to_string(),
+			);
+		}
+		let value = self
+			.extra
+			.get("authorizationServers")
+			.or_else(|| self.extra.get("authorization_servers"));
+		match value {
+			None => Ok(None),
+			Some(Value::Array(values)) if values.len() == 1 => values[0]
+				.as_str()
+				.map(|value| Some(value.to_string()))
+				.ok_or_else(|| "resourceMetadata.authorizationServers must contain one string".to_string()),
+			Some(_) => {
+				Err("resourceMetadata.authorizationServers must contain exactly one issuer".to_string())
+			},
+		}
+	}
+
 	/// Build RFC-compliant JSON for the protected resource metadata.
 	///
 	/// - Defaults computed `resource` and `authorization_servers`.
@@ -2879,7 +2912,7 @@ impl ResourceMetadata {
 	pub fn to_rfc_json(&self, resource_uri: String, issuer: String) -> Value {
 		let mut map = serde_json::Map::new();
 
-		// Computed fields. User can override them if they explicitly configure them.
+		// Identity fields are validated inputs and cannot overwrite the resolved values below.
 		map.insert("resource".into(), Value::String(resource_uri));
 		map.insert(
 			"authorization_servers".into(),
@@ -2895,6 +2928,9 @@ impl ResourceMetadata {
 		// Copy user-provided extra keys, converting to snake_case
 		for (key, value) in &self.extra {
 			let snake = key.to_snake_case();
+			if matches!(snake.as_str(), "resource" | "authorization_servers") {
+				continue;
+			}
 			map.insert(snake, value.clone());
 		}
 
@@ -2945,6 +2981,7 @@ impl store::RequestPolicyTrait for JwtAuthentication {
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct McpAuthentication {
 	pub issuer: String,
+	pub upstream_issuer: Option<String>,
 	pub audiences: Vec<String>,
 	pub provider: Option<McpIDP>,
 	pub resource_metadata: ResourceMetadata,
@@ -2990,6 +3027,8 @@ impl From<McpAuthenticationMode> for crate::http::jwt::Mode {
 pub struct LocalMcpAuthentication {
 	/// Expected token issuer, matched against the JWT `iss` claim.
 	pub issuer: String,
+	/// Issuer used for upstream discovery and provider endpoints. Defaults to `issuer`.
+	pub upstream_issuer: Option<String>,
 	/// Accepted token audiences, matched against the JWT `aud` claim.
 	/// If unset, audience validation is disabled.
 	pub audiences: Option<Vec<String>>,
@@ -3023,7 +3062,7 @@ impl LocalMcpAuthentication {
 	/// Derive the JWKS URL from the issuer and provider, for configs that do not set `jwks`.
 	fn derived_jwks_url(&self) -> anyhow::Result<::http::Uri> {
 		crate::mcp::provider::McpProviderProfile::new(self.provider.as_ref())
-			.jwks_url(&self.issuer)
+			.jwks_url(self.upstream_issuer.as_deref().unwrap_or(&self.issuer))
 			.map_err(|error| anyhow!(error))
 	}
 
@@ -3062,8 +3101,9 @@ impl LocalMcpAuthentication {
 	) -> anyhow::Result<McpAuthentication> {
 		let jwt_cfg = self.as_jwt()?;
 		let jwt = jwt_cfg.try_into(resources).await?;
-		Ok(McpAuthentication {
+		let auth = McpAuthentication {
 			issuer: self.issuer.clone(),
+			upstream_issuer: self.upstream_issuer.clone(),
 			audiences: self.audiences.clone().unwrap_or_default(),
 			provider: self.provider.clone(),
 			resource_metadata: self.resource_metadata.clone(),
@@ -3071,7 +3111,9 @@ impl LocalMcpAuthentication {
 			mode: self.mode,
 			client_id: self.client_id.clone(),
 			client_secret: self.client_secret.clone(),
-		})
+		};
+		crate::mcp::identity::validate_configured_identity(&auth).map_err(anyhow::Error::msg)?;
+		Ok(auth)
 	}
 }
 
@@ -3667,6 +3709,7 @@ InvalidKeyData
 	fn test_local_mcp_authentication_entra_provider() {
 		let yaml = r#"
 issuer: "https://login.microsoftonline.com/11111111-2222-3333-4444-555555555555/v2.0"
+upstreamIssuer: "https://login.microsoftonline.us/11111111-2222-3333-4444-555555555555/v2.0"
 audiences: ["api://client-id-guid", "client-id-guid"]
 jwks: '{"keys":[]}'
 provider:
@@ -3680,6 +3723,10 @@ resourceMetadata:
 		let auth: LocalMcpAuthentication = serdes::yamlviajson::from_str(yaml).unwrap();
 		assert!(matches!(auth.provider, Some(McpIDP::Entra {})));
 		assert_eq!(auth.client_id.as_deref(), Some("client-id-guid"));
+		assert_eq!(
+			auth.upstream_issuer.as_deref(),
+			Some("https://login.microsoftonline.us/11111111-2222-3333-4444-555555555555/v2.0")
+		);
 		assert!(auth.client_secret.is_some());
 		assert!(auth.as_jwt().is_ok());
 	}
@@ -3700,6 +3747,33 @@ resourceMetadata: {}
 			},
 			_ => panic!("Expected LocalJwtConfig::Single"),
 		}
+	}
+
+	#[test]
+	fn resource_metadata_identity_fields_cannot_override_projection() {
+		let metadata = ResourceMetadata {
+			extra: BTreeMap::from([
+				(
+					"resource".to_string(),
+					Value::String("https://configured.example/mcp".to_string()),
+				),
+				(
+					"authorizationServers".to_string(),
+					serde_json::json!(["https://configured.example/as"]),
+				),
+				("scopesSupported".to_string(), serde_json::json!(["read"])),
+			]),
+		};
+		let projected = metadata.to_rfc_json(
+			"https://resolved.example/mcp".to_string(),
+			"https://resolved.example/as".to_string(),
+		);
+		assert_eq!(projected["resource"], "https://resolved.example/mcp");
+		assert_eq!(
+			projected["authorization_servers"],
+			serde_json::json!(["https://resolved.example/as"])
+		);
+		assert_eq!(projected["scopes_supported"], serde_json::json!(["read"]));
 	}
 
 	#[test]
