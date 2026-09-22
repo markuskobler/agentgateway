@@ -152,7 +152,7 @@ mod base64 {
 
 mod aes {
 	use base64::Engine;
-	use base64::engine::general_purpose::STANDARD;
+	use base64::engine::general_purpose::{STANDARD, URL_SAFE_NO_PAD};
 
 	use crate::crypto::aead::{AeadError, Aes256Gcm};
 
@@ -175,12 +175,15 @@ mod aes {
 				.seal(plaintext)
 				.map_err(|_| Error::EncryptionFailed)?;
 			// Format: nonce || ciphertext+tag, base64 encoded
-			Ok(STANDARD.encode(&sealed))
+			Ok(URL_SAFE_NO_PAD.encode(&sealed))
 		}
 
 		/// Decode and decrypt
 		pub fn decrypt(&self, encoded: &str) -> Result<Vec<u8>, Error> {
-			let data = STANDARD.decode(encoded).map_err(|_| Error::InvalidFormat)?;
+			let data = URL_SAFE_NO_PAD
+				.decode(encoded)
+				.or_else(|_| STANDARD.decode(encoded))
+				.map_err(|_| Error::InvalidFormat)?;
 			self.key.open(&data).map_err(|e| match e {
 				AeadError::InvalidFormat => Error::InvalidFormat,
 				_ => Error::DecryptionFailed,
@@ -203,13 +206,35 @@ mod aes {
 	#[cfg(test)]
 	mod tests {
 		use base64::Engine;
+		use base64::engine::general_purpose::STANDARD;
 
 		use super::{Encoder, Error};
 
 		#[test]
+		fn encrypts_with_url_safe_unpadded_base64() {
+			let encoder = Encoder::new(&[0u8; 32]).expect("encoder");
+			let encoded = encoder.encrypt(b"session").expect("encrypted session");
+
+			assert!(
+				encoded
+					.bytes()
+					.all(|byte| byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_'))
+			);
+		}
+
+		#[test]
+		fn decrypts_legacy_standard_base64() {
+			let encoder = Encoder::new(&[0u8; 32]).expect("encoder");
+			let sealed = encoder.key.seal(b"x").expect("sealed session");
+			let encoded = STANDARD.encode(sealed);
+
+			assert_eq!(encoder.decrypt(&encoded).expect("decrypted session"), b"x");
+		}
+
+		#[test]
 		fn short_ciphertexts_fail_cleanly() {
 			let encoder = Encoder::new(&[0u8; 32]).expect("encoder");
-			let short = base64::engine::general_purpose::STANDARD.encode([0u8; 11]);
+			let short = STANDARD.encode([0u8; 11]);
 			assert!(matches!(encoder.decrypt(&short), Err(Error::InvalidFormat)));
 		}
 	}

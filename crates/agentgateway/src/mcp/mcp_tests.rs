@@ -19,7 +19,8 @@ use crate::mcp::{FailureMode, McpAuthorization, guardrails};
 use crate::proxy::httpproxy::PolicyClient;
 use crate::test_helpers::extauthmock::{ExtAuthMock, deny_response};
 use crate::test_helpers::proxymock::{
-	BIND_KEY, TestBind, basic_named_route, basic_route, is_json_subset, setup_proxy_test, simple_bind,
+	BIND_KEY, TestBind, basic_named_route, basic_route, is_json_subset, setup_proxy_test,
+	setup_proxy_test_with_config, simple_bind,
 };
 use crate::test_helpers::ratelimitmock::{RateLimitMock, over_limit_response};
 use crate::types::agent::{
@@ -1781,6 +1782,56 @@ async fn streamable_http_validates_protocol_version_header() {
 		subsequent_unsupported.status(),
 		reqwest::StatusCode::BAD_REQUEST
 	);
+}
+
+#[tokio::test]
+async fn session_encoded_with_different_key_returns_404_then_reinitializes() {
+	let mock = mock_streamable_http_server(true).await;
+	let (_first_bind, first_io) = setup_proxy_with_session_key(
+		&mock,
+		"000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+	)
+	.await;
+	let (_second_bind, second_io) = setup_proxy_with_session_key(
+		&mock,
+		"f1e1d1c1b1a1918171615141312111000f0e0d0c0b0a09080706050403020100",
+	)
+	.await;
+	let client = reqwest::Client::new();
+	let first_url = format!("http://{first_io}/mcp");
+	let second_url = format!("http://{second_io}/mcp");
+
+	let initialize = mcp_json_post(&client, &first_url, &mcp_initialize_body())
+		.header("mcp-protocol-version", "2025-06-18")
+		.send()
+		.await
+		.unwrap();
+	assert_eq!(initialize.status(), reqwest::StatusCode::OK);
+	let session_id = initialize.headers()["mcp-session-id"]
+		.to_str()
+		.unwrap()
+		.to_string();
+
+	let list = serde_json::json!({
+		"jsonrpc": "2.0",
+		"id": 2,
+		"method": "tools/list",
+		"params": {}
+	});
+	let expired = mcp_json_post(&client, &second_url, &list)
+		.header("mcp-session-id", session_id)
+		.header("mcp-protocol-version", "2025-06-18")
+		.send()
+		.await
+		.unwrap();
+	assert_eq!(expired.status(), reqwest::StatusCode::NOT_FOUND);
+
+	let reinitialized = mcp_json_post(&client, &second_url, &mcp_initialize_body())
+		.header("mcp-protocol-version", "2025-06-18")
+		.send()
+		.await
+		.unwrap();
+	assert_eq!(reinitialized.status(), reqwest::StatusCode::OK);
 }
 
 fn mcp_json_post<'a>(
@@ -4179,6 +4230,26 @@ async fn setup_proxy(
 	legacy_sse: bool,
 ) -> (TestBind, SocketAddr) {
 	setup_proxy_policies(mock, stateful, legacy_sse, vec![]).await
+}
+
+async fn setup_proxy_with_session_key(mock: &MockServer, key: &str) -> (TestBind, SocketAddr) {
+	let config = crate::config::parse_config(
+		format!(
+			r#"
+config:
+  session:
+    key: "{key}"
+"#
+		),
+		None,
+	)
+	.expect("session config");
+	let t = setup_proxy_test_with_config(config)
+		.with_mcp_backend_policies(mock.addr, true, false, vec![])
+		.with_bind(simple_bind())
+		.with_route(basic_route(mock.addr));
+	let io = t.serve_real_listener(BIND_KEY).await;
+	(t, io)
 }
 
 async fn setup_proxy_policies(

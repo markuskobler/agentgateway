@@ -611,7 +611,18 @@ func (g *agentgatewayParametersHelmValuesGenerator) buildSessionKeySecret(
 	gw *gwv1.Gateway,
 	secretName string,
 ) (*corev1.Secret, error) {
-	key, err := g.resolveSessionKey(ctx, gw.Namespace, secretName)
+	_ = ctx
+	existing := g.secretClient.Get(secretName, gw.Namespace)
+	return buildSessionKeySecretFrom(existing, gw, secretName, g.sessionKeyGen)
+}
+
+func buildSessionKeySecretFrom(
+	existing *corev1.Secret,
+	gw *gwv1.Gateway,
+	secretName string,
+	keyGen func() (string, error),
+) (*corev1.Secret, error) {
+	key, err := resolveSessionKeyFrom(existing, gw.Namespace, secretName, keyGen)
 	if err != nil {
 		return nil, err
 	}
@@ -637,9 +648,18 @@ func (g *agentgatewayParametersHelmValuesGenerator) resolveSessionKey(
 	secretName string,
 ) (string, error) {
 	_ = ctx
+	existing := g.secretClient.Get(secretName, namespace)
+	return resolveSessionKeyFrom(existing, namespace, secretName, g.sessionKeyGen)
+}
 
-	if secret := g.secretClient.Get(secretName, namespace); secret != nil {
-		key, found := secret.Data["key"]
+func resolveSessionKeyFrom(
+	existing *corev1.Secret,
+	namespace string,
+	secretName string,
+	keyGen func() (string, error),
+) (string, error) {
+	if existing != nil {
+		key, found := existing.Data["key"]
 		if !found || len(key) == 0 {
 			return "", fmt.Errorf("session key secret %s/%s missing key entry", namespace, secretName)
 		}
@@ -650,7 +670,7 @@ func (g *agentgatewayParametersHelmValuesGenerator) resolveSessionKey(
 		return resolvedKey, nil
 	}
 
-	key, err := g.sessionKeyGen()
+	key, err := keyGen()
 	if err != nil {
 		return "", err
 	}
