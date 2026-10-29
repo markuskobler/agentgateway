@@ -80,16 +80,21 @@ pub(crate) async fn handle_mcp_request(
 ) -> Result<Option<Response>, ProxyError> {
 	match req.uri().path() {
 		// TODO: indicate this is a DirectResponse
-		path if path.ends_with("client-registration") => Ok(Some(
-			client_registration(req, auth, client.clone())
-				.await
-				.map_err(|e| {
-					warn!("client_registration error: {}", e);
-					StatusCode::INTERNAL_SERVER_ERROR
-				})
-				.into_response()
-				.map(Body::new),
-		)),
+		path
+			if path.starts_with("/.well-known/oauth-authorization-server/")
+				&& path.ends_with("/client-registration") =>
+		{
+			Ok(Some(
+				client_registration(req, auth, client.clone())
+					.await
+					.map_err(|e| {
+						warn!("client_registration error: {}", e);
+						StatusCode::INTERNAL_SERVER_ERROR
+					})
+					.into_response()
+					.map(Body::new),
+			))
+		},
 		path
 			if path == "/.well-known/oauth-protected-resource"
 				|| path.starts_with("/.well-known/oauth-protected-resource/") =>
@@ -1263,6 +1268,41 @@ mod tests {
 			.expect("request should build");
 		req.extensions_mut().insert(auth);
 		req
+	}
+
+	#[rstest::rstest]
+	#[case::root("/.well-known/oauth-authorization-server/client-registration", true)]
+	#[case::path(
+		"/.well-known/oauth-authorization-server/mcp/client-registration",
+		true
+	)]
+	#[case::backend("/api/client-registration", false)]
+	#[case::backend_suffix("/api/not-client-registration", false)]
+	#[case::backend_root("/client-registration", false)]
+	#[case::backend_token("/api/token", false)]
+	#[tokio::test]
+	async fn client_registration_dispatch(#[case] path: &str, #[case] registration: bool) {
+		let mut auth = default_auth();
+		auth.client_id = Some("configured-client".to_string());
+		let mut req = ::http::Request::builder()
+			.method(Method::POST)
+			.uri(format!("https://gateway.example.com{path}"))
+			.body(Body::from(r#"{"redirect_uris":[]}"#))
+			.unwrap();
+		let client = crate::test_helpers::policy_client();
+
+		let response = handle_mcp_request(&mut req, &auth, &client).await.unwrap();
+
+		if registration {
+			let response = response.expect("advertised endpoint should handle registration");
+			assert_eq!(response.status(), StatusCode::CREATED);
+			assert_eq!(
+				response_body_to_json(response).await["client_id"],
+				"configured-client"
+			);
+		} else {
+			assert!(response.is_none(), "backend path {path} was captured");
+		}
 	}
 
 	fn default_auth() -> McpAuthentication {
