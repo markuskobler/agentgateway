@@ -97,6 +97,7 @@ pub(crate) struct ResolvedMcpIdentity {
 	pub(crate) upstream_discovery_issuer: IdentityUri,
 	pub(crate) expected_token_issuer: String,
 	resource_was_configured: bool,
+	authorization_server_was_configured: bool,
 }
 
 impl ResolvedMcpIdentity {
@@ -114,7 +115,10 @@ impl ResolvedMcpIdentity {
 			Some(resource) => validate_identity_uri(&resource, "resourceMetadata.resource")?,
 			None => infer_public_resource(&external, auth.provider.as_ref()),
 		};
-		let public_authorization_server = match auth.resource_metadata.authorization_server_uri()? {
+		let configured_authorization_server = auth.resource_metadata.authorization_server_uri()?;
+		let authorization_server_was_configured = configured_authorization_server.is_some()
+			|| (auth.provider.is_some() && resource_was_configured);
+		let public_authorization_server = match configured_authorization_server {
 			Some(issuer) => validate_identity_uri(&issuer, "resourceMetadata.authorizationServers")?,
 			None if auth.provider.is_some() => public_resource.clone(),
 			None => upstream_discovery_issuer.clone(),
@@ -126,21 +130,20 @@ impl ResolvedMcpIdentity {
 			upstream_discovery_issuer,
 			expected_token_issuer: auth.issuer.clone(),
 			resource_was_configured,
+			authorization_server_was_configured,
 		})
 	}
 
 	pub(crate) fn endpoint(&self, req: &Request, provider: Option<&McpIDP>) -> Option<McpEndpoint> {
-		if !self.resource_was_configured
-			&& !req
-				.extensions()
-				.get::<crate::types::agent::PathMatch>()
-				.is_some_and(|matched| matches!(matched, crate::types::agent::PathMatch::Exact(_)))
-		{
-			return None;
-		}
+		let exact_route = req
+			.extensions()
+			.get::<crate::types::agent::PathMatch>()
+			.is_some_and(|matched| matches!(matched, crate::types::agent::PathMatch::Exact(_)));
 		let external = external_request_url(req).ok()?;
 		let path = external.path();
-		if same_origin(&external, &self.public_resource)
+		let owns_resource_paths = self.resource_was_configured
+			|| (exact_route && same_origin(&external, &self.public_resource));
+		if owns_resource_paths
 			&& path
 				== inserted_well_known(
 					"/.well-known/oauth-protected-resource",
@@ -153,11 +156,12 @@ impl ResolvedMcpIdentity {
 				"/.well-known/oauth-authorization-server",
 				self.public_resource.path(),
 			);
-			return (same_origin(&external, &self.public_resource)
-				&& self.explicit_alias(req, &compatibility_path))
-			.then_some(McpEndpoint::AuthorizationServerMetadata);
+			return (owns_resource_paths && self.explicit_alias(req, &compatibility_path))
+				.then_some(McpEndpoint::AuthorizationServerMetadata);
 		}
-		if !same_origin(&external, &self.public_authorization_server) {
+		let owns_authorization_server_paths = self.authorization_server_was_configured
+			|| (exact_route && same_origin(&external, &self.public_authorization_server));
+		if !owns_authorization_server_paths {
 			return None;
 		}
 
@@ -490,7 +494,7 @@ mod tests {
 	}
 
 	#[test]
-	fn ownership_is_exact_and_origin_bound() {
+	fn ownership_is_exact_and_configuration_bound() {
 		let auth = auth(Some("https://gateway.example/mcp"), Some(McpIDP::Entra {}));
 		for (uri, expected) in [
 			(
@@ -511,7 +515,7 @@ mod tests {
 			),
 			("https://gateway.example/mcp/token-evil", None),
 			("https://gateway.example/api/v1/token", None),
-			("https://other.example/mcp/token", None),
+			("https://other.example/mcp/token", Some(McpEndpoint::Token)),
 		] {
 			let request = request(uri, crate::types::agent::PathMatch::PathPrefix("/".into()));
 			let identity = ResolvedMcpIdentity::resolve(&request, &auth).expect("identity");
@@ -519,6 +523,100 @@ mod tests {
 				identity.endpoint(&request, auth.provider.as_ref()),
 				expected,
 				"{uri}"
+			);
+		}
+	}
+
+	#[rstest::rstest]
+	#[case::public_forwarded_host("gateway.example")]
+	#[case::forged_forwarded_host("attacker.invalid")]
+	fn configured_public_identity_owns_exact_paths_after_host_rewriting(#[case] forwarded: &str) {
+		let mut auth = auth(
+			Some("https://gateway.example/tools/mcp"),
+			Some(McpIDP::Auth0 {}),
+		);
+		auth.resource_metadata.extra.insert(
+			"authorizationServers".to_string(),
+			serde_json::json!(["https://auth.gateway.example/oauth"]),
+		);
+		for (path, expected) in [
+			(
+				"/.well-known/oauth-protected-resource/tools/mcp",
+				Some(McpEndpoint::ProtectedResourceMetadata),
+			),
+			(
+				"/.well-known/oauth-authorization-server/oauth",
+				Some(McpEndpoint::AuthorizationServerMetadata),
+			),
+			("/oauth/authorize", Some(McpEndpoint::Authorization)),
+			("/oauth/token", Some(McpEndpoint::Token)),
+			(
+				"/oauth/client-registration",
+				Some(McpEndpoint::Registration),
+			),
+			("/tools/mcp/token", None),
+			("/api/client-registration", None),
+			("/oauth/token-evil", None),
+		] {
+			let mut req = request(
+				&format!("http://backend.internal{path}"),
+				crate::types::agent::PathMatch::PathPrefix("/".into()),
+			);
+			req
+				.headers_mut()
+				.insert("host", "backend.internal".parse().unwrap());
+			req
+				.headers_mut()
+				.insert("x-forwarded-host", forwarded.parse().unwrap());
+			req
+				.headers_mut()
+				.insert("x-forwarded-proto", "https".parse().unwrap());
+			let identity = ResolvedMcpIdentity::resolve(&req, &auth).unwrap();
+			assert_eq!(
+				identity.endpoint(&req, auth.provider.as_ref()),
+				expected,
+				"{path}"
+			);
+			assert_eq!(
+				identity.protected_resource_metadata_url(),
+				"https://gateway.example/.well-known/oauth-protected-resource/tools/mcp"
+			);
+			assert_eq!(
+				identity.authorization_server_metadata_url(),
+				"https://auth.gateway.example/.well-known/oauth-authorization-server/oauth"
+			);
+			assert_eq!(
+				identity.token_url(),
+				"https://auth.gateway.example/oauth/token"
+			);
+		}
+	}
+
+	#[test]
+	fn explicit_authorization_server_owns_its_paths_without_a_configured_resource() {
+		let mut auth = auth(None, Some(McpIDP::Auth0 {}));
+		auth.resource_metadata.extra.insert(
+			"authorizationServers".to_string(),
+			serde_json::json!(["https://gateway.example/adapter"]),
+		);
+		for (path, expected) in [
+			(
+				"/.well-known/oauth-authorization-server/adapter",
+				Some(McpEndpoint::AuthorizationServerMetadata),
+			),
+			("/adapter/token", Some(McpEndpoint::Token)),
+			("/mcp/token", None),
+			("/.well-known/oauth-protected-resource/adapter", None),
+		] {
+			let req = request(
+				&format!("http://backend.internal{path}"),
+				crate::types::agent::PathMatch::PathPrefix("/".into()),
+			);
+			let identity = ResolvedMcpIdentity::resolve(&req, &auth).unwrap();
+			assert_eq!(
+				identity.endpoint(&req, auth.provider.as_ref()),
+				expected,
+				"{path}"
 			);
 		}
 	}
