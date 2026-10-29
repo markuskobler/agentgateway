@@ -399,6 +399,31 @@ pub(super) async fn oauth_token(
 		return oauth_invalid_request(&error);
 	}
 	if !provider.strips_resource_parameter() {
+		let body = if matches!(
+			auth.resource_parameter_mode,
+			McpResourceParameterMode::Audience
+		) {
+			let configured = auth.audiences.first().ok_or_else(|| {
+				ProxyError::ProcessingString(
+					"audience resource parameter mode requires a configured audience".to_string(),
+				)
+			})?;
+			let mut serializer = url::form_urlencoded::Serializer::new(String::new());
+			for (key, value) in url::form_urlencoded::parse(&bytes) {
+				if key == "audience" && value != configured.as_str() {
+					return oauth_invalid_request(
+						"token request audience conflicts with the configured MCP audience",
+					);
+				}
+				if !matches!(key.as_ref(), "resource" | "audience") {
+					serializer.append_pair(&key, &value);
+				}
+			}
+			serializer.append_pair("audience", configured);
+			Body::from(serializer.finish())
+		} else {
+			Body::from(bytes)
+		};
 		let mut builder = ::http::Request::builder()
 			.uri(token_endpoint)
 			.method(Method::POST);
@@ -410,7 +435,7 @@ pub(super) async fn oauth_token(
 		}
 		return client
 			.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
-			.simple_call(builder.body(Body::from(bytes))?)
+			.simple_call(builder.body(body)?)
 			.await;
 	}
 
@@ -1090,6 +1115,105 @@ mod tests {
 		assert_eq!(requests.len(), 1);
 		assert_eq!(requests[0].url.query(), Some(query));
 		assert_eq!(requests[0].body, form.as_bytes());
+	}
+
+	#[rstest::rstest]
+	#[case::auth0(McpIDP::Auth0 {}, "", "/oauth/token")]
+	#[case::okta(McpIDP::Okta {}, "/oauth2/default", "/oauth2/default/v1/token")]
+	#[tokio::test]
+	async fn oauth_token_audience_mode_replaces_resource(
+		#[case] provider: McpIDP,
+		#[case] issuer_path: &str,
+		#[case] token_path: &str,
+		#[values("", "&audience=api%3A%2F%2Fmcp")] incoming_audience: &str,
+	) {
+		let server = wiremock::MockServer::start().await;
+		wiremock::Mock::given(wiremock::matchers::method("POST"))
+			.and(wiremock::matchers::path(token_path))
+			.respond_with(wiremock::ResponseTemplate::new(400))
+			.mount(&server)
+			.await;
+		let auth = McpAuthentication {
+			provider: Some(provider),
+			upstream_issuer: Some(format!("{}{issuer_path}", server.uri())),
+			audiences: vec!["api://mcp".to_string()],
+			resource_parameter_mode: McpResourceParameterMode::Audience,
+			..default_auth()
+		};
+		let query = "x_query=first&x_query=second";
+		let form = format!(
+			"grant_type=authorization_code&client_id=fixture-client&code=fixture-code&code_verifier=fixture-verifier&resource=https%3A%2F%2Fapi.example%2Fone&x_hint=alpha%26beta&empty=&resource=https%3A%2F%2Fapi.example%2Ftwo&x_hint=second{incoming_audience}"
+		);
+		let mut req = ::http::Request::builder()
+			.method(Method::POST)
+			.uri(format!("https://gateway.example/mcp/token?{query}"))
+			.header(
+				::http::header::CONTENT_TYPE,
+				"application/x-www-form-urlencoded",
+			)
+			.header(
+				::http::header::AUTHORIZATION,
+				"Basic Zml4dHVyZTpjcmVkZW50aWFs",
+			)
+			.body(Body::from(form))
+			.unwrap();
+
+		let response = oauth_token(&mut req, &auth, crate::test_helpers::policy_client())
+			.await
+			.unwrap();
+
+		assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+		let requests = server.received_requests().await.unwrap();
+		assert_eq!(requests.len(), 1);
+		assert_eq!(requests[0].url.query(), Some(query));
+		assert_eq!(requests[0].body, b"grant_type=authorization_code&client_id=fixture-client&code=fixture-code&code_verifier=fixture-verifier&x_hint=alpha%26beta&empty=&x_hint=second&audience=api%3A%2F%2Fmcp");
+		assert_eq!(
+			requests[0].headers[::http::header::CONTENT_TYPE],
+			"application/x-www-form-urlencoded"
+		);
+		assert_eq!(
+			requests[0].headers[::http::header::AUTHORIZATION],
+			"Basic Zml4dHVyZTpjcmVkZW50aWFs"
+		);
+	}
+
+	#[rstest::rstest]
+	#[tokio::test]
+	async fn oauth_token_audience_mode_rejects_conflicting_audience(
+		#[values(McpIDP::Auth0 {}, McpIDP::Okta {})] provider: McpIDP,
+	) {
+		let server = wiremock::MockServer::start().await;
+		let auth = McpAuthentication {
+			provider: Some(provider),
+			upstream_issuer: Some(server.uri()),
+			audiences: vec!["api://mcp".to_string()],
+			resource_parameter_mode: McpResourceParameterMode::Audience,
+			..default_auth()
+		};
+		let mut req = ::http::Request::builder()
+			.method(Method::POST)
+			.uri("https://gateway.example/mcp/token")
+			.header(
+				::http::header::CONTENT_TYPE,
+				"application/x-www-form-urlencoded",
+			)
+			.body(Body::from(
+				"grant_type=authorization_code&client_id=fixture-client&audience=other",
+			))
+			.unwrap();
+
+		let response = oauth_token(&mut req, &auth, crate::test_helpers::policy_client())
+			.await
+			.unwrap();
+
+		assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+		let error = response_body_to_json(response).await;
+		assert_eq!(error["error"], "invalid_request");
+		assert_eq!(
+			error["error_description"],
+			"token request audience conflicts with the configured MCP audience"
+		);
+		assert!(server.received_requests().await.unwrap().is_empty());
 	}
 
 	#[rstest::rstest]
