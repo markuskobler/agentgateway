@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::http::StatusCode;
 use axum::response::Response;
 use axum_core::response::IntoResponse;
@@ -300,6 +302,9 @@ pub(super) fn oauth_authorize(
 	let mut location = url::Url::parse(&authorization_endpoint)
 		.map_err(|e| ProxyError::ProcessingString(format!("invalid authorize URL: {e}")))?;
 	let query = req.uri().query().unwrap_or_default();
+	if let Some(error) = duplicate_oauth_parameter(query.as_bytes(), &["client_id", "audience"]) {
+		return oauth_invalid_request(&error);
+	}
 	let mut pairs = url::form_urlencoded::parse(query.as_bytes())
 		.filter(|(key, _)| !(provider.strips_resource_parameter() && key == "resource"))
 		.map(|(key, value)| (key.into_owned(), value.into_owned()))
@@ -316,7 +321,7 @@ pub(super) fn oauth_authorize(
 				.iter()
 				.filter_map(|(key, value)| (key == "audience").then_some(value))
 				.collect::<Vec<_>>();
-			if incoming.len() > 1 || incoming.iter().any(|value| *value != configured) {
+			if incoming.iter().any(|value| *value != configured) {
 				return Ok(
 					Response::builder()
 						.status(StatusCode::BAD_REQUEST)
@@ -382,7 +387,17 @@ pub(super) async fn oauth_token(
 	// forward it and don't inject a second credential.
 	let authorization = req.headers().get(::http::header::AUTHORIZATION).cloned();
 	let content_type = req.headers().get(::http::header::CONTENT_TYPE).cloned();
+	let limit = crate::http::buffer_limit(req);
 	let body = std::mem::take(req.body_mut());
+	let bytes = crate::http::read_body_with_limit(body, limit)
+		.await
+		.map_err(ProxyError::Body)?;
+	if let Some(error) = duplicate_oauth_parameter(
+		&bytes,
+		&["client_id", "grant_type", "client_secret", "audience"],
+	) {
+		return oauth_invalid_request(&error);
+	}
 	if !provider.strips_resource_parameter() {
 		let mut builder = ::http::Request::builder()
 			.uri(token_endpoint)
@@ -395,26 +410,13 @@ pub(super) async fn oauth_token(
 		}
 		return client
 			.with_outbound(OutboundCallKind::Policy, OutboundCallSubtype::Oidc)
-			.simple_call(builder.body(body)?)
+			.simple_call(builder.body(Body::from(bytes))?)
 			.await;
 	}
-	let limit = crate::http::buffer_limit(req);
-	let bytes = crate::http::read_body_with_limit(body, limit)
-		.await
-		.map_err(ProxyError::Body)?;
 
 	let parsed = match parse_entra_token_form(&bytes) {
 		Ok(parsed) => parsed,
-		Err(error) => {
-			return Ok(
-				Response::builder()
-					.status(StatusCode::BAD_REQUEST)
-					.header(::http::header::CONTENT_TYPE, "application/json")
-					.body(Body::from(
-						serde_json::json!({"error": "invalid_request", "error_description": error}).to_string(),
-					))?,
-			);
-		},
+		Err(error) => return oauth_invalid_request(&error),
 	};
 	// The configured secret belongs to the app registration identified by the configured
 	// clientId (the one the DCR short-circuit hands out); never attach it to a request for
@@ -449,6 +451,28 @@ pub(super) async fn oauth_token(
 		.await?;
 
 	Ok(upstream)
+}
+
+fn duplicate_oauth_parameter(input: &[u8], fields: &[&str]) -> Option<String> {
+	let mut seen = HashSet::new();
+	for (name, _) in url::form_urlencoded::parse(input) {
+		if fields.contains(&name.as_ref()) && !seen.insert(name.to_string()) {
+			return Some(format!("duplicate {name} parameter"));
+		}
+	}
+	None
+}
+
+fn oauth_invalid_request(description: &str) -> Result<Response, ProxyError> {
+	Ok(
+		Response::builder()
+			.status(StatusCode::BAD_REQUEST)
+			.header(::http::header::CONTENT_TYPE, "application/json")
+			.body(Body::from(
+				serde_json::json!({"error": "invalid_request", "error_description": description})
+					.to_string(),
+			))?,
+	)
 }
 
 /// An OAuth token request form re-encoded without any `resource` parameters, plus the fields
@@ -1066,6 +1090,95 @@ mod tests {
 		assert_eq!(requests.len(), 1);
 		assert_eq!(requests[0].url.query(), Some(query));
 		assert_eq!(requests[0].body, form.as_bytes());
+	}
+
+	#[rstest::rstest]
+	#[case::client("client_id=first&client_id=second", "client_id")]
+	#[case::encoded_client("client_id=first&%63lient_id=second", "client_id")]
+	#[case::audience("audience=first&audience=second", "audience")]
+	#[tokio::test]
+	async fn oauth_authorize_rejects_duplicate_singletons(
+		#[values(McpIDP::Auth0 {}, McpIDP::Okta {})] provider: McpIDP,
+		#[case] query: &str,
+		#[case] field: &str,
+	) {
+		let auth = McpAuthentication {
+			provider: Some(provider),
+			..default_auth()
+		};
+		let req = ::http::Request::builder()
+			.uri(format!("https://gateway.example/mcp/authorize?{query}"))
+			.body(Body::empty())
+			.unwrap();
+
+		let response = oauth_authorize(&req, &auth).unwrap();
+
+		assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+		assert!(!response.headers().contains_key(::http::header::LOCATION));
+		let error = response_body_to_json(response).await;
+		assert_eq!(error["error"], "invalid_request");
+		assert_eq!(
+			error["error_description"],
+			format!("duplicate {field} parameter")
+		);
+	}
+
+	#[rstest::rstest]
+	#[case::client("client_id=second", "client_id")]
+	#[case::encoded_client("%63lient_id=second", "client_id")]
+	#[case::grant("grant_type=refresh_token", "grant_type")]
+	#[case::credential("client_secret=first&client_secret=second", "client_secret")]
+	#[case::audience("audience=first&audience=second", "audience")]
+	#[tokio::test]
+	async fn oauth_token_rejects_duplicate_singletons(
+		#[values(McpIDP::Auth0 {}, McpIDP::Okta {})] provider: McpIDP,
+		#[case] duplicate: &str,
+		#[case] field: &str,
+	) {
+		let server = wiremock::MockServer::start().await;
+		let refused =
+			serde_json::json!({"error": "invalid_grant", "error_description": "fixture control"});
+		wiremock::Mock::given(wiremock::matchers::method("POST"))
+			.respond_with(wiremock::ResponseTemplate::new(400).set_body_json(&refused))
+			.mount(&server)
+			.await;
+		let auth = McpAuthentication {
+			provider: Some(provider),
+			upstream_issuer: Some(server.uri()),
+			..default_auth()
+		};
+		let control = "grant_type=authorization_code&client_id=fixture-client&resource=one&resource=two&x_hint=first&x_hint=second";
+		let broken = format!("{control}&{duplicate}");
+		let client = crate::test_helpers::policy_client();
+		for (index, form) in [control, broken.as_str(), control].into_iter().enumerate() {
+			let before = server.received_requests().await.unwrap().len();
+			let mut req = ::http::Request::builder()
+				.method(Method::POST)
+				.uri("https://gateway.example/mcp/token")
+				.header(
+					::http::header::CONTENT_TYPE,
+					"application/x-www-form-urlencoded",
+				)
+				.body(Body::from(form.to_string()))
+				.unwrap();
+
+			let response = oauth_token(&mut req, &auth, client.clone()).await.unwrap();
+
+			assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+			let error = response_body_to_json(response).await;
+			let after = server.received_requests().await.unwrap().len();
+			if index == 1 {
+				assert_eq!(error["error"], "invalid_request");
+				assert_eq!(
+					error["error_description"],
+					format!("duplicate {field} parameter")
+				);
+				assert_eq!(after, before);
+			} else {
+				assert_eq!(error, refused);
+				assert_eq!(after, before + 1);
+			}
+		}
 	}
 
 	fn entra_auth() -> McpAuthentication {
