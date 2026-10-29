@@ -370,10 +370,14 @@ pub(super) async fn oauth_token(
 	}
 
 	let provider = McpProviderProfile::new(auth.provider.as_ref());
-	let token_endpoint = provider
+	let mut token_endpoint = provider
 		.token_endpoint(auth.upstream_issuer.as_deref().unwrap_or(&auth.issuer))
 		.map_err(ProxyError::ProcessingString)?
 		.ok_or_else(|| ProxyError::ProcessingString("provider has no proxied token endpoint".into()))?;
+	if let Some(query) = req.uri().query() {
+		token_endpoint.push('?');
+		token_endpoint.push_str(query);
+	}
 	// Clients using client_secret_basic carry their credentials in the Authorization header;
 	// forward it and don't inject a second credential.
 	let authorization = req.headers().get(::http::header::AUTHORIZATION).cloned();
@@ -1019,6 +1023,49 @@ mod tests {
 			request.headers.get(::http::header::AUTHORIZATION),
 			Some(&"Bearer registration-token".parse().expect("header"))
 		);
+	}
+
+	#[rstest::rstest]
+	#[case::auth0(McpIDP::Auth0 {}, "", "/oauth/token")]
+	#[case::okta(McpIDP::Okta {}, "/oauth2/default", "/oauth2/default/v1/token")]
+	#[tokio::test]
+	async fn oauth_token_preserves_query_and_form(
+		#[case] provider: McpIDP,
+		#[case] issuer_path: &str,
+		#[case] token_path: &str,
+	) {
+		let server = wiremock::MockServer::start().await;
+		wiremock::Mock::given(wiremock::matchers::method("POST"))
+			.and(wiremock::matchers::path(token_path))
+			.respond_with(wiremock::ResponseTemplate::new(400))
+			.mount(&server)
+			.await;
+		let auth = McpAuthentication {
+			provider: Some(provider),
+			upstream_issuer: Some(format!("{}{issuer_path}", server.uri())),
+			..default_auth()
+		};
+		let query = "x_query=first&x_query=second&empty=&x_hint=alpha%26beta";
+		let form = "grant_type=authorization_code&client_id=fixture-client&resource=https%3A%2F%2Fapi.example%2Fone&x_hint=first&resource=https%3A%2F%2Fapi.example%2Ftwo";
+		let mut req = ::http::Request::builder()
+			.method(Method::POST)
+			.uri(format!("https://gateway.example/mcp/token?{query}"))
+			.header(
+				::http::header::CONTENT_TYPE,
+				"application/x-www-form-urlencoded",
+			)
+			.body(Body::from(form))
+			.unwrap();
+
+		let response = oauth_token(&mut req, &auth, crate::test_helpers::policy_client())
+			.await
+			.unwrap();
+
+		assert_eq!(response.status(), StatusCode::BAD_REQUEST);
+		let requests = server.received_requests().await.unwrap();
+		assert_eq!(requests.len(), 1);
+		assert_eq!(requests[0].url.query(), Some(query));
+		assert_eq!(requests[0].body, form.as_bytes());
 	}
 
 	fn entra_auth() -> McpAuthentication {
