@@ -173,6 +173,7 @@ impl<'a> McpProviderProfile<'a> {
 				for unsupported in [
 					"authorization_response_iss_parameter_supported",
 					"dpop_signing_alg_values_supported",
+					"tls_client_certificate_bound_access_tokens",
 					"mtls_endpoint_aliases",
 					"pushed_authorization_request_endpoint",
 					"require_pushed_authorization_requests",
@@ -280,6 +281,7 @@ fn remove_relocated_capabilities(metadata: &mut serde_json::Value) -> Result<(),
 	for unsupported in [
 		"authorization_response_iss_parameter_supported",
 		"dpop_signing_alg_values_supported",
+		"tls_client_certificate_bound_access_tokens",
 		"mtls_endpoint_aliases",
 		"pushed_authorization_request_endpoint",
 		"require_pushed_authorization_requests",
@@ -636,6 +638,35 @@ mod tests {
 				.authorization_endpoint("https://tenant.auth0.com/path")
 				.is_err()
 		);
+	}
+
+	#[rstest::rstest]
+	#[case::auth0(McpIDP::Auth0 {})]
+	#[case::okta(McpIDP::Okta {})]
+	#[case::entra(McpIDP::Entra {})]
+	#[test]
+	fn relocated_token_endpoint_does_not_advertise_certificate_binding(#[case] provider: McpIDP) {
+		let mut metadata = serde_json::json!({
+			"authorization_endpoint": "https://idp.example/authorize",
+			"token_endpoint": "https://idp.example/token",
+			"tls_client_certificate_bound_access_tokens": true,
+			"mtls_endpoint_aliases": {"token_endpoint": "https://idp.example/mtls/token"}
+		});
+
+		profile(Some(&provider))
+			.rewrite_metadata(&mut metadata, "https://gateway.example/mcp", false)
+			.unwrap();
+
+		assert_eq!(
+			metadata["token_endpoint"],
+			"https://gateway.example/mcp/token"
+		);
+		assert!(
+			metadata
+				.get("tls_client_certificate_bound_access_tokens")
+				.is_none()
+		);
+		assert!(metadata.get("mtls_endpoint_aliases").is_none());
 	}
 
 	#[test]
