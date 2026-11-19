@@ -72,7 +72,7 @@ decisions](../../../../llm-ir/README.md#design-decisions).
 
 ## Outstanding work
 
-- **Providers.** Bedrock and Vertex need their endpoints, signing and model families wired to the IR.
+- **Providers.** Bedrock needs its endpoints, signing and model families wired to the IR.
 - **Policies that call out.** Prompt guards that call a service hold the request or reply for an outside
   verdict, which the gateway's IR stages don't do yet.
 - **Request-side token counting** for rate-limit admission.
