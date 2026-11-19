@@ -18,7 +18,7 @@ use crate::types::frontend::DatabaseLlmMode;
 /// rejection responses, audit behavior and telemetry; streaming masking is not legacy behavior.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Ineligible {
-	/// Bedrock and Vertex attempts are not wired to the IR. Integrate their endpoint and model
+	/// Bedrock attempts are not wired to the IR. Integrate their endpoint and model
 	/// selection, authentication/signing, and request/reply handling, adding protocol adapters
 	/// where their wire formats are not already supported.
 	Provider,
@@ -253,9 +253,10 @@ fn check_configuration(
 		| AIProvider::Gemini(_)
 		| AIProvider::Azure(_)
 		| AIProvider::Copilot(_)
-		| AIProvider::Custom(_) => {},
-		// Their paths, signing and model families are not yet wired to IR attempts.
-		AIProvider::Bedrock(_) | AIProvider::Vertex(_) => return Err(Ineligible::Provider),
+		| AIProvider::Custom(_)
+		| AIProvider::Vertex(_) => {},
+		// Its paths, signing and model families are not yet wired to IR attempts.
+		AIProvider::Bedrock(_) => return Err(Ineligible::Provider),
 	}
 	if *tokenize {
 		return Err(Ineligible::Tokenize);
